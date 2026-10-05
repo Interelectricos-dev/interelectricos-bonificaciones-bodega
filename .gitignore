@@ -1,0 +1,18 @@
+# Archivos de entorno y credenciales
+.env
+*.env
+
+# Archivos de datos con registros reales o información sensible
+*.xlsx
+*.xls
+*.csv
+!templates/*.xlsx
+!templates/*.csv
+!data/*.example
+
+# Archivos temporales de sistema y editores
+.DS_Store
+Thumbs.db
+~$*
+.vscode/
+.idea/
