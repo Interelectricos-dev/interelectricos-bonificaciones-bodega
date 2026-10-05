@@ -99,6 +99,6 @@ Los supervisores y bodegueros pueden consultar el avance de productividad y cali
 
 Para facilitar la resolución de dudas operativas a los trabajadores de bodega:
 
-* **Meta Base de Productividad:** 100 puntos semanales (cubiertos por el salario ordinario). A partir del punto 101 se liquidan bonos escalonados ($150, $300, $450 ó $600).
-* **Bono de Calidad:** Bolsa inicial de $200. Cada punto de error reportado descuenta $40 de dicha bolsa.
+* **Meta Base de Productividad:** 100 puntos semanales (cubiertos por el salario ordinario). A partir del punto 101 se liquidan bonos escalonados ($150.000, $300.000, $450.000 ó $600.000).
+* **Bono de Calidad:** Bolsa inicial de $200.000. Cada punto de error reportado descuenta $40.000 de dicha bolsa.
 * **Protección de Salario:** El bono de calidad cuenta con piso de $0; nunca genera saldos en contra ni deducciones del sueldo fijo.

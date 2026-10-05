@@ -48,14 +48,30 @@ El libro de Google Sheets se compone de cinco tablas estructuradas:
 
 ### 3.2. Hoja: FILTRO_FECHAS
 * **Permiso en AppSheet:** `Updates_Only`
-* **Función:** Almacena una única fecha de referencia para sincronizar las vistas temporales.
-* **Estructura:**
+* **Función:** Centraliza la fecha de consulta y calcula de forma automática los límites temporales (semana y mes) para alimentar a `RESUMEN_SEMANAL` y `RESUMEN_MENSUAL`.
+* **Estructura de Columnas:**
   * `ID_Filtro` (`Text`, `Key`): Valor constante `1`.
-  * `Fecha_Referencia` (`Date`, `Editable`): Fecha seleccionada por el supervisor.
-* **Regla técnica de configuración:** En Google Sheets **no debe existir ninguna fórmula** (como `=HOY()`) en esta celda para evitar que AppSheet bloquee la columna como solo lectura. En AppSheet, la propiedad *Spreadsheet formula* permanece en blanco y en *Initial value* se define:
-  ```text
-  TODAY()
-  ```
+  * `Fecha_Referencia` (`Date`, `Editable`): Fecha seleccionada interactivamente por el usuario en AppSheet.
+    * *Regla técnica de configuración:* En Google Sheets **no debe existir ninguna fórmula** (como `=HOY()`) en esta celda (`B2`) para evitar que AppSheet bloquee la columna como solo lectura. En AppSheet, la propiedad *Spreadsheet formula* permanece en blanco y en *Initial value* se define:
+      ```text
+      TODAY()
+      ```
+  * `Semana_Inicio` (`Date`, Celda `C2`): Lunes de la semana seleccionada. Calculado automáticamente con la fórmula:
+    ```excel
+    =B2 - DIASEM(B2; 2) + 1
+    ```
+  * `Semana_Fin` (`Date`, Celda `D2`): Domingo de la semana seleccionada. Calculado automáticamente con la fórmula:
+    ```excel
+    =C2 + 6
+    ```
+  * `Mes_Inicio` (`Date`, Celda `E2`): Primer día del mes seleccionado. Calculado automáticamente con la fórmula:
+    ```excel
+    =FIN.MES(B2; -1) + 1
+    ```
+  * `Mes_Fin` (`Date`, Celda `F2`): Último día del mes seleccionado. Calculado automáticamente con la fórmula:
+    ```excel
+    =FIN.MES(B2; 0)
+    ```
 
 ---
 
@@ -76,50 +92,29 @@ El libro de Google Sheets se compone de cinco tablas estructuradas:
 ### 3.4. Hoja: CONFIGURACION
 Centraliza las variables de nómina para que cualquier ajuste gerencial se propague sin la necesidad de modificar el código ni las fórmulas:
 * **3.4.1. Meta base semanal (`B2`):** `100` puntos.
-* **3.4.2. Bono base de calidad (`B3`):** `$200`.
-* **3.4.3. Deducción unitaria por error (`B4`):** `$40`.
+* **3.4.2. Bono inicial de calidad (`B3`):** `$200.000`.
+* **3.4.3. Descuento unitario por error (`B4`):** `$40.000`.
 * **3.4.4. Matriz de Escala de Productividad (`A8:C11`):**
-  * `101` a `120` puntos → `$150`
-  * `121` a `150` puntos → `$300`
-  * `151` a `180` puntos → `$450`
-  * `181` a más puntos → `$600`
+  * `101` a `120` puntos → `$150.000`
+  * `121` a `150` puntos → `$300.000`
+  * `151` a `180` puntos → `$450.000`
+  * `181` o más puntos → `$600.000`
 
 ---
 
 ## 4. Motor de Liquidación en Google Sheets
 
-Las hojas `RESUMEN_SEMANAL` y `RESUMEN_MENSUAL` operan como motores analíticos en modo de solo lectura (`Read_Only`).
+Las hojas `RESUMEN_SEMANAL` y `RESUMEN_MENSUAL` operan como motores analíticos en modo de solo lectura (`Read_Only`). No poseen tablas de fechas independientes en su interior; en su lugar, consumen directamente los rangos calculados en la hoja `FILTRO_FECHAS`.
 
 ### 4.1. Delimitación Temporal Dinámica
-El bloque selector en ambas hojas lee la fecha centralizada en `FILTRO_FECHAS` y calcula de forma automática los límites del ciclo:
+En lugar de duplicar celdas de control en cada hoja de resumen, los límites de consulta se procesan de manera centralizada en la hoja `FILTRO_FECHAS`:
 
-#### 4.1.1. En Resumen Semanal (Celdas `I2:J4`)
-* **Fecha de referencia (`J2`):**
-  ```excel
-  =FILTRO_FECHAS!$B$2
-  ```
-* **Inicio de semana - Lunes (`J3`):**
-  ```excel
-  =J2 - DIASEM(J2; 2) + 1
-  ```
-* **Fin de semana - Domingo (`J4`):**
-  ```excel
-  =J3 + 6
-  ```
-
-#### 4.1.2. En Resumen Mensual (Celdas `I2:J4`)
-* **Fecha de referencia (`J2`):**
-  ```excel
-  =FILTRO_FECHAS!$B$2
-  ```
-* **Inicio de mes (`J3`):**
-  ```excel
-  =FIN.MES(J2; -1) + 1
-  ```
-* **Fin de mes (`J4`):**
-  ```excel
-  =FIN.MES(J2; 0)
-  ```
+* **Ciclo Semanal (`FILTRO_FECHAS!$C$2:$D$2`):**
+  * `Semana_Inicio` (`C2`): Lunes del ciclo (`=B2 - DIASEM(B2; 2) + 1`).
+  * `Semana_Fin` (`D2`): Domingo del ciclo (`=C2 + 6`).
+* **Ciclo Mensual (`FILTRO_FECHAS!$E$2:$F$2`):**
+  * `Mes_Inicio` (`E2`): Primer día del mes (`=FIN.MES(B2; -1) + 1`).
+  * `Mes_Fin` (`F2`): Último día del mes (`=FIN.MES(B2; 0)`).
 
 ---
 
@@ -129,11 +124,10 @@ Cada fila representa un colaborador activo y se autocalcula a partir de la fila 
 #### 4.2.1. Columna A: Extracción Dinámica de Personal Activo
 Genera la lista vertical de colaboradores vigentes en la empresa:
 ```excel
-=FILTER(EMPLEADOS!A2:A; EMPLEADOS!C2:C = VERDADERO)
+=SI.ERROR(FILTER(EMPLEADOS!A2:A1000; EMPLEADOS!C2:C1000 = VERDADERO); "")
 ```
-* `FILTER(...)`: Función matricial dinámica que evalúa un rango y retorna únicamente las filas que cumplen una condición lógica establecida.
-* `EMPLEADOS!A2:A`: Rango de retorno. Apunta a la columna `ID_Empleado` de la tabla maestra.
-* `EMPLEADOS!C2:C = VERDADERO`: Criterio de validación. Evalúa la columna booleana `Activo`. Si un colaborador es desactivado, desaparece automáticamente de las liquidaciones vigentes sin eliminar su registro en el histórico transaccional.
+* `FILTER(...)`: Función matricial dinámica que evalúa el rango de personal y retorna únicamente los IDs donde `Activo = TRUE`. Si un colaborador es desactivado, desaparece automáticamente de las liquidaciones vigentes sin alterar el histórico transaccional.
+* `SI.ERROR(..., "")`: Previene errores visuales (`#N/A` o `#CALC!`) en caso de no haber empleados activos.
 
 #### 4.2.2. Columna B: Nombre del Empleado
 Recupera la denominación textual asociada al identificador para facilitar la lectura del reporte:
@@ -144,47 +138,49 @@ Recupera la denominación textual asociada al identificador para facilitar la le
 * `BUSCARV(...)`: Función de búsqueda vertical exacta.
   * `A2`: Valor buscado (`ID_Empleado`).
   * `EMPLEADOS!$A:$B`: Matriz de consulta fijada en la tabla maestra.
-  * `2`: Indicador de la columna que extrae el `Nombre_Completo`.
+  * `2`: Indicador de columna que extrae el `Nombre_Completo`.
   * `FALSO`: Parámetro de coincidencia exacta obligatoria.
 
 #### 4.2.3. Columna C: Puntos Totales Acumulados
-Consolida la sumatoria de complejidad documental y desgaste físico generados por el trabajador dentro de la ventana de fechas:
-```excel
-=SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & $J$3; REGISTRO_DIARIO!$B:$B; "<" & ($J$4 + 1)) + SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & $J$3; REGISTRO_DIARIO!$B:$B; "<" & ($J$4 + 1)))
-```
-* **Primer `SUMAR.SI.CONJUNTO(...)` (Puntos por Factura):**
-  * `REGISTRO_DIARIO!$E:$E`: Rango de suma. Columna donde se registran los puntos por complejidad de lectura de la remisión (escala de 1 a 5).
-  * `REGISTRO_DIARIO!$C:$C`: Rango de criterios 1. Columna de empleados en el histórico de despachos.
-  * `A2`: Criterio 1. Código identificador (`ID_Empleado`) a evaluar.
-  * `REGISTRO_DIARIO!$B:$B`: Rango de criterios 2 y 3. Columna que contiene la marca de tiempo de auditoría (`DateTime`).
-  * `">=" & $J$3`: Criterio 2. Limita los registros a aquellos cuya fecha sea mayor o igual al inicio del ciclo (Lunes en semanal / Día 1 en mensual).
-  * `"<" & ($J$4 + 1)`: Criterio 3. Limita los registros a aquellos cuya fecha sea menor al día final del periodo más 1 unidad. Dado que la columna B almacena hora exacta, la adición de `+ 1` asegura la inclusión de todas las transacciones realizadas hasta las `23:59:59` del último día.
-* **Operador `+`:** Concatena aritméticamente la sumatoria de esfuerzo cognitivo con la de esfuerzo físico.
-* **Segundo `SUMAR.SI.CONJUNTO(...)` (Puntos por Esfuerzo Físico):**
-  * `REGISTRO_DIARIO!$F:$F`: Rango de suma. Columna de desgaste físico y maniobras logísticas (cortes, peso).
-  * **Argumentos restantes:** Idénticos al primer bloque para garantizar consistencia en el empleado y el intervalo de fechas.
+Consolida la sumatoria de complejidad documental y desgaste físico generados por el trabajador dentro de la ventana de fechas.
+
+* **En `RESUMEN_SEMANAL` (apunta a `FILTRO_FECHAS!$C$2` y `$D$2`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$D$2 + 1)) + SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$D$2 + 1)))
+  ```
+
+* **En `RESUMEN_MENSUAL` (apunta a `FILTRO_FECHAS!$E$2` y `$F$2`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)) + SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)))
+  ```
+
+* **Desglose de argumentos:**
+  * `REGISTRO_DIARIO!$E:$E` / `$F:$F`: Rangos de suma para `Puntos_Factura` y `Puntos_Esfuerzo` respectivamente.
+  * `REGISTRO_DIARIO!$C:$C; A2`: Filtro por código del trabajador.
+  * `REGISTRO_DIARIO!$B:$B; ">=" & ...`: Limita los registros a marcas de tiempo mayores o iguales al inicio del ciclo.
+  * `REGISTRO_DIARIO!$B:$B; "<" & (... + 1)`: Limita los registros a marcas de tiempo menores al día de fin más 1 unidad. Al contener la columna B hora exacta (`DateTime`), la adición de `+ 1` asegura incluir todas las transacciones hasta las `23:59:59` del último día.
 
 #### 4.2.4. Columna D: Bono de Productividad
-Determina la retribución económica correspondiente a los puntos obtenidos:
+Determina la retribución económica correspondiente a los puntos obtenidos evaluando la matriz escalonada:
 ```excel
 =SI(A2 = ""; ""; SI(C2 <= CONFIGURACION!$B$2; 0; BUSCARV(C2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
 ```
-* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SI(C2 <= CONFIGURACION!$B$2; 0; ...)`: Umbral de rentabilidad operativa. Evalúa el acumulado de puntos de la celda `C2` frente a la meta mínima fijada en `CONFIGURACION!$B$2` (100 puntos). Si no se supera el umbral, asigna `$0`.
-* `BUSCARV(...)` (Búsqueda escalonada):
-  * `C2`: Valor de entrada a calificar (`Puntos Totales`).
-  * `CONFIGURACION!$A$8:$C$11`: Matriz fija de escalas salariales (`101 pts → $150`, `121 pts → $300`, `151 pts → $450`, `181 pts → $600`).
-  * `3`: Indicador de la columna que devuelve el valor monetario correspondiente.
-  * `VERDADERO`: Búsqueda de aproximación. Al estar ordenada de forma ascendente, localiza el escalón numérico inmediatamente inferior o igual al valor obtenido.
+* `SI(C2 <= CONFIGURACION!$B$2; 0; ...)`: Evalúa el acumulado frente a la meta mínima de `100` puntos (`CONFIGURACION!$B$2`). Si no se supera, asigna `$0`.
+* `BUSCARV(C2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)`: Búsqueda por aproximación sobre la escala salarial ordenada (`101 pts → $150.000`, `121 pts → $300.000`, `151 pts → $450.000`, `181 pts → $600.000`).
 
 #### 4.2.5. Columna E: Total Errores Acumulados
-Totaliza las penalizaciones asignadas por fallas en el despacho dentro del periodo:
-```excel
-=SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$G:$G; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & $J$3; REGISTRO_DIARIO!$B:$B; "<" & ($J$4 + 1)))
-```
-* `REGISTRO_DIARIO!$G:$G`: Rango de la suma. Columna que registra las deducciones numéricas negativas asignadas por el despachador (`0, -1, -2, -3`).
-* `REGISTRO_DIARIO!$C:$C; A2`: Filtro por código de empleado.
-* `REGISTRO_DIARIO!$B:$B; ">=" & $J$3; REGISTRO_DIARIO!$B:$B; "<" & ($J$4 + 1)`: Filtro de contención temporal entre fecha de inicio y fecha de cierre del periodo.
+Totaliza las penalizaciones asignadas por fallas en el despacho dentro del periodo evaluado:
+
+* **En `RESUMEN_SEMANAL`:**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$G:$G; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$D$2 + 1)))
+  ```
+
+* **En `RESUMEN_MENSUAL`:**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$G:$G; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)))
+  ```
+* `REGISTRO_DIARIO!$G:$G`: Rango de suma de deducciones negativas (`0, -1, -2, -3`).
 
 #### 4.2.6. Columna F: Bono de Calidad con Protección de Saldo
 Calcula la retención del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador:

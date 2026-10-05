@@ -29,13 +29,19 @@ Este documento sirve como respaldo técnico de las expresiones lógicas, configu
 
 ### Tabla: FILTRO_FECHAS
 
-* **Columna: `Fecha_Referencia`**
-  * **Objetivo:** Fijar por defecto el día en curso sin bloquear la edición del usuario.
-  * **Propiedades:** `Editable?` activado (`TRUE`).
-  * **Initial Value:**
-    ```text
-    TODAY()
-    ```
+* **Columnas de la Tabla:**
+  * `ID_Filtro` (`Text`, `Key`): Identificador único (valor fijo `1`).
+  * `Fecha_Referencia` (`Date`, `Editable`):
+    * **Objetivo:** Fijar por defecto el día en curso permitiendo al usuario modificarla interactivamente para filtrar reportes.
+    * **Propiedades:** `Editable?` activado (`TRUE`).
+    * **Initial Value:**
+      ```text
+      TODAY()
+      ```
+    * **Regla estricta:** En Google Sheets la celda `B2` no debe llevar fórmula de hoja de cálculo para evitar bloqueo en AppSheet.
+  * `Semana_Inicio`, `Semana_Fin`, `Mes_Inicio`, `Mes_Fin` (`Date`, `Read_Only`):
+    * **Objetivo:** Columnas calculadas automáticamente por fórmulas en Google Sheets (`WEEKDAY` / `EOMONTH`) para delimitar las ventanas temporales que consumen `RESUMEN_SEMANAL` y `RESUMEN_MENSUAL`.
+    * **Propiedades:** `Editable?` desactivado (`FALSE`).
 
 ---
 
