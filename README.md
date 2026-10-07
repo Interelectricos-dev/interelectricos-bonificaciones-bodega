@@ -27,6 +27,7 @@ La solución opera bajo un esquema cliente-servidor en la nube:
 * `/docs`: Documentación técnica del sistema, manuales de usuario y reglas de negocio:
   * [`INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md)
   * [`MANUAL_DE_USUARIO_OPERATIVO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/MANUAL_DE_USUARIO_OPERATIVO.md)
+  * [`RUNBOOK_SOPORTE_TECNICO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/RUNBOOK_SOPORTE_TECNICO.md)
 * `/schemas`: Respaldo de configuraciones estructurales, fórmulas internas y expresiones lógicas de AppSheet ([`appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md)).
 * `/templates`: Plantillas limpias de la base de datos de Google Sheets excluyendo registros reales o sensibles ([`BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/templates/BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx)).
 
