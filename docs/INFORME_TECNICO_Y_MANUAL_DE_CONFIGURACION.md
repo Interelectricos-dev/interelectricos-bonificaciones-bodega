@@ -36,13 +36,9 @@ El libro de Google Sheets se compone de cinco tablas estructuradas:
 * **Permiso en AppSheet:** `Read_Only`
 * **Función:** Control centralizado del personal operativo. Las altas, bajas y modificaciones son realizadas exclusivamente por el administrador en la hoja de cálculo para evitar alteraciones a mitad de ciclo de pago.
 * **Estructura:**
-  * `ID_Empleado` (`Text`, `Key`): Identificador alfanumérico único del trabajador (ej. `B001`) o puede guardar el número de documento del empleado.
-  * `Nombre_Completo` (`Text`): Nombre y apellidos del empleado.
+  * `ID_Empleado` (`Text`, `Key`): Identificador alfanumérico único del trabajador (ej. `B001`) o número de documento de identidad.
+  * `Nombre_Completo` (`Text`, `Label`): Nombre y apellidos del empleado. Al ser una operación con un equipo reducido (máx. 5 colaboradores con nombres distintos), esta columna actúa como la etiqueta nativa (`Label`) de la tabla para desplegar directamente el nombre en listas y formularios.
   * `Activo` (`Yes/No`): Casilla de verificación booleana (`TRUE` / `FALSE`). Define vigencia laboral.
-  * `Etiqueta_Empleado` (Columna Virtual en AppSheet, `Label`): Concatenación utilizada en menús desplegables para facilitar la selección visual guardando únicamente el identificador clave:
-    ```text
-    CONCATENATE([ID_Empleado], " - ", [Nombre_Completo])
-    ```
 
 ---
 
@@ -81,7 +77,7 @@ El libro de Google Sheets se compone de cinco tablas estructuradas:
 * **Estructura:**
   * `ID_Registro` (`Text`, `Key`): Oculto (`Show? = False`), autogenerado mediante la fórmula `UNIQUEID()`.
   * `Fecha_Hora` (`DateTime`): Oculto (`Show? = False`), marca temporal automática generada mediante `NOW()`.
-  * `Empleado` (`Ref` apuntando a `EMPLEADOS`): Guarda `ID_Empleado` y muestra visualmente `Etiqueta_Empleado`.
+  * `Empleado` (`Ref` apuntando a `EMPLEADOS`): Almacena internamente el `ID_Empleado` y muestra visualmente `Nombre_Completo` (configurado como etiqueta `Label` de la tabla `EMPLEADOS`).
   * `Numero_Factura` (`Text`): Número del documento impreso auditado. Campo obligatorio (`Require? = True`).
   * `Puntos_Factura` (`Enum`, `Base Type: Number`): Botones numéricos `[1, 2, 3, 4, 5]`. Evalúa la complejidad documental y conteo de referencias.
   * `Puntos_Esfuerzo` (`Enum`, `Base Type: Number`): Botones numéricos `[1, 2, 3, 4, 5]`. Evalúa el desgaste corporal y maniobras logísticas (cortes, peso, repeticiones).

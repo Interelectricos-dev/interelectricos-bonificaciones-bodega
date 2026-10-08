@@ -16,14 +16,12 @@ Este documento sirve como respaldo técnico de las expresiones lógicas, configu
 ## 2. Configuraciones de Columnas (Data > Columns)
 
 ### Tabla: EMPLEADOS
-
-* **Columna Virtual: `Etiqueta_Empleado`**
-  * **Objetivo:** Mostrar el ID y Nombre de forma amigable en listas desplegables y referencias.
-  * **Propiedades:** `Label` activado (`TRUE`).
-  * **App Formula:**
-    ```text
-    CONCATENATE([ID_Empleado], " - ", [Nombre_Completo])
-    ```
+* **Columnas Físicas:**
+  * `ID_Empleado` (`Text`, `Key`): Identificador único de cada colaborador.
+  * `Nombre_Completo` (`Text`, `Label`):
+    * **Objetivo:** Etiqueta nativa visual para menús desplegables y selecciones en formularios (`Ref`). Dado que son máximo 5 colaboradores con nombres distintos, muestra de forma limpia únicamente el nombre del trabajador sin requerir columnas virtuales de concatenación.
+    * **Propiedades:** `Label` activado (`TRUE`).
+  * `Activo` (`Yes/No`): Control de vigencia laboral.
 
 ---
 

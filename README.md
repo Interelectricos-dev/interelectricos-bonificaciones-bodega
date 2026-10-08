@@ -25,6 +25,7 @@ La solución opera bajo un esquema cliente-servidor en la nube:
 
 ## Organización del Repositorio
 * `/docs`: Documentación técnica del sistema, manuales de usuario y reglas de negocio:
+  * [`GUIA_INSTALACION_APP.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/GUIA_INSTALACION_APP.md)
   * [`INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md)
   * [`MANUAL_DE_USUARIO_OPERATIVO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/MANUAL_DE_USUARIO_OPERATIVO.md)
   * [`RUNBOOK_SOPORTE_TECNICO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/RUNBOOK_SOPORTE_TECNICO.md)

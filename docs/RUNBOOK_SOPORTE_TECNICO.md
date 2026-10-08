@@ -82,7 +82,7 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
      * `RESUMEN_SEMANAL` / `RESUMEN_MENSUAL`: `ID_Empleado`, `Nombre_Empleado`, `Puntos_Factura`, `Puntos_Esfuerzo`, `Puntos_Totales`, `Bono_Productividad`, `Total_Errores`, `Bono_Calidad`, `Total_Extra_A_Pagar`.
   2. En el editor de AppSheet, ir a **Data > Tables**.
   3. Seleccionar la tabla en conflicto y hacer clic en **Regenerate Schema**.
-  4. Validar que la columna virtual `Etiqueta_Empleado` en `EMPLEADOS` permanezca intacta (`CONCATENATE([ID_Empleado], " - ", [Nombre_Completo])`).
+   4. Validar que en EMPLEADOS la columna Nombre_Completo conserve la propiedad Label activada (TRUE).
   5. Guardar los cambios (**Save**).
 
 ---
