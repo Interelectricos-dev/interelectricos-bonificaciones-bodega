@@ -36,7 +36,7 @@ Ir a **Data > Tables**. Para cada tabla configurar la propiedad **Are updates al
 
 Ir a **Data > Columns**. La cuadrícula principal de AppSheet permite configurar directamente las propiedades estándar (`TYPE`, `KEY?`, `LABEL?`, `SHOW?`, `EDITABLE?`, `REQUIRE?`, `SEARCH?` y `DISPLAY NAME`).
 
-El apartado **Ajustes internos (✏️)** contiene **únicamente** las propiedades avanzadas que no son visibles en la cuadrícula y exigen abrir el modal de edición de la columna (icono de lápiz ✏️), tales como `Auto Compute`, `Type Details` o reglas `Valid_If`.
+El apartado **Ajustes internos** contiene **únicamente** las propiedades avanzadas que no son visibles en la cuadrícula y exigen abrir el modal de edición de la columna (icono de lápiz en el editor), tales como `Auto Compute`, `Type Details` o reglas `Valid_If`.
 
 ---
 
@@ -67,7 +67,7 @@ Esta columna **no existe en Google Sheets**. Se crea solo en AppSheet para mostr
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | `Estado` | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `Activo?` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **App formula:** `IF([Activo], "SI", "NO")`
 >
 > *(Resultado: En la vista de detalle del empleado, el usuario verá `SI` o `NO` en lugar de `Y` o `N`).*
@@ -88,10 +88,10 @@ Esta columna **no existe en Google Sheets**. Se crea solo en AppSheet para mostr
 | `Mes_Inicio` | `Date` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Mes Inicio` |
 | `Mes_Fin` | `Date` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Mes Fin` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **`Fecha_Referencia`:**
 >   * **Auto Compute > Initial value:** `TODAY()`
->   * ⚠️ **Regla estricta:** La celda `B2` en Google Sheets **NO debe tener fórmula**. Debe ser una fecha estática (ej. `10/10/2026`). Si tiene fórmula de hoja de cálculo, AppSheet bloquea la edición desde la app.
+>   * **Regla estricta:** La celda `B2` en Google Sheets **NO debe tener fórmula**. Debe ser una fecha estática (ej. `10/10/2026`). Si tiene fórmula de hoja de cálculo, AppSheet bloquea la edición desde la app.
 
 ---
 
@@ -110,7 +110,7 @@ Esta columna **no existe en Google Sheets**. Se crea solo en AppSheet para mostr
 | `Puntos_Esfuerzo` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | `Puntos Esfuerzo` |
 | `Puntos_Error` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | `Puntos Error` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **`ID_Registro`:**
 >   * **Auto Compute > Initial value:** `UNIQUEID()`
 >
@@ -152,7 +152,7 @@ Ambas comparten la misma estructura de columnas base provenientes de Google Shee
 | `Bono_Calidad` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Bono Calidad` |
 | `Total_Extra_A_Pagar` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Bono Neto` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **Columnas monetarias (`Bono_Productividad`, `Bono_Calidad`, `Total_Extra_A_Pagar`):**
 >   * **Type Details > Currency symbol:** `$`
 >   * **Type Details > Decimal digits:** `0` *(ej. `$150.000`, sin centavos)*
@@ -173,7 +173,7 @@ Al final de la lista de columnas de `RESUMEN_SEMANAL`, clic en **`+ Add virtual 
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | `Registros_Semana` | `List` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `Registros Semanales` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **App formula:**
 >   ```plaintext
 >   FILTER(
@@ -197,7 +197,7 @@ Al final de la lista de columnas de `RESUMEN_MENSUAL`, clic en **`+ Add virtual 
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | `Registros_Mes` | `List` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `Registros del Mes` |
 
-> **Ajustes internos (✏️):**
+> **Ajustes internos:**
 > * **App formula:**
 >   ```plaintext
 >   FILTER(
@@ -448,7 +448,7 @@ Ir a **App > Actions > REGISTRO_DIARIO > acción del sistema `Edit`**.
   ```
   TOTALMINUTES(NOW() - [Fecha_Hora]) <= 15
   ```
-* **Efecto operativo:** El botón de edición (ícono de lápiz ✏️) permanece habilitado durante los primeros 15 minutos posteriores a la creación del registro. Cumplido este lapso, el sistema oculta automáticamente el botón, congelando el registro en modo Solo Lectura inalterable.
+* **Efecto operativo:** El botón de edición (ícono de lápiz) permanece habilitado durante los primeros 15 minutos posteriores a la creación del registro. Cumplido este lapso, el sistema oculta automáticamente el botón, congelando el registro en modo Solo Lectura inalterable.
 
 ---
 
@@ -482,7 +482,7 @@ Antes del despliegue masivo o entrega a los operarios, cotejar cada punto contra
 - [ ] **Columna `Estado`:** En el detalle del empleado muestra `"SI"` o `"NO"`.
 - [ ] **Formulario:** `N° Factura` es obligatorio; los botones de puntos (`1` a `5`) y errores (`0` a `-3`) responden tácticamente.
 - [ ] **Finish view:** Al guardar un despacho, el formulario se recarga automáticamente en blanco (`REGISTRO_DIARIO_Form`).
-- [ ] **Restricción 15 min:** El lápiz ✏️ permite correcciones durante 15 minutos; transcurrido este tiempo desaparece.
+- [ ] **Restricción 15 min:** El botón de edición permite correcciones durante 15 minutos; transcurrido este tiempo desaparece.
 - [ ] **Dashboard `RESUMEN`:** Navegación móvil por pestañas (`SEMANAL` y `MENSUAL`) con títulos dinámicos de rango de fechas.
 - [ ] **Formato condicional:** Puntos en azul, errores en rojo, bonos con ícono `money-bill` verde, y empleados inactivos en naranja cursiva.
 - [ ] **Empleado inactivo:** No figura en la lista desplegable de operarios al crear nuevos registros.

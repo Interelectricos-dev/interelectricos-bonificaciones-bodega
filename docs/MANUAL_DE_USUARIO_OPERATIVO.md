@@ -27,7 +27,7 @@ El aplicativo móvil **BONIFICACIONES** es la herramienta digital oficial para a
 Al ingresar a la aplicación en el dispositivo móvil, el usuario encontrará una barra de navegación inferior permanente compuesta por 4 módulos de trabajo:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Menú Principal de Navegación" width="340">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Menú Principal de Navegación" width="340" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -58,7 +58,7 @@ Cada vez que un auxiliar de bodega entregue un pedido alistado junto con la fact
 En la barra de navegación inferior, toque el ícono **NUEVO REGISTRO**:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Nuevo Registro" width="340">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Nuevo Registro" width="340" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -71,7 +71,7 @@ En la barra de navegación inferior, toque el ícono **NUEVO REGISTRO**:
 La aplicación abrirá automáticamente la pantalla en blanco con los campos obligatorios listos para registrar:
 
 <p align="center">
-  <img src="images/manual_operativo/5_menu_nuevo_registro.png" alt="Formulario Nuevo Registro Vacío" width="280">
+  <img src="images/manual_operativo/5_menu_nuevo_registro.png" alt="Formulario Nuevo Registro Vacío" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -88,7 +88,7 @@ La aplicación abrirá automáticamente la pantalla en blanco con los campos obl
 Complete la información del alistamiento utilizando las entradas táctiles optimizadas:
 
 <p align="center">
-  <img src="images/manual_operativo/6_menu_nuevo_registro_lleno.png" alt="Formulario Diligenciado Completo" width="280">
+  <img src="images/manual_operativo/6_menu_nuevo_registro_lleno.png" alt="Formulario Diligenciado Completo" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -161,7 +161,7 @@ Para auditar o consultar los despachos ingresados durante la jornada de trabajo,
 En la barra inferior de navegación, toque el ícono **HISTORIAL HOY**:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Historial Hoy" width="340">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Historial Hoy" width="340" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -178,7 +178,7 @@ La aplicación despliega la lista cronológica de todas las entregas registradas
 
 | Vista Inicial: Factura y Empleado | Vista Desplazada: Puntos y Errores |
 | :---: | :---: |
-| <img src="images/manual_operativo/1_menu_historial_hoy_parte_1.png" alt="Historial Hoy - Parte 1" width="220"> | <img src="images/manual_operativo/2_menu_historial_hoy_parte_2.png" alt="Historial Hoy - Parte 2" width="220"> |
+| <img src="images/manual_operativo/1_menu_historial_hoy_parte_1.png" alt="Historial Hoy - Parte 1" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> | <img src="images/manual_operativo/2_menu_historial_hoy_parte_2.png" alt="Historial Hoy - Parte 2" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -198,7 +198,7 @@ La aplicación despliega la lista cronológica de todas las entregas registradas
 Al tocar sobre cualquier fila de la tabla, se abre la vista de detalle con la información completa de esa entrega:
 
 <p align="center">
-  <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Detalle de Fila en Historial" width="280">
+  <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Detalle de Fila en Historial" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -216,7 +216,7 @@ Al tocar sobre cualquier fila de la tabla, se abre la vista de detalle con la in
 Al presionar la flecha `>` junto al nombre del trabajador, la aplicación abre la ficha técnica del auxiliar:
 
 <p align="center">
-  <img src="images/manual_operativo/4_detalle_empleado_todos_registros.png" alt="Ficha del Empleado y Registros Relacionados" width="280">
+  <img src="images/manual_operativo/4_detalle_empleado_todos_registros.png" alt="Ficha del Empleado y Registros Relacionados" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -247,14 +247,14 @@ El sistema cuenta con una política de seguridad estricta para resolver errores 
 
 | Caso A: Dentro de los 15 Minutos (Editable) | Caso B: Superados los 15 Minutos (Bloqueado) |
 | :---: | :---: |
-| <img src="images/manual_operativo/3b_registro_editable_menor_15_min.png" alt="Registro Editable" width="220"> | <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Registro Bloqueado" width="220"> |
-| **Aparece el botón flotante del lápiz ✏️** | **El botón del lápiz desaparece por completo** |
+| <img src="images/manual_operativo/3b_registro_editable_menor_15_min.png" alt="Registro Editable" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> | <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Registro Bloqueado" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> |
+| **Aparece el botón flotante de edición (ícono de lápiz)** | **El botón de edición desaparece por completo** |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
 <!-- En la imagen de la izquierda (Caso A):                             -->
 <!-- * Destaque con un círculo rojo llamativo el botón azul flotante con-->
-<!--   icono de lápiz ✏️ en la esquina inferior derecha.                -->
+<!--   icono de lápiz en la esquina inferior derecha.                   -->
 <!-- * Texto guía: 'Botón habilitado para corregir datos (≤ 15 min)'.   -->
 <!-- En la imagen de la derecha (Caso B):                               -->
 <!-- * Señale con una X o flecha la esquina inferior derecha vacía.     -->
@@ -264,7 +264,7 @@ El sistema cuenta con una política de seguridad estricta para resolver errores 
 
 ### Protocolo de Auditoría:
 1. **Ventana de Autocorrección (≤ 15 minutos):**  
-   Si el despachador detecta que ingresó un número de factura equivocado o seleccionó un colaborador por error, abre el registro desde **HISTORIAL HOY**, toca el botón flotante del **Lápiz ✏️**, modifica el campo y presiona **Save**.
+   Si el despachador detecta que ingresó un número de factura equivocado o seleccionó un colaborador por error, abre el registro desde **HISTORIAL HOY**, toca el botón flotante de **edición (lápiz)**, modifica el campo y presiona **Save**.
 2. **Cierre de Ventana (> 15 minutos):**  
    Transcurrido el umbral temporal, el botón de edición se oculta automáticamente y el registro queda congelado para auditoría en modo de solo lectura. Para ajustes extemporáneos, se debe remitir la solicitud a la Jefatura con el soporte físico de la factura.
 3. **Inhabilitación de Eliminaciones (Deletes):**  
@@ -286,7 +286,7 @@ Para conocer el acumulado de puntos y la compensación económica generada, ingr
 En la barra inferior de navegación, toque el ícono **RESUMEN**:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Resumen" width="340">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Resumen" width="340" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -303,7 +303,7 @@ En dispositivos móviles, el dashboard organiza los dos cortes temporales median
 
 | Pestaña SEMANAL (Lunes a Domingo) | Pestaña MENSUAL (Mes Completo) |
 | :---: | :---: |
-| <img src="images/manual_operativo/7_menu_resumen_parte_1.png" alt="Resumen Parte 1" width="220"> | <img src="images/manual_operativo/8_menu_resumen_parte_2.png" alt="Resumen Parte 2" width="220"> |
+| <img src="images/manual_operativo/7_menu_resumen_parte_1.png" alt="Resumen Parte 1" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> | <img src="images/manual_operativo/8_menu_resumen_parte_2.png" alt="Resumen Parte 2" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
@@ -328,7 +328,7 @@ En dispositivos móviles, el dashboard organiza los dos cortes temporales median
 Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega su informe analítico individual en formato de dos columnas (*Side-by-side*):
 
 <p align="center">
-  <img src="images/manual_operativo/9_detalle_fila_tabla_resumen.png" alt="Detalle de Fila en Resumen" width="280">
+  <img src="images/manual_operativo/9_detalle_fila_tabla_resumen.png" alt="Detalle de Fila en Resumen" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -368,20 +368,20 @@ Para auditar semanas o meses pasados sin modificar fórmulas ni fórmulas de cá
 En la barra inferior, toque el ícono **SELECCIONE FECHA**. La pantalla mostrará la fecha de referencia activa y los rangos calculados de semana y mes:
 
 <p align="center">
-  <img src="images/manual_operativo/10_menu_selecione_fecha.png" alt="Pantalla Seleccione Fecha con Botón Lápiz" width="280">
+  <img src="images/manual_operativo/10_menu_selecione_fecha.png" alt="Pantalla Seleccione Fecha con Botón Lápiz" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
 <!-- En '10_menu_selecione_fecha.png', resalte con círculo rojo el      -->
-<!-- botón flotante del lápiz ✏️ en la esquina inferior derecha o la    -->
+<!-- botón flotante del lápiz en la esquina inferior derecha o la       -->
 <!-- casilla de fecha directa con QuickEdit.                            -->
 <!-- Texto guía: 'Toque la fecha o el lápiz para cambiar el período'.   -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **Opción Rápida (Recomendada):** Gracias a la propiedad *QuickEdit*, toque directamente sobre la casilla interactiva de fecha (`Seleccionar Fecha*` o su ícono de calendario 📅) para abrir el selector en un solo toque.
-* **Opción Alternativa:** Toque el **botón azul flotante del lápiz ✏️** en la esquina inferior derecha para abrir el formulario de edición.
+* **Opción Rápida (Recomendada):** Gracias a la propiedad *QuickEdit*, toque directamente sobre la casilla interactiva de fecha (`Seleccionar Fecha*` o su icono de calendario) para abrir el selector en un solo toque.
+* **Opción Alternativa:** Toque el **botón azul flotante de edición (lápiz)** en la esquina inferior derecha para abrir el formulario de edición.
 
 ---
 
@@ -389,7 +389,7 @@ En la barra inferior, toque el ícono **SELECCIONE FECHA**. La pantalla mostrar�
 Toque directamente sobre la casilla de fecha:
 
 <p align="center">
-  <img src="images/manual_operativo/11_formulario_seleccione_fecha.png" alt="Formulario Seleccionar Fecha" width="280">
+  <img src="images/manual_operativo/11_formulario_seleccione_fecha.png" alt="Formulario Seleccionar Fecha" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -405,7 +405,7 @@ Toque directamente sobre la casilla de fecha:
 El sistema abrirá el calendario interactivo del teléfono:
 
 <p align="center">
-  <img src="images/manual_operativo/12_seleciona_fecha.png" alt="Modal Calendario" width="280">
+  <img src="images/manual_operativo/12_seleciona_fecha.png" alt="Modal Calendario" width="280" style="border: 1px solid #d1d5db; border-radius: 6px;">
 </p>
 
 <!-- ================================================================= -->
@@ -426,7 +426,7 @@ El valor seleccionado se reflejará en la casilla:
 
 | Guardar el Cambio | Fecha Actualizada en el Sistema |
 | :---: | :---: |
-| <img src="images/manual_operativo/13_fecha_cambiada_a_guardar.png" alt="Fecha Cambiada a Guardar" width="220"> | <img src="images/manual_operativo/14_fecha_cambiada.png" alt="Fecha Cambiada Confirmada" width="220"> |
+| <img src="images/manual_operativo/13_fecha_cambiada_a_guardar.png" alt="Fecha Cambiada a Guardar" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> | <img src="images/manual_operativo/14_fecha_cambiada.png" alt="Fecha Cambiada Confirmada" width="220" style="border: 1px solid #d1d5db; border-radius: 6px;"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->

@@ -109,6 +109,18 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 
 ---
 
+### Incidente 6: Usuario bloqueado por permisos de cuenta ("Access Denied / Not Authorized")
+* **Síntoma:** Al abrir el acceso directo en el celular o iniciar sesión con Google, el usuario recibe un mensaje indicando que no cuenta con autorización para acceder a la aplicación.
+* **Causa:** El aplicativo se encuentra configurado con control de acceso por lista blanca y el correo del colaborador aún no ha sido dado de alta en la consola de usuarios.
+* **Procedimiento de Solución:**
+  1. El colaborador remite formalmente a soporte su dirección de correo electrónico (ej. `pepito@correo.com`).
+  2. El Administrador de Sistemas ingresa al editor de AppSheet con las credenciales maestras.
+  3. Accede al apartado **Users** (o **Share App**).
+  4. Agrega la dirección de correo en la lista de usuarios autorizados con rol de usuario estándar (`User`) y guarda los cambios.
+  5. En caso de que la directriz gerencial sea mantener el acceso libre provisional sin autenticación obligatoria, verificar la política de seguridad vigente en los ajustes del aplicativo.
+
+---
+
 ## 4. Procedimientos de Mantenimiento Preventivo y Rutinario
 
 ### 4.1. Alta o Baja de Personal Operativo
