@@ -185,12 +185,13 @@ Totaliza las penalizaciones asignadas por fallas en el despacho dentro del perio
   ```
 * `REGISTRO_DIARIO!$G:$G`: Rango de suma de deducciones negativas (`0, -1, -2, -3`).
 
-#### 4.2.8. Columna H: Bono de Calidad con Protección de Saldo
-Calcula la retención del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador:
+#### 4.2.8. Columna H: Bono de Calidad con Protección de Saldo y Umbral Mínimo
+Calcula la retención del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador y condicionando su cobro al cumplimiento de la meta mínima de puntos:
 ```excel
-=SI(A2 = ""; ""; MAX(0; CONFIGURACION!$B$3 + (G2 * CONFIGURACION!$B$4)))
+=SI(A2 = ""; ""; SI(E2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (G2 * CONFIGURACION!$B$4))))
 ```
 * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `SI(E2 < CONFIGURACION!$B$2; 0; ...)`: **Condición habilitadora de calidad dinámica.** Evalúa si el total de puntos alcanzado (`E2`) cumple o supera la meta mínima fijada en `CONFIGURACION!$B$2` (por defecto `100` puntos o el valor calibrado tras la prueba piloto). Si el colaborador no alcanza la meta (`E2 < CONFIGURACION!$B$2`), se le asigna `$0`. Al igualar o superar la meta (`E2 >= CONFIGURACION!$B$2`), se liquida el bono de calidad.
 * `CONFIGURACION!$B$3`: Valor base garantizado del bono de calidad (`$200.000`).
 * `(G2 * CONFIGURACION!$B$4)`: Multiplica el acumulado de puntos de error (`G2`, valor numérico negativo o cero) por el descuento unitario fijado en `CONFIGURACION!$B$4` (`$40.000`). Al ser `G2` negativo, el signo `+` efectúa una deducción directa (ejemplo: `$200.000 + (-2 * $40.000) = $120.000`).
 * `MAX(0; ...)`: Barrera o piso financiero de protección salarial; evita que los errores afecten el sueldo básico ordinario.
@@ -221,6 +222,33 @@ La navegación se compone de tres accesos principales:
 * **Tipo:** `Dashboard` ubicado en la barra central de navegación, con la opción *Use tabs in mobile view* activada para alternar entre reportes sin recargas de página. Contiene las vistas internas en posición `Ref`:
   * En la vista **Semanal**
   * En la vista **Mensual**
+
+### 5.4. Reglas de Formato Condicional (Format Rules) en AppSheet
+Para optimizar la experiencia visual del operario y alertar al supervisor sobre anomalías de forma intuitiva, se implementaron las siguientes reglas de formato:
+
+* **5.4.1. Destacado de Acumulado de Puntos (`Puntos_Totales`):**
+  * **Condición:** `[Puntos_Totales] > 0`
+  * **Formato:** Texto en Negrilla (`Bold`) de color Azul para resaltar el volumen de esfuerzo y facturación alcanzado.
+* **5.4.2. Alerta de Penalizaciones (`Total_Errores`):**
+  * **Condición:** `[Total_Errores] < 0`
+  * **Formato:** Texto en Negrilla (`Bold`) de color Rojo para resaltar el volumen de errores cometidos.
+* **5.4.3. Recompensa Financiera (`Total_Extra_A_Pagar`):**
+  * **Formato:** Texto en Negrilla (`Bold`), ícono de billete de color Verde, para identificar de manera inmediata los beneficios económicos devengados.
+* **5.4.4. Identificación de Empleado Inactivo (Tabla `EMPLEADOS`):**
+  * **Condición:** `[Activo] = FALSE`
+  * **Formato:** Texto en estilo Cursiva (`Italic`) de color Gris Claro con ícono de estado. Mantiene la legibilidad del nombre para auditorías y consultas históricas sin generar confusión visual.
+
+### 5.5. Validaciones y Comportamiento de Campos (Valid_If / Show_If)
+
+* **5.5.1. Filtro de Selección de Personal Activo:**
+  En la columna `Empleado` de `REGISTRO_DIARIO`, la regla `Valid_If` restringe la lista desplegable únicamente a colaboradores con estado activo:
+  ```text
+  SELECT(EMPLEADOS[ID_Empleado], [Activo] = TRUE)
+  ```
+* **5.5.2. Obligatoriedad de Número de Factura:**
+  Configuración `Require? = TRUE` para evitar registros huérfanos sin documento auditado.
+* **5.5.3. Uso de Botones de Selección Rápida (`Enum`):**
+  Configuración de entrada en modo `Buttons` para `Puntos_Factura` (`1 a 5`), `Puntos_Esfuerzo` (`1 a 5`) y `Puntos_Error` (`0 a -3`), acelerando la captura táctil de datos en bodega.
 
 ---
 

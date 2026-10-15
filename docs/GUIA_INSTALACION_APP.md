@@ -16,7 +16,7 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 2. Busca la aplicación gratuita **AppSheet** e instálala.  
    *(Solo instálala, **no** es necesario abrirla todavía).*
 
-![Paso 1: Descargar AppSheet](./images/instalacion/paso_1_descarga_appsheet.jpg)
+![Paso 1: Descargar AppSheet](./images/instalacion/1.jpg)
 
 ---
 
@@ -27,7 +27,7 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 2. Se abrirá una pantalla con el logo de la aplicación.
 3. Toca el botón azul **Install**.
 
-![Paso 2: Botón Install](./images/instalacion/paso_2_boton_install.jpg)
+![Paso 2: Botón Install](./images/instalacion/2.jpg)
 
 ---
 

@@ -124,7 +124,7 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 * Si la gerencia aprueba cambios en el esquema de bonificación:
   1. Ir a la pestaña `CONFIGURACION` en Google Sheets.
   2. Ajustar los valores en las celdas correspondientes:
-     * `B2`: Meta mínima de puntos (Base: `100`).
+     * `B2`: Meta mínima de puntos (Base: `100`). Define el umbral indispensable para tener derecho a liquidar el Bono de Calidad (`Puntos Totales >= B2`) y el punto de partida de la escala de productividad. Cualquier calibración tras la prueba piloto se propaga automáticamente a ambas liquidaciones.
      * `B3`: Bono base de calidad (Base: `$200.000`).
      * `B4`: Penalización por error (Base: `$40.000`).
      * `A8:C11`: Rangos y valores de la escala salarial de productividad.
