@@ -207,47 +207,54 @@ Totaliza la liquidación neta a transferir o entregar en efectivo al colaborador
 
 ## 5. Configuración de Vistas e Interfaz (UI/UX) en AppSheet
 
-La navegación se compone de tres accesos principales:
+La barra de navegación principal se compone de **cuatro accesos operativos**:
 
-### 5.1. Vista: Formulario de Despacho
-* **Tipo:** `Form` configurado como pantalla de inicio.
-* **Captura:** Optimizada mediante entradas de tipo `Enum` con modo de botones (`Buttons`) para calificaciones de 1 a 5 y selección relacional (`Ref`) para empleados activos.
+### 5.1. Vista: Formulario de Despacho (`NUEVO REGISTRO`)
+* **Tipo:** `Form` en posición inicial (`first`) configurado como pantalla de registro continuo.
+* **Captura:** Optimizada mediante entradas táctiles de tipo `Enum` con modo de botones (`Buttons`) para calificaciones de 1 a 5 y selección relacional (`Ref`) para empleados activos.
 * **Campos automáticos:** `ID_Registro` y `Fecha_Hora` ocultos bajo autocomputo (`UNIQUEID()`, `NOW()`).
+* **Recarga automática:** Configuración de `Finish view = REGISTRO_DIARIO_Form` para limpiar y dejar el formulario listo para el siguiente despacho inmediatamente al guardar.
 
-### 5.2. Vista: Selector de Fecha
-* **Tipo:** `Detail` con la propiedad `QuickEdit columns` habilitada para el campo `Fecha_Referencia`.
-* **Propósito:** Permite la actualización de fechas sin ingresar a la edición estructural de la tabla.
+### 5.2. Vista: Historial del Día (`HISTORIAL HOY`)
+* **Tipo:** `Table` en posición central (`middle`), alimentada exclusivamente por el Slice `REGISTRO_HOY` (`[Fecha_Hora] > TODAY()`).
+* **Ordenamiento:** Descendente por `Fecha_Hora` para mostrar arriba las órdenes más recientes del turno.
+* **Columnas visibles:** `Numero_Factura`, `Empleado`, `Puntos_Factura`, `Puntos_Esfuerzo` y `Puntos_Error`.
 
-### 5.3. Vista: Resumen (Dashboard Unificado)
-* **Tipo:** `Dashboard` ubicado en la barra central de navegación, con la opción *Use tabs in mobile view* activada para alternar entre reportes sin recargas de página. Contiene las vistas internas en posición `Ref`:
-  * En la vista **Semanal**
-  * En la vista **Mensual**
+### 5.3. Vista: Resumen Consolidado (`RESUMEN`)
+* **Tipo:** `Dashboard` ubicado en posición central (`middle`), con la opción *Use tabs in mobile view* activada para alternar fluidamente mediante pestañas táctiles superiores entre los reportes sin recargas:
+  * Pestaña **SEMANAL** (tabla interna en posición `Ref` con título de rango de fechas de lunes a domingo).
+  * Pestaña **MENSUAL** (tabla interna en posición `Ref` con título dinámico del mes calendario en curso).
 
-### 5.4. Reglas de Formato Condicional (Format Rules) en AppSheet
-Para optimizar la experiencia visual del operario y alertar al supervisor sobre anomalías de forma intuitiva, se implementaron las siguientes reglas de formato:
+### 5.4. Vista: Selector de Fecha (`SELECCIONE FECHA`)
+* **Tipo:** `Detail` en posición final (`last`) con la propiedad `QuickEdit columns` habilitada para `Fecha_Referencia`.
+* **Propósito:** Permite cambiar interactivamente la fecha de consulta en un solo paso directamente desde la interfaz, recalculando en tiempo real los límites de semana y mes (`Semana_Inicio`, `Semana_Fin`, `Mes_Inicio`, `Mes_Fin`) que alimentan las vistas de resumen.
 
-* **5.4.1. Destacado de Acumulado de Puntos (`Puntos_Totales`):**
+### 5.5. Reglas de Formato Condicional (Format Rules) en AppSheet
+Para optimizar la experiencia visual del operario y alertar al supervisor sobre anomalías de forma intuitiva, se implementaron 7 reglas de formato condicional:
+
+* **5.5.1. Acumulado de Puntos (`PUNTOS_TOTALES_SEMANAL` y `PUNTOS_TOTALES_MENSUAL`):**
   * **Condición:** `[Puntos_Totales] > 0`
-  * **Formato:** Texto en Negrilla (`Bold`) de color Azul para resaltar el volumen de esfuerzo y facturación alcanzado.
-* **5.4.2. Alerta de Penalizaciones (`Total_Errores`):**
+  * **Formato:** Texto en Negrilla (`Bold`) de color **Azul (`blue`)** sobre la columna `Puntos_Totales`.
+* **5.5.2. Alerta de Penalizaciones (`ERRORES_TOTALES_SEMANAL` y `ERRORES_TOTALES_MENSUAL`):**
   * **Condición:** `[Total_Errores] < 0`
-  * **Formato:** Texto en Negrilla (`Bold`) de color Rojo para resaltar el volumen de errores cometidos.
-* **5.4.3. Recompensa Financiera (`Total_Extra_A_Pagar`):**
-  * **Formato:** Texto en Negrilla (`Bold`), ícono de billete de color Verde, para identificar de manera inmediata los beneficios económicos devengados.
-* **5.4.4. Identificación de Empleado Inactivo (Tabla `EMPLEADOS`):**
+  * **Formato:** Texto en Negrilla (`Bold`) de color **Rojo (`red`)** sobre la columna `Total_Errores`.
+* **5.5.3. Recompensa Financiera (`BONOS_SEMANAL` y `BONOS_MENSUAL`):**
+  * **Condición:** Activa permanente.
+  * **Formato:** Color de resalte **Verde (`green`)** con ícono `money-bill` sobre las tres columnas monetarias: `Bono_Productividad`, `Bono_Calidad` y `Total_Extra_A_Pagar`.
+* **5.5.4. Identificación de Empleado Inactivo (`EMPLEADO_INACTIVO` en `EMPLEADOS`):**
   * **Condición:** `[Activo] = FALSE`
-  * **Formato:** Texto en estilo Cursiva (`Italic`) de color Gris Claro con ícono de estado. Mantiene la legibilidad del nombre para auditorías y consultas históricas sin generar confusión visual.
+  * **Formato:** Texto en color **Naranja (`orange`)** con estilo Cursiva (`Italic`) sobre `Nombre_Completo`. Mantiene la legibilidad del nombre para auditorías y consultas históricas sin generar confusión visual.
 
-### 5.5. Validaciones y Comportamiento de Campos (Valid_If / Show_If)
+### 5.6. Validaciones y Comportamiento de Campos (Valid_If / Show_If)
 
-* **5.5.1. Filtro de Selección de Personal Activo:**
+* **5.6.1. Filtro de Selección de Personal Activo:**
   En la columna `Empleado` de `REGISTRO_DIARIO`, la regla `Valid_If` restringe la lista desplegable únicamente a colaboradores con estado activo:
   ```text
   SELECT(EMPLEADOS[ID_Empleado], [Activo] = TRUE)
   ```
-* **5.5.2. Obligatoriedad de Número de Factura:**
+* **5.6.2. Obligatoriedad de Número de Factura:**
   Configuración `Require? = TRUE` para evitar registros huérfanos sin documento auditado.
-* **5.5.3. Uso de Botones de Selección Rápida (`Enum`):**
+* **5.6.3. Uso de Botones de Selección Rápida (`Enum`):**
   Configuración de entrada en modo `Buttons` para `Puntos_Factura` (`1 a 5`), `Puntos_Esfuerzo` (`1 a 5`) y `Puntos_Error` (`0 a -3`), acelerando la captura táctil de datos en bodega.
 
 ---

@@ -26,7 +26,9 @@ El aplicativo móvil **BONIFICACIONES** es la herramienta digital oficial para a
 
 Al ingresar a la aplicación en el dispositivo móvil, el usuario encontrará una barra de navegación inferior permanente compuesta por 4 módulos de trabajo:
 
-![Menú Principal de Navegación](images/manual_operativo/0_menu_app.png)
+<p align="center">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Menú Principal de Navegación" width="340">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -55,7 +57,9 @@ Cada vez que un auxiliar de bodega entregue un pedido alistado junto con la fact
 ### 3.1. Acceso al Formulario de Captura
 En la barra de navegación inferior, toque el ícono **NUEVO REGISTRO**:
 
-![Barra Menú - Nuevo Registro](images/manual_operativo/0_menu_app.png)
+<p align="center">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Nuevo Registro" width="340">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -66,7 +70,9 @@ En la barra de navegación inferior, toque el ícono **NUEVO REGISTRO**:
 
 La aplicación abrirá automáticamente la pantalla en blanco con los campos obligatorios listos para registrar:
 
-![Formulario Nuevo Registro Vacío](images/manual_operativo/5_menu_nuevo_registro.png)
+<p align="center">
+  <img src="images/manual_operativo/5_menu_nuevo_registro.png" alt="Formulario Nuevo Registro Vacío" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -81,7 +87,9 @@ La aplicación abrirá automáticamente la pantalla en blanco con los campos obl
 
 Complete la información del alistamiento utilizando las entradas táctiles optimizadas:
 
-![Formulario Diligenciado Completo](images/manual_operativo/6_menu_nuevo_registro_lleno.png)
+<p align="center">
+  <img src="images/manual_operativo/6_menu_nuevo_registro_lleno.png" alt="Formulario Diligenciado Completo" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
@@ -152,7 +160,9 @@ Para auditar o consultar los despachos ingresados durante la jornada de trabajo,
 ### 4.1. Acceso a la Pestaña Historial
 En la barra inferior de navegación, toque el ícono **HISTORIAL HOY**:
 
-![Barra Menú - Historial Hoy](images/manual_operativo/0_menu_app.png)
+<p align="center">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Historial Hoy" width="340">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -168,7 +178,7 @@ La aplicación despliega la lista cronológica de todas las entregas registradas
 
 | Vista Inicial: Factura y Empleado | Vista Desplazada: Puntos y Errores |
 | :---: | :---: |
-| ![Historial Hoy - Parte 1](images/manual_operativo/1_menu_historial_hoy_parte_1.png) | ![Historial Hoy - Parte 2](images/manual_operativo/2_menu_historial_hoy_parte_2.png) |
+| <img src="images/manual_operativo/1_menu_historial_hoy_parte_1.png" alt="Historial Hoy - Parte 1" width="220"> | <img src="images/manual_operativo/2_menu_historial_hoy_parte_2.png" alt="Historial Hoy - Parte 2" width="220"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -187,7 +197,9 @@ La aplicación despliega la lista cronológica de todas las entregas registradas
 ### 4.3. Detalle Individual de la Transacción
 Al tocar sobre cualquier fila de la tabla, se abre la vista de detalle con la información completa de esa entrega:
 
-![Detalle de Fila en Historial](images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png)
+<p align="center">
+  <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Detalle de Fila en Historial" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -203,18 +215,21 @@ Al tocar sobre cualquier fila de la tabla, se abre la vista de detalle con la in
 ### 4.4. Consulta de Despachos por Empleado
 Al presionar la flecha `>` junto al nombre del trabajador, la aplicación abre la ficha técnica del auxiliar:
 
-![Ficha del Empleado y Registros Relacionados](images/manual_operativo/4_detalle_empleado_todos_registros.png)
+<p align="center">
+  <img src="images/manual_operativo/4_detalle_empleado_todos_registros.png" alt="Ficha del Empleado y Registros Relacionados" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
 <!-- En la imagen '4_detalle_empleado_todos_registros.png', resalte:    -->
-<!-- 1. El contador 'Related REGISTRO_DIARIOs' (indica cuántas facturas -->
-<!--    lleva alistadas ese trabajador en el turno).                    -->
+<!-- 1. El contador 'Historial de Despachos' (Related REGISTRO_DIARIOs, -->
+<!--    indica cuántas facturas lleva alistadas ese trabajador en el    -->
+<!--    turno).                                                         -->
 <!-- 2. La tabla inferior con el listado individual de sus facturas.    -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **Conteo Rápido:** La casilla `Related REGISTRO_DIARIOs` permite al supervisor y al operario auditar exactamente cuántas órdenes ha alistado ese colaborador durante el día.
+* **Conteo Rápido:** La sección `Historial de Despachos` (relación del sistema `Related REGISTRO_DIARIOs`) permite al supervisor y al operario auditar exactamente cuántas órdenes ha alistado ese colaborador durante el día y revisar el detalle de cada factura.
 
 ---
 
@@ -232,7 +247,7 @@ El sistema cuenta con una política de seguridad estricta para resolver errores 
 
 | Caso A: Dentro de los 15 Minutos (Editable) | Caso B: Superados los 15 Minutos (Bloqueado) |
 | :---: | :---: |
-| ![Registro Editable](images/manual_operativo/3b_registro_editable_menor_15_min.png) | ![Registro Bloqueado](images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png) |
+| <img src="images/manual_operativo/3b_registro_editable_menor_15_min.png" alt="Registro Editable" width="220"> | <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Registro Bloqueado" width="220"> |
 | **Aparece el botón flotante del lápiz ✏️** | **El botón del lápiz desaparece por completo** |
 
 <!-- ================================================================= -->
@@ -270,7 +285,9 @@ Para conocer el acumulado de puntos y la compensación económica generada, ingr
 ### 6.1. Acceso a la Pestaña Resumen
 En la barra inferior de navegación, toque el ícono **RESUMEN**:
 
-![Barra Menú - Resumen](images/manual_operativo/0_menu_app.png)
+<p align="center">
+  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Resumen" width="340">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -281,17 +298,17 @@ En la barra inferior de navegación, toque el ícono **RESUMEN**:
 
 ---
 
-### 6.2. Visualización de Reportes Semanal y Mensual
-La pantalla agrupa dos tablas sincronizadas dinámicamente:
+### 6.2. Visualización de Reportes Semanal y Mensual (Navegación por Pestañas)
+En dispositivos móviles, el dashboard organiza los dos cortes temporales mediante **pestañas superiores táctiles** para alternar de forma inmediata sin recargar:
 
-| Bloque Semanal y Mensual (Puntos y Errores) | Desplazamiento: Liquidación Neta a Pagar |
+| Pestaña SEMANAL (Lunes a Domingo) | Pestaña MENSUAL (Mes Completo) |
 | :---: | :---: |
-| ![Resumen Parte 1](images/manual_operativo/7_menu_resumen_parte_1.png) | ![Resumen Parte 2](images/manual_operativo/8_menu_resumen_parte_2.png) |
+| <img src="images/manual_operativo/7_menu_resumen_parte_1.png" alt="Resumen Parte 1" width="220"> | <img src="images/manual_operativo/8_menu_resumen_parte_2.png" alt="Resumen Parte 2" width="220"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
 <!-- En '7_menu_resumen_parte_1.png' y '8_menu_resumen_parte_2.png':   -->
-<!-- 1. Resalte con un recuadro los dos títulos de bloque:              -->
+<!-- 1. Resalte con un recuadro las dos pestañas superiores de bloque: -->
 <!--    * 'SEMANAL (dd/mm/aaaa al dd/mm/aaaa)': Período de lun a dom.   -->
 <!--    * 'MENSUAL (Mes aaaa)': Período de mes calendario.              -->
 <!-- 2. Señale el código de colores corporativos en las tablas:         -->
@@ -301,15 +318,18 @@ La pantalla agrupa dos tablas sincronizadas dinámicamente:
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **Reporte SEMANAL:** Consolida los puntos acumulados de lunes a domingo de la semana consultada.
-* **Reporte MENSUAL:** Presenta el consolidado desde el primer hasta el último día del mes calendario en curso.
+* **Pestaña SEMANAL:** Consolida los puntos acumulados de lunes a domingo de la semana consultada en `FILTRO_FECHAS`.
+* **Pestaña MENSUAL:** Presenta el consolidado desde el primer hasta el último día del mes calendario en curso.
+* **Navegación Táctil:** Toque directamente sobre la pestaña deseada en la parte superior de la pantalla para alternar entre el resumen semanal y mensual.
 
 ---
 
-### 6.3. Desglose Financiero Individual
-Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega su informe analítico individual:
+### 6.3. Desglose Financiero Individual y Auditoría de Facturas
+Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega su informe analítico individual en formato de dos columnas (*Side-by-side*):
 
-![Detalle de Fila en Resumen](images/manual_operativo/9_detalle_fila_tabla_resumen.png)
+<p align="center">
+  <img src="images/manual_operativo/9_detalle_fila_tabla_resumen.png" alt="Detalle de Fila en Resumen" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
@@ -322,6 +342,7 @@ Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega s
 <!-- ================================================================= -->
 
 #### Conceptos del Desglose:
+* **Empleado / ID:** Nombre completo y código identificador del auxiliar.
 * **Puntos Factura:** Puntos devengados exclusivamente por lectura y complejidad documental.
 * **Puntos Esfuerzo:** Puntos devengados por desgaste corporal y trabajo pesado.
 * **Total Puntos:** Sumatoria consolidada (`Puntos Factura + Puntos Esfuerzo`).
@@ -329,6 +350,7 @@ Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega s
 * **Total Errores:** Cantidad de penalizaciones registradas en el ciclo.
 * **Bono Calidad:** Fondo de calidad restante ($200.000 garantizados menos $40.000 por cada error). **Requisito indispensable:** Solo se liquida si el colaborador alcanza o supera la meta mínima de puntos del ciclo (fijada en la celda `B2` de `CONFIGURACION`, base 100 puntos). Si no alcanza la meta mínima, se liquida en $0.
 * **Bono Neto:** Importe neto total a transferir o pagar al colaborador (`Productividad + Calidad`).
+* **Registros Semanales / Registros del Mes:** Lista desplegable inferior que muestra todas las facturas despachadas por ese colaborador acotadas estrictamente al ciclo seleccionado, permitiendo validar cada despacho en detalle.
 
 ---
 
@@ -343,26 +365,32 @@ Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega s
 Para auditar semanas o meses pasados sin modificar fórmulas ni fórmulas de cálculo, siga este procedimiento paso a paso:
 
 ### Paso 1: Ingresar al Módulo y Activar Edición
-En la barra inferior, toque el ícono **SELECCIONE FECHA**. La pantalla mostrará la fecha de consulta actual:
+En la barra inferior, toque el ícono **SELECCIONE FECHA**. La pantalla mostrará la fecha de referencia activa y los rangos calculados de semana y mes:
 
-![Pantalla Seleccione Fecha con Botón Lápiz](images/manual_operativo/10_menu_selecione_fecha.png)
+<p align="center">
+  <img src="images/manual_operativo/10_menu_selecione_fecha.png" alt="Pantalla Seleccione Fecha con Botón Lápiz" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
 <!-- En '10_menu_selecione_fecha.png', resalte con círculo rojo el      -->
-<!-- botón flotante del lápiz ✏️ en la esquina inferior derecha.        -->
-<!-- Texto guía: 'Toque el lápiz para habilitar el selector de fecha'.  -->
+<!-- botón flotante del lápiz ✏️ en la esquina inferior derecha o la    -->
+<!-- casilla de fecha directa con QuickEdit.                            -->
+<!-- Texto guía: 'Toque la fecha o el lápiz para cambiar el período'.   -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-Toque el **botón azul flotante del lápiz ✏️** para abrir la pantalla de edición.
+* **Opción Rápida (Recomendada):** Gracias a la propiedad *QuickEdit*, toque directamente sobre la casilla interactiva de fecha (`Seleccionar Fecha*` o su ícono de calendario 📅) para abrir el selector en un solo toque.
+* **Opción Alternativa:** Toque el **botón azul flotante del lápiz ✏️** en la esquina inferior derecha para abrir el formulario de edición.
 
 ---
 
 ### Paso 2: Abrir el Selector de Calendario
 Toque directamente sobre la casilla de fecha:
 
-![Formulario Seleccionar Fecha](images/manual_operativo/11_formulario_seleccione_fecha.png)
+<p align="center">
+  <img src="images/manual_operativo/11_formulario_seleccione_fecha.png" alt="Formulario Seleccionar Fecha" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -376,7 +404,9 @@ Toque directamente sobre la casilla de fecha:
 ### Paso 3: Escoger la Fecha en el Calendario
 El sistema abrirá el calendario interactivo del teléfono:
 
-![Modal Calendario](images/manual_operativo/12_seleciona_fecha.png)
+<p align="center">
+  <img src="images/manual_operativo/12_seleciona_fecha.png" alt="Modal Calendario" width="280">
+</p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
@@ -396,7 +426,7 @@ El valor seleccionado se reflejará en la casilla:
 
 | Guardar el Cambio | Fecha Actualizada en el Sistema |
 | :---: | :---: |
-| ![Fecha Cambiada a Guardar](images/manual_operativo/13_fecha_cambiada_a_guardar.png) | ![Fecha Cambiada Confirmada](images/manual_operativo/14_fecha_cambiada.png) |
+| <img src="images/manual_operativo/13_fecha_cambiada_a_guardar.png" alt="Fecha Cambiada a Guardar" width="220"> | <img src="images/manual_operativo/14_fecha_cambiada.png" alt="Fecha Cambiada Confirmada" width="220"> |
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->

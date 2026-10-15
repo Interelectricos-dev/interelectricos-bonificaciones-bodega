@@ -16,7 +16,9 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 2. Busca la aplicación gratuita **AppSheet** e instálala.  
    *(Solo instálala, **no** es necesario abrirla todavía).*
 
-![Paso 1: Descargar AppSheet](./images/instalacion/1.jpg)
+<p align="center">
+  <img src="./images/instalacion/1.jpg" alt="Paso 1: Descargar AppSheet" width="260">
+</p>
 
 ---
 
@@ -27,7 +29,9 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 2. Se abrirá una pantalla con el logo de la aplicación.
 3. Toca el botón azul **Install**.
 
-![Paso 2: Botón Install](./images/instalacion/2.jpg)
+<p align="center">
+  <img src="./images/instalacion/2.jpg" alt="Paso 2: Botón Install" width="260">
+</p>
 
 ---
 
@@ -35,16 +39,22 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 
 1. **Agregar a pantalla principal:** Te aparecerá un aviso emergente en pantalla; toca la opción **Agregar a pantalla principal** (o **Agregar** según la marca de tu teléfono).
 
-![Paso 3.1: Modal agregar a pantalla principal](./images/instalacion/3.1.jpg)
+<p align="center">
+  <img src="./images/instalacion/3.1.jpg" alt="Paso 3.1: Modal agregar a pantalla principal" width="260">
+</p>
 
 2. **Iniciar sesión:** En la pantalla de inicio de sesión, toca el botón **Sign in with Google**.
 
-![Paso 3.2: Botón Sign In with Google](./images/instalacion/3.2.jpg)
+<p align="center">
+  <img src="./images/instalacion/3.2.jpg" alt="Paso 3.2: Botón Sign In with Google" width="260">
+</p>
 
 3. **Seleccionar cuenta:** Elige tu cuenta de correo corporativa/autorizada (o pulsa *"Usar otra cuenta"* si no aparece en la lista).
 4. Si es tu primera vez usando AppSheet, acepta los términos y autoriza los permisos de acceso que solicita Google.
 
-![Paso 3.3: Seleccionar cuenta de Google](./images/instalacion/3.3.jpg)
+<p align="center">
+  <img src="./images/instalacion/3.3.jpg" alt="Paso 3.3: Seleccionar cuenta de Google" width="260">
+</p>
 
 ---
 
@@ -54,4 +64,6 @@ Sigue estos **4 sencillos pasos** para tener la aplicación lista en tu teléfon
 2. Toca el botón **OK**.
 3. **¡Listo!** Ya estás dentro del aplicativo de Bonificaciones. A partir de ahora podrás ingresar directamente tocando el ícono creado en la pantalla de tu celular.
 
-![Paso 4: Pantalla OK y App lista](./images/instalacion/4.jpg)
+<p align="center">
+  <img src="./images/instalacion/4.jpg" alt="Paso 4: Pantalla OK y App lista" width="260">
+</p>
