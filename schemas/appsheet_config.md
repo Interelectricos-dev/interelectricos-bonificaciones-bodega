@@ -258,7 +258,7 @@ Ir a **App > Views**. La barra de navegación principal móvil tiene **4 accesos
 | **Column order** | `Automatic` *(renderiza Empleado, Numero_Factura, Puntos_Factura, Puntos_Esfuerzo, Puntos_Error)* |
 | **Save / cancel position** | `Bottom` |
 | **Finish view** | `REGISTRO_DIARIO_Form` *(al guardar, el formulario se recarga en blanco inmediatamente, listo para el siguiente despacho)* |
-| **Display name** | *(vacío o `NUEVO REGISTRO`)* |
+| **Display name** | `NUEVO REGISTRO` |
 | **Icon** | `mobile-android` |
 
 ---
@@ -277,8 +277,24 @@ Ir a **App > Views**. La barra de navegación principal móvil tiene **4 accesos
 | **Group aggregate** | `NONE` |
 | **Column order** | **Manual** — agregar en este orden exacto:<br>1. `Numero_Factura`<br>2. `Empleado`<br>3. `Puntos_Factura`<br>4. `Puntos_Esfuerzo`<br>5. `Puntos_Error` |
 | **Column width** | `Default` |
-| **Display name** | *(vacío o `HISTORIAL HOY`)* |
+| **Display name** | `HISTORIAL HOY` |
 | **Icon** | `history` |
+
+#### Vista de sistema detalle: `REGISTRO_DIARIO_Detail`
+
+*(Ubicada en **SYSTEM GENERATED > REGISTRO_DIARIO (1)**)*
+
+Se despliega automáticamente al presionar cualquier fila dentro de `HISTORIAL HOY`:
+
+| Propiedad | Valor |
+| :--- | :--- |
+| **View name** | `REGISTRO_DIARIO_Detail` |
+| **For this data** | `REGISTRO_DIARIO` |
+| **View type** | `detail` |
+| **Position** | `ref` |
+| **Display mode** | `Side-by-side` |
+| **Column order** | `Automatic` *(muestra `Fecha_Hora`, `Empleado`, `Numero_Factura`, `Puntos_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`)* |
+| **Display name** | `Detalle del Despacho` |
 
 ---
 
@@ -323,6 +339,7 @@ CONCATENATE(
 | **Display mode** | `Side-by-side` *(etiqueta a la izquierda, valor a la derecha)* |
 | **Column order** | `Automatic` *(despliega las 10 columnas en orden natural: `Nombre_Empleado`, `ID_Empleado`, `Puntos_Factura`, `Puntos_Esfuerzo`, `Puntos_Totales`, `Bono_Productividad`, `Total_Errores`, `Bono_Calidad`, `Total_Extra_A_Pagar`, `Registros_Semana`)* |
 | **Nested row display** | `5` |
+| **Display name** | `Detalle Semanal` |
 
 #### Paso 3 — Vista interna tabla mensual: `MENSUAL`
 
@@ -359,9 +376,17 @@ CONCATENATE(
 *(Ubicada en **SYSTEM GENERATED > RESUMEN_MENSUAL (1)**)*
 
 Configuración análoga a `RESUMEN_SEMANAL_Detail`:
-* **Display mode:** `Side-by-side`
-* **Column order:** `Automatic` (despliega las métricas consolidadas del mes y la lista de despachos filtrados).
-* **Nested row display:** `5`
+
+| Propiedad | Valor |
+| :--- | :--- |
+| **View name** | `RESUMEN_MENSUAL_Detail` |
+| **For this data** | `RESUMEN_MENSUAL` |
+| **View type** | `detail` |
+| **Position** | `ref` |
+| **Display mode** | `Side-by-side` |
+| **Column order** | `Automatic` *(despliega las métricas consolidadas del mes y la lista de despachos filtrados `Registros_Mes`)* |
+| **Nested row display** | `5` |
+| **Display name** | `Detalle Mensual` |
 
 #### Paso 5 — Dashboard principal: `RESUMEN`
 
@@ -376,7 +401,7 @@ Configuración análoga a `RESUMEN_SEMANAL_Detail`:
 | **View entries** | 1. `SEMANAL` (`Large`)<br>2. `MENSUAL` (`Large`) |
 | **Use tabs in mobile view** | `TRUE` *(activa las pestañas superiores para alternar fluidamente entre vista semanal y mensual en smartphones)* |
 | **Interactive mode** | `FALSE` |
-| **Display name** | *(vacío o `RESUMEN`)* |
+| **Display name** | `RESUMEN` |
 | **Icon** | `list-alt` |
 
 ---
@@ -395,7 +420,7 @@ Configuración análoga a `RESUMEN_SEMANAL_Detail`:
 | **Display mode** | `Side-by-side` |
 | **Quick edit columns** | `Fecha_Referencia` *(permite al usuario tocar el campo o selector de calendario y actualizar la fecha de referencia en tiempo real, recalculando automáticamente todas las vistas de resumen)* |
 | **Desktop layout** | `Split view` |
-| **Display name** | *(vacío o `SELECCIONE FECHA`)* |
+| **Display name** | `SELECCIONE FECHA` |
 | **Icon** | `calendar-day` |
 
 ---
@@ -415,6 +440,7 @@ Se abre cuando el supervisor o usuario toca la flecha `>` en el campo `Empleado`
 | **Column order** | `Automatic` *(al tener `Activo` con `SHOW? = FALSE`, AppSheet presenta de forma limpia: `Nombre_Completo`, `ID_Empleado` [ID], `Estado` [Activo? = SI/NO] y `Related REGISTRO_DIARIOs` [Historial de Despachos])* |
 | **Display mode** | `Side-by-side` |
 | **Nested row display** | `5` |
+| **Display name** | `Ficha del Colaborador` |
 
 **Resultado visual en la app móvil:**
 ```
@@ -441,6 +467,7 @@ Ir a **App > Actions > REGISTRO_DIARIO > acción del sistema `Edit`**.
 
 * **Objetivo:** Garantizar la integridad y auditoría de la bodega, impidiendo que un operario modifique un despacho pasados 15 minutos de su creación.
 * **Do this:** `App: edit this row`
+* **Display name:** `Editar Despacho`
 * **Desktop behavior:** `Open a form`
 * **Position:** `Primary`
 * **Campo:** `Behavior > Only if this condition is true`
