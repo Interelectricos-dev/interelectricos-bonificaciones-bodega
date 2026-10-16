@@ -37,7 +37,7 @@ El libro de Google Sheets se compone de cinco tablas estructuradas:
 * **Función:** Control centralizado del personal operativo. Las altas, bajas y modificaciones son realizadas exclusivamente por el administrador en la hoja de cálculo para evitar alteraciones a mitad de ciclo de pago.
 * **Estructura:**
   * `ID_Empleado` (`Text`, `Key`): Identificador alfanumérico único del trabajador (ej. `B001`) o número de documento de identidad.
-  * `Nombre_Completo` (`Text`, `Label`): Nombre y apellidos del empleado. Al ser una operación con un equipo reducido (máx. 5 colaboradores con nombres distintos), esta columna actúa como la etiqueta nativa (`Label`) de la tabla para desplegar directamente el nombre en listas y formularios.
+  * `Nombre_Completo` (`Text`, `Label`): Nombre y apellidos del empleado. Al ser una operación con un equipo reducido de personas, esta columna actúa como la etiqueta nativa (`Label`) de la tabla para desplegar directamente el nombre en listas y formularios.
   * `Activo` (`Yes/No`): Casilla de verificación booleana (`TRUE` / `FALSE`). Define vigencia laboral.
 
 ---
@@ -115,15 +115,17 @@ En lugar de duplicar celdas de control en cada hoja de resumen, los límites de 
 ---
 
 ### 4.2. Lógica de Consolidación por Empleado
-Cada fila representa un colaborador activo y se autocalcula a partir de la fila 2 sobre una matriz de 9 columnas desglosadas para garantizar máxima transparencia operativa:
+Cada fila representa un colaborador activo y se autocalcula a partir de la fila 2 sobre una matriz de 9 columnas desglosadas para garantizar máxima transparencia operativa y auditoría matemática:
 
 #### 4.2.1. Columna A: Extracción Dinámica de Personal Activo
 Genera la lista vertical de colaboradores vigentes en la empresa:
 ```excel
-=SI.ERROR(FILTER(EMPLEADOS!A2:A1000; EMPLEADOS!C2:C1000 = VERDADERO); "")
+=SI.ERROR(FILTER(EMPLEADOS!A2:A; EMPLEADOS!C2:C = VERDADERO); "")
 ```
-* `FILTER(...)`: Función matricial dinámica que evalúa el catálogo maestro y extrae únicamente los identificadores donde `Activo = TRUE`. Si un empleado es desactivado, desaparece automáticamente de las liquidaciones vigentes sin alterar el histórico transaccional.
-* `SI.ERROR(..., "")`: Cláusula de protección que previene errores visuales (`#CALC!` o `#N/A`) en caso de no haber empleados activos o encontrarse en estado inicial de plantilla.
+* `=SI.ERROR(...; "")`: Cláusula de protección y manejo de errores. En caso de que no existan colaboradores activos o la base de datos se encuentre en estado inicial de plantilla, evita que se disparen errores de cálculo `#CALC!` o `#N/A` que romperían las fórmulas en cascada de las columnas adyacentes.
+* `FILTER(...)`: Función matricial dinámica que evalúa el catálogo maestro y extrae únicamente los identificadores de los colaboradores cuya columna `Activo` sea `VERDADERO` (`TRUE`). Si un empleado es desactivado, se excluye de forma automática de la liquidación sin borrar su histórico.
+* `EMPLEADOS!A2:A`: Rango de retorno. Apunta a la columna `ID_Empleado` de la tabla maestra.
+* `EMPLEADOS!C2:C = VERDADERO`: Criterio de validación. Evalúa la columna booleana `Activo`. Si un colaborador es desactivado, desaparece automáticamente de las liquidaciones vigentes sin eliminar su registro en el histórico transaccional.
 
 #### 4.2.2. Columna B: Nombre del Empleado
 Recupera la denominación textual asociada al identificador para facilitar la lectura del reporte:
@@ -131,10 +133,14 @@ Recupera la denominación textual asociada al identificador para facilitar la le
 =SI(A2 = ""; ""; BUSCARV(A2; EMPLEADOS!$A:$B; 2; FALSO))
 ```
 * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `BUSCARV(A2; EMPLEADOS!$A:$B; 2; FALSO)`: Búsqueda vertical exacta que extrae el `Nombre_Completo`.
+* `BUSCARV(...)`: Función de búsqueda vertical exacta.
+* `A2`: Valor buscado (`ID_Empleado`).
+* `EMPLEADOS!$A:$B`: Matriz de consulta fijada en la tabla maestra.
+* `2`: Indicador de la columna que extrae el `Nombre_Completo`.
+* `FALSO`: Parámetro de coincidencia exacta obligatoria.
 
 #### 4.2.3. Columna C: Puntos de Factura Acumulados
-Totaliza exclusivamente los puntos obtenidos por concepto de volumen documental y lectura de referencias:
+Totaliza de manera independiente los puntos devengados por concepto de lectura, líneas y complejidad documental:
 
 * **En `RESUMEN_SEMANAL`:**
   ```excel
@@ -145,8 +151,17 @@ Totaliza exclusivamente los puntos obtenidos por concepto de volumen documental 
   =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)))
   ```
 
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `SUMAR.SI.CONJUNTO(...)`: Función de suma condicional con múltiples filtros:
+  * `REGISTRO_DIARIO!$E:$E`: Rango de suma. Columna donde se registran los puntos por complejidad documental y cantidad de renglones de la remisión (escala de 1 a 5).
+  * `REGISTRO_DIARIO!$C:$C`: Rango de criterios 1. Columna de empleados en el histórico de despachos.
+  * `A2`: Criterio 1. Código identificador `ID_Empleado` a evaluar.
+  * `REGISTRO_DIARIO!$B:$B`: Rango de criterios 2 y 3. Columna que contiene la marca de tiempo de auditoría (`DateTime`).
+  * `">=" & FILTRO_FECHAS!$C$2` *(o `$E$2` en mensual)*: Criterio 2. Limita los registros a aquellos cuya fecha sea mayor o igual al inicio del ciclo de consulta.
+  * `"<" & (FILTRO_FECHAS!$D$2 + 1)` *(o `$F$2 + 1` en mensual)*: Criterio 3. Limita los registros a aquellos cuya fecha sea menor al día final del periodo más 1 unidad. Dado que la columna B almacena fecha y hora exacta, la adición de `+ 1` asegura la inclusión de todas las transacciones realizadas hasta las 23:59:59 del último día.
+
 #### 4.2.4. Columna D: Puntos de Esfuerzo Físico Acumulados
-Totaliza exclusivamente los puntos devengados por desgaste corporal, cortes de cable y maniobras de carga pesada:
+Totaliza de manera independiente los puntos devengados por desgaste corporal, cortes de cable y maniobras logísticas de carga pesada:
 
 * **En `RESUMEN_SEMANAL`:**
   ```excel
@@ -157,23 +172,36 @@ Totaliza exclusivamente los puntos devengados por desgaste corporal, cortes de c
   =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)))
   ```
 
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `SUMAR.SI.CONJUNTO(...)`: Función de suma condicional:
+  * `REGISTRO_DIARIO!$F:$F`: Rango de suma. Columna donde se registran los puntos asociados al desgaste físico y maniobras logísticas (cortes, peso, uso de montacargas).
+  * Argumentos restantes (`REGISTRO_DIARIO!$C:$C`, `A2`, `REGISTRO_DIARIO!$B:$B`, fechas de inicio y fin): Idénticos a la columna C para garantizar consistencia estricta en el empleado y el intervalo de fechas auditado.
+
 #### 4.2.5. Columna E: Puntos Totales Acumulados
-Consolida la sumatoria directa de complejidad documental y esfuerzo físico:
+Consolida la sumatoria directa entre el volumen documental procesado y el esfuerzo físico realizado:
 ```excel
 =SI(A2 = ""; ""; C2 + D2)
 ```
-* Elimina fórmulas extensas de doble cálculo y ofrece total claridad al bodeguero y al supervisor para auditar de dónde proviene su puntaje.
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `C2`: Total de puntos acumulados por volumen de facturas (`Puntos_Factura`).
+* `D2`: Total de puntos acumulados por desgaste físico (`Puntos_Esfuerzo`).
+* `+`: Operador aritmético simple. Evita la sobrecarga de fórmulas repetidas y otorga total transparencia analítica a los supervisores y trabajadores para auditar el origen exacto de su puntuación.
 
 #### 4.2.6. Columna F: Bono de Productividad
-Determina la retribución económica correspondiente a los puntos totales obtenidos (`E2`) evaluando la matriz escalonada:
+Determina la retribución económica correspondiente a los puntos obtenidos evaluando la matriz escalonada:
 ```excel
 =SI(A2 = ""; ""; SI(E2 <= CONFIGURACION!$B$2; 0; BUSCARV(E2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
 ```
-* `SI(E2 <= CONFIGURACION!$B$2; 0; ...)`: Evalúa el acumulado de la celda `E2` frente a la meta mínima de `100` puntos (`CONFIGURACION!$B$2`). Si no se supera, asigna `$0`.
-* `BUSCARV(E2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)`: Búsqueda escalonada por aproximación sobre la escala salarial ordenada (`101 pts → $150.000`, `121 pts → $300.000`, `151 pts → $450.000`, `181 pts → $600.000`).
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `SI(E2 <= CONFIGURACION!$B$2; 0; ...)`: Umbral de rentabilidad operativa. Evalúa el acumulado de puntos de la celda `E2` frente a la meta mínima fijada en `CONFIGURACION!$B$2` (`100` puntos). Si no se supera el umbral, asigna `$0`.
+* `BUSCARV(...)` *(Búsqueda escalonada)*:
+  * `E2`: Valor de entrada a calificar (`Puntos_Totales`).
+  * `CONFIGURACION!$A$8:$C$11`: Matriz fija de escalas salariales (`101 pts → $150.000`, `121 pts → $300.000`, `151 pts → $450.000`, `181 pts → $600.000`).
+  * `3`: Indicador de la columna que devuelve el valor monetario correspondiente.
+  * `VERDADERO`: Búsqueda de aproximación. Al estar ordenada de forma ascendente, localiza el escalón numérico inmediatamente inferior o igual al valor obtenido.
 
 #### 4.2.7. Columna G: Total Errores Acumulados
-Totaliza las penalizaciones asignadas por fallas en el despacho dentro del periodo evaluado:
+Totaliza las penalizaciones asignadas por fallas en el despacho dentro del periodo:
 
 * **En `RESUMEN_SEMANAL`:**
   ```excel
@@ -183,7 +211,12 @@ Totaliza las penalizaciones asignadas por fallas en el despacho dentro del perio
   ```excel
   =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$G:$G; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<" & (FILTRO_FECHAS!$F$2 + 1)))
   ```
-* `REGISTRO_DIARIO!$G:$G`: Rango de suma de deducciones negativas (`0, -1, -2, -3`).
+
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `SUMAR.SI.CONJUNTO(...)`: Función de suma condicional:
+  * `REGISTRO_DIARIO!$G:$G`: Rango de la suma. Columna que registra las deducciones numéricas negativas asignadas por el despachador (`0, -1, -2, -3`).
+  * `REGISTRO_DIARIO!$C:$C; A2`: Filtro por código de empleado.
+  * `REGISTRO_DIARIO!$B:$B; ">=" & ...; REGISTRO_DIARIO!$B:$B; "<" & (... + 1)`: Filtro de contención temporal entre fecha de inicio y fecha de cierre del periodo consultado.
 
 #### 4.2.8. Columna H: Bono de Calidad con Protección de Saldo y Umbral Mínimo
 Calcula la retención del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador y condicionando su cobro al cumplimiento de la meta mínima de puntos:
@@ -191,17 +224,20 @@ Calcula la retención del fondo de calidad asegurando que las penalizaciones no 
 =SI(A2 = ""; ""; SI(E2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (G2 * CONFIGURACION!$B$4))))
 ```
 * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SI(E2 < CONFIGURACION!$B$2; 0; ...)`: **Condición habilitadora de calidad dinámica.** Evalúa si el total de puntos alcanzado (`E2`) cumple o supera la meta mínima fijada en `CONFIGURACION!$B$2` (por defecto `100` puntos o el valor calibrado tras la prueba piloto). Si el colaborador no alcanza la meta (`E2 < CONFIGURACION!$B$2`), se le asigna `$0`. Al igualar o superar la meta (`E2 >= CONFIGURACION!$B$2`), se liquida el bono de calidad.
+* `SI(E2 < CONFIGURACION!$B$2; 0; ...)`: **Condición habilitadora de calidad dinámica.** Evalúa si el total de puntos alcanzado `E2` cumple o supera la meta mínima fijada en `CONFIGURACION!$B$2` (por defecto `100` puntos o el valor calibrado tras la prueba piloto). Si el colaborador no alcanza la meta (`E2 < CONFIGURACION!$B$2`), se le asigna `$0`. Al igualar o superar la meta (`E2 >= CONFIGURACION!$B$2`), se liquida el bono de calidad.
 * `CONFIGURACION!$B$3`: Valor base garantizado del bono de calidad (`$200.000`).
-* `(G2 * CONFIGURACION!$B$4)`: Multiplica el acumulado de puntos de error (`G2`, valor numérico negativo o cero) por el descuento unitario fijado en `CONFIGURACION!$B$4` (`$40.000`). Al ser `G2` negativo, el signo `+` efectúa una deducción directa (ejemplo: `$200.000 + (-2 * $40.000) = $120.000`).
-* `MAX(0; ...)`: Barrera o piso financiero de protección salarial; evita que los errores afecten el sueldo básico ordinario.
+* `(G2 * CONFIGURACION!$B$4)`: **Producto del castigo.** Multiplica el acumulado de puntos de error (`G2`, que es un valor numérico negativo o cero) por la penalización unitaria fijada en `CONFIGURACION!$B$4` (`$40.000`). Al ser `G2` negativo, el signo `+` ejecuta una sustracción financiera directa (ejemplo: `$200.000 + (-2 * $40.000) = $200.000 - $80.000 = $120.000`).
+* `MAX(0; ...)`: **Función de barrera o piso financiero.** Compara el saldo resultante contra 0 y devuelve el valor mayor. Evita que un exceso de equivocaciones genere descuentos sobre el salario base o saldos negativos para la empresa.
 
 #### 4.2.9. Columna I: Total Extra a Pagar
 Totaliza la liquidación neta a transferir o entregar en efectivo al colaborador:
 ```excel
 =SI(A2 = ""; ""; F2 + H2)
 ```
-* Consolida el importe de productividad (`F2`) más el remanente del bono de calidad (`H2`).
+* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+* `F2`: Importe ganado por concepto de productividad física y volumen (`Bono_Productividad`).
+* `H2`: Importe remanente por concepto de calidad y precisión de entrega (`Bono_Calidad`).
+* `+`: Adición simple que consolida el beneficio económico total devengado en el ciclo evaluado.
 
 ---
 
