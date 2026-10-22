@@ -16,6 +16,7 @@ Este documento provee los lineamientos técnicos para el mantenimiento, soporte 
 * **Alojamiento de Base de Datos:** Google Drive (Carpeta corporativa: `01_SISTEMA_BONIFICACIONES`).
 * **Archivo Maestro:** `BD_BONIFICACIONES_BODEGA` (Libro nativo de Google Sheets).
 * **Plantilla de Respaldo:** [`BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/templates/BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx).
+* **Guía Canónica de Configuración AppSheet:** [`schemas/appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md).
 * **Entorno de Ejecución en Bodega:** Portátil dedicado para despacho ejecutando aplicación PWA (Google Chrome / Microsoft Edge).
 * **Orquestador de Sincronización:** Motor en la nube de AppSheet.
 * **Propiedad y Credenciales:** Cuenta oficial del departamento de sistemas (excluida de control de versiones).
@@ -32,7 +33,7 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 | **`EMPLEADOS`** | `Read_Only` | Google Sheets directo | Catálogo maestro de colaboradores. Altas/bajas exclusivas por el administrador. |
 | **`FILTRO_FECHAS`** | `Updates_Only` | Google Sheets / AppSheet | Selector de fecha interactivo (`B2`) y motor de delimitación de fechas (`C2:F2`). |
 | **`CONFIGURACION`** | *(Sin vista directa)* | Google Sheets directo | Parámetros financieros: meta base (`B2`), bono calidad (`B3`), castigo error (`B4`) y escalas salariales (`A8:C11`). |
-| **`RESUMEN_SEMANAL`** | `Read_Only` | Fórmulas matriciales | Liquidación consolidada de lunes a domingo según `FILTRO_FECHAS!$C$2:$D$2`. |
+| **`RESUMEN_QUINCENAL`** | `Read_Only` | Fórmulas matriciales | Liquidación consolidada quincenal según `FILTRO_FECHAS!$C$2:$D$2`. |
 | **`RESUMEN_MENSUAL`** | `Read_Only` | Fórmulas matriciales | Liquidación consolidada mensual según `FILTRO_FECHAS!$E$2:$F$2`. |
 
 ---
@@ -59,15 +60,14 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
   1. Ingresar a la consola de administración de AppSheet.
   2. Ir a **Data > Columns > REGISTRO_DIARIO**.
   3. Verificar y restablecer la siguiente configuración estricta para cada campo:
-     * **`Puntos_Factura`:**
-       * `Type`: **Enum** | `Base type`: **Number** | `Input mode`: **Buttons**
-       * `Values`: `1, 2, 3, 4, 5`
      * **`Puntos_Esfuerzo`:**
        * `Type`: **Enum** | `Base type`: **Number** | `Input mode`: **Buttons**
        * `Values`: `1, 2, 3, 4, 5`
+       * `Display name`: `Puntaje Despacho`
      * **`Puntos_Error`:**
        * `Type`: **Enum** | `Base type`: **Number** | `Input mode`: **Buttons**
        * `Values`: `0, -1, -2, -3`
+       * `Initial value`: `0`
   4. Hacer clic en **Save** en la esquina superior derecha.
 
 ---
@@ -77,12 +77,13 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 * **Causa:** Se renombró, insertó o eliminó una columna en Google Sheets sin actualizar la definición de datos en AppSheet.
 * **Procedimiento de Solución:**
   1. Verificar que las columnas en Google Sheets coincidan con la estructura canónica:
-     * `REGISTRO_DIARIO`: `ID_Registro`, `Fecha_Hora`, `Empleado`, `Numero_Factura`, `Puntos_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`.
-     * `FILTRO_FECHAS`: `ID_Filtro`, `Fecha_Referencia`, `Semana_Inicio`, `Semana_Fin`, `Mes_Inicio`, `Mes_Fin`.
-     * `RESUMEN_SEMANAL` / `RESUMEN_MENSUAL`: `ID_Empleado`, `Nombre_Empleado`, `Puntos_Factura`, `Puntos_Esfuerzo`, `Puntos_Totales`, `Bono_Productividad`, `Total_Errores`, `Bono_Calidad`, `Total_Extra_A_Pagar`.
+     * `EMPLEADOS`: `ID_Empleado`, `Nombre_Completo`, `Activo`.
+     * `REGISTRO_DIARIO`: `ID_Registro`, `Fecha_Hora`, `Empleado`, `Numero_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`.
+     * `FILTRO_FECHAS`: `ID_Filtro`, `Fecha_Referencia`, `Quincena_Inicio`, `Quincena_Fin`, `Mes_Inicio`, `Mes_Fin`.
+     * `RESUMEN_QUINCENAL` / `RESUMEN_MENSUAL`: `ID_Empleado`, `Nombre_Empleado`, `Total_Puntos`, `Bono_Productividad`, `Total_Errores`, `Bono_Calidad`, `Total_Bonificacion`.
   2. En el editor de AppSheet, ir a **Data > Tables**.
   3. Seleccionar la tabla en conflicto y hacer clic en **Regenerate Schema**.
-   4. Validar que en EMPLEADOS la columna Nombre_Completo conserve la propiedad Label activada (TRUE).
+  4. Validar que en `EMPLEADOS` la columna `Nombre_Completo` conserve la propiedad Label activada (`TRUE`), que `Activo` tenga `SHOW? = FALSE`, y que las columnas virtuales (`Activo?`, `Despachos_Quincena`, `Despachos_Mes`) se mantengan conforme a [`schemas/appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md).
   5. Guardar los cambios (**Save**).
 
 ---
@@ -99,7 +100,7 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 ---
 
 ### Incidente 5: Tablas de resumen vacías o con error `#N/A` generalizado
-* **Síntoma:** Las vistas `RESUMEN_SEMANAL` o `RESUMEN_MENSUAL` no muestran colaboradores o exhiben error de cálculo matricial.
+* **Síntoma:** Las vistas `RESUMEN_QUINCENAL` o `RESUMEN_MENSUAL` no muestran colaboradores o exhiben error de cálculo matricial.
 * **Causa:** La fórmula `=SI.ERROR(FILTER(EMPLEADOS!A2:A1000; EMPLEADOS!C2:C1000 = VERDADERO); "")` no encuentra ningún trabajador con la casilla `Activo` en `VERDADERO` / `TRUE`.
 * **Procedimiento de Solución:**
   1. Abrir la pestaña `EMPLEADOS` en Google Sheets.

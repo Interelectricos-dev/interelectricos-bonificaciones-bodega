@@ -39,8 +39,8 @@ Al ingresar a la aplicación en el dispositivo móvil, el usuario encontrará un
 
 * **1. NUEVO REGISTRO:** Formulario de captura rápida para registrar cada factura alistada en tiempo real.
 * **2. HISTORIAL HOY:** Listado cronológico de las órdenes despachadas durante la jornada actual para verificación operativa.
-* **3. RESUMEN:** Tablero analítico consolidado (Semanal y Mensual) de puntos y liquidación monetaria.
-* **4. SELECCIONE FECHA:** Selector interactivo para auditar semanas o meses pasados.
+* **3. RESUMEN:** Tablero analítico consolidado (Quincenal y Mensual) de puntos y liquidación monetaria.
+* **4. SELECCIONE FECHA:** Selector interactivo para auditar quincenas o meses pasados.
 
 ---
 
@@ -110,21 +110,15 @@ Complete la información del alistamiento utilizando las entradas táctiles opti
 * **Paso B: Digitar el Número de Factura (`N° Factura *`):**  
   En la casilla de texto, escriba el número consecutivo impreso en la factura o remisión física (ejemplo: `09102601`). *(Campo obligatorio para evitar registros huérfanos).*
 
-* **Paso C: Calificar Puntos de Factura (Lectura y Densidad Documental):**  
-  Presione un botón táctil del **1 al 5** evaluando la cantidad de renglones y referencias que requirió la lectura:
-  * **1 pt:** Factura simple con pocos artículos o referencias estándar de fácil conteo.
-  * **2 a 4 pts:** Pedidos medianos con múltiples referencias que exigieron conteo intermedio.
-  * **5 pts:** Factura extensa con alta densidad de renglones que demandó lectura y revisión minuciosa.
+* **Paso C: Calificar Puntaje de Despacho (`Puntos_Esfuerzo`):**  
+  Presione un botón táctil del **1 al 5** evaluando de forma integral la complejidad del pedido y el esfuerzo físico invertido:
+  * **1 pt:** Factura simple con pocos artículos livianos, sin exigencia física extra.
+  * **2 a 4 pts:** Pedidos medianos con múltiples referencias o que requirieron cortes de cable conductor, mangueras, alambre o cargue de tubería pesada.
+  * **5 pts:** Despacho complejo con alta densidad de renglones, bobinas industriales pesadas o maniobras con montacargas.
 
-* **Paso D: Calificar Puntos de Esfuerzo Físico (Desgaste Corporal y Logística):**  
-  Presione un botón táctil del **1 al 5** según las maniobras y desgaste corporal invertido:
-  * **1 pt:** Mercancía liviana ubicada en estanterías bajas, sin exigencia física extra.
-  * **2 a 4 pts:** Pedidos que requirieron cortes de cable conductor, mangueras, alambre o cargue de tubería pesada.
-  * **5 pts:** Maniobras complejas de carga pesada con bobinas industriales o uso del montacargas.
-
-* **Paso E: Calificar Puntos de Error (Auditoría de Calidad en Mostrador):**  
-  Inspeccione físicamente la mercancía antes de empacar y marque la casilla correspondiente:
-  * **0 pts:** Despacho exacto y perfecto, sin ninguna inconsistencia.
+* **Paso D: Calificar Puntos de Error (`Puntos_Error`):**  
+  Viene preseleccionado automáticamente en **0** (despacho correcto sin penalización). Solo cámbielo si detecta alguna falla:
+  * **0 pts:** Despacho exacto y perfecto, sin ninguna inconsistencia *(valor por defecto)*.
   * **-1 pt:** Error leve subsanable (ejemplo: olvido de un ítem menor o conteo corregido en mostrador).
   * **-2 pts:** Dos errores leves detectados en la misma entrega.
   * **-3 pts:** Falta crítica (ejemplo: corte erróneo de cable conductor o equivocación que cause reclamo formal).
@@ -190,7 +184,7 @@ La aplicación despliega la lista cronológica de todas las entregas registradas
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **Desplazamiento Táctil:** Deslice horizontalmente con el dedo sobre la pantalla para visualizar todas las columnas del registro (`N° Factura`, `Empleado`, `Puntos Factura`, `Puntos Esfuerzo` y `Puntos Error`).
+* **Desplazamiento Táctil:** Deslice horizontalmente con el dedo sobre la pantalla para visualizar todas las columnas del registro (`N° Factura`, `Empleado`, `Puntos Esfuerzo` y `Puntos Error`).
 
 ---
 
@@ -298,10 +292,10 @@ En la barra inferior de navegación, toque el ícono **RESUMEN**:
 
 ---
 
-### 6.2. Visualización de Reportes Semanal y Mensual (Navegación por Pestañas)
+### 6.2. Visualización de Reportes Quincenal y Mensual (Navegación por Pestañas)
 En dispositivos móviles, el dashboard organiza los dos cortes temporales mediante **pestañas superiores táctiles** para alternar de forma inmediata sin recargar:
 
-| Pestaña SEMANAL (Lunes a Domingo) | Pestaña MENSUAL (Mes Completo) |
+| Pestaña QUINCENAL (Día 1-15 o 16-Fin de Mes) | Pestaña MENSUAL (Mes Completo) |
 | :---: | :---: |
 | <img src="images/manual_operativo/7_menu_resumen_parte_1.png" alt="Resumen Parte 1" width="220"> | <img src="images/manual_operativo/8_menu_resumen_parte_2.png" alt="Resumen Parte 2" width="220"> |
 
@@ -309,18 +303,18 @@ En dispositivos móviles, el dashboard organiza los dos cortes temporales median
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
 <!-- En '7_menu_resumen_parte_1.png' y '8_menu_resumen_parte_2.png':   -->
 <!-- 1. Resalte con un recuadro las dos pestañas superiores de bloque: -->
-<!--    * 'SEMANAL (dd/mm/aaaa al dd/mm/aaaa)': Período de lun a dom.   -->
+<!--    * 'QUINCENAL (dd/mm/aaaa al dd/mm/aaaa)': Período de quincena.  -->
 <!--    * 'MENSUAL (Mes aaaa)': Período de mes calendario.              -->
 <!-- 2. Señale el código de colores corporativos en las tablas:         -->
-<!--    * AZUL: Puntos Totales ganados.                                 -->
+<!--    * AZUL: Total Puntos ganados.                                   -->
 <!--    * ROJO: Total de Errores acumulados.                            -->
 <!--    * VERDE con icono de billete: Bono Neto a cobrar.               -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **Pestaña SEMANAL:** Consolida los puntos acumulados de lunes a domingo de la semana consultada en `FILTRO_FECHAS`.
+* **Pestaña QUINCENAL:** Consolida los puntos acumulados de la quincena comercial consultada en `FILTRO_FECHAS`.
 * **Pestaña MENSUAL:** Presenta el consolidado desde el primer hasta el último día del mes calendario en curso.
-* **Navegación Táctil:** Toque directamente sobre la pestaña deseada en la parte superior de la pantalla para alternar entre el resumen semanal y mensual.
+* **Navegación Táctil:** Toque directamente sobre la pestaña deseada en la parte superior de la pantalla para alternar entre el resumen quincenal y mensual.
 
 ---
 
@@ -343,14 +337,13 @@ Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega s
 
 #### Conceptos del Desglose:
 * **Empleado / ID:** Nombre completo y código identificador del auxiliar.
-* **Puntos Factura:** Puntos devengados exclusivamente por lectura y complejidad documental.
-* **Puntos Esfuerzo:** Puntos devengados por desgaste corporal y trabajo pesado.
-* **Total Puntos:** Sumatoria consolidada (`Puntos Factura + Puntos Esfuerzo`).
-* **Bono Productividad:** Retribución monetaria por superar el umbral mínimo de 100 puntos semanales.
+* **Puntos Esfuerzo:** Puntaje de calificación obtenido por el colaborador en cada despacho (escala 1 a 5).
+* **Total Puntos:** Sumatoria consolidada de los puntos del período (`Total_Puntos`).
+* **Bono Productividad:** Retribución monetaria por superar el umbral mínimo de 100 puntos quincenales.
 * **Total Errores:** Cantidad de penalizaciones registradas en el ciclo.
 * **Bono Calidad:** Fondo de calidad restante ($200.000 garantizados menos $40.000 por cada error). **Requisito indispensable:** Solo se liquida si el colaborador alcanza o supera la meta mínima de puntos del ciclo (fijada en la celda `B2` de `CONFIGURACION`, base 100 puntos). Si no alcanza la meta mínima, se liquida en $0.
 * **Bono Neto:** Importe neto total a transferir o pagar al colaborador (`Productividad + Calidad`).
-* **Registros Semanales / Registros del Mes:** Lista desplegable inferior que muestra todas las facturas despachadas por ese colaborador acotadas estrictamente al ciclo seleccionado, permitiendo validar cada despacho en detalle.
+* **Despachos Quincena / Despachos Mes:** Lista desplegable inferior que muestra todas las facturas despachadas por ese colaborador acotadas estrictamente al ciclo seleccionado, permitiendo validar cada despacho en detalle.
 
 ---
 
