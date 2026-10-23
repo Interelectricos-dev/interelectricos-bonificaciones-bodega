@@ -269,7 +269,8 @@ Ir a **App > Views**. La barra de navegación principal móvil tiene **4 accesos
 | **Position** | `first` |
 | **Column order** | `Automatic` *(renderiza Empleado, Numero_Factura, Puntos_Esfuerzo, Puntos_Error)* |
 | **Save / cancel position** | `Bottom` |
-| **Finish view** | `REGISTRO_DIARIO_Form` *(al guardar, el formulario se recarga en blanco inmediatamente, listo para el siguiente despacho)* |
+| **Auto re-open** | `ON` *(activado para recarga continua del formulario sin límite de despachos)* |
+| **Finish view** | `Auto assign (Go Back)` *(al guardar, Auto re-open mantiene el formulario en blanco; al dar Cancel regresa a la vista previa)* |
 | **Display name** | `NUEVO REGISTRO` |
 | **Icon** | `mobile-android` |
 
@@ -434,7 +435,7 @@ Antes del despliegue masivo o entrega a los operarios, cotejar cada punto contra
 - [ ] **Detalle con Filtro de Período:** En el detalle de `RESUMEN_QUINCENAL` o `RESUMEN_MENSUAL`, la lista desplegable inferior muestra los despachos acotados al período de la fecha seleccionada en `SELECCIONE FECHA`.
 - [ ] **Columna `Activo?`:** En el detalle del empleado muestra `"SI"` o `"NO"`.
 - [ ] **Formulario:** `N° Factura` es obligatorio; los botones de puntos (`1` a `5`) y errores (`0` a `-3` con default `0`) responden tácticamente en un solo toque.
-- [ ] **Finish view:** Al guardar un despacho, el formulario se recarga automáticamente en blanco (`REGISTRO_DIARIO_Form`).
+- [ ] **Recarga continua:** Con `Auto re-open` activo y `Finish view = Auto assign (Go Back)`, el formulario se recarga continuamente en blanco tras cada guardado para despachos masivos.
 - [ ] **Restricción 15 min:** El botón de edición permite correcciones durante 15 minutos; transcurrido este tiempo desaparece.
 - [ ] **Dashboard `RESUMEN`:** Navegación móvil por pestañas (`QUINCENAL` y `MENSUAL`) con títulos dinámicos de rango de fechas.
 - [ ] **Formato condicional:** Reglas `PUNTOS_QUINCENAL` (azul sobre `Total_Puntos`), `ERRORES_QUINCENAL` (rojo sobre `Total_Errores`), `BONOS_QUINCENAL` (verde sobre `Total_Bonificacion`), `PUNTOS_MENSUAL` (azul), `ERRORES_MENSUAL` (rojo), `BONOS_MENSUAL` (verde) y `EMPLEADO_ACTIVO?` (naranja cursiva).

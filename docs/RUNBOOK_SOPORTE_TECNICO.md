@@ -122,6 +122,18 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 
 ---
 
+### Incidente 7: El formulario de despacho se cierra tras guardar dos registros consecutivos
+* **Síntoma:** El despachador guarda un despacho y el formulario se recarga, pero al guardar el segundo despacho la app se sale del formulario y vuelve a la vista previa. Al tocar de nuevo el botón en el menú, el ciclo se repite cada dos registros.
+* **Causa:** La opción nativa `Auto re-open` está desactivada (`OFF`) o `Finish view` apunta a la vista de sistema `REGISTRO_DIARIO_Form` (la cual no tiene configurado retorno automático por defecto).
+* **Procedimiento de Solución:**
+  1. Ingresar al editor de AppSheet.
+  2. Ir a **Views > NUEVO REGISTRO** (y verificar también en **SYSTEM GENERATED > REGISTRO_DIARIO_Form**).
+  3. Activar el switch **Auto re-open** (en posición `ON` / azul).
+  4. En el campo **Finish view**, seleccionar **`Auto assign (Go Back)`**.
+  5. Guardar los cambios (**Save**). Con esto el formulario se mantendrá abierto indefinidamente tras cada guardado hasta que el usuario pulse conscientemente *Cancel*.
+
+---
+
 ## 4. Procedimientos de Mantenimiento Preventivo y Rutinario
 
 ### 4.1. Alta o Baja de Personal Operativo

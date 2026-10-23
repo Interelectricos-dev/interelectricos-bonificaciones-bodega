@@ -221,7 +221,7 @@ La barra de navegación principal se compone de **cuatro accesos operativos**:
 * **Tipo:** `Form` en posición inicial (`first`) configurado como pantalla de registro continuo.
 * **Captura:** Optimizada mediante entradas táctiles de tipo `Enum` con modo de botones (`Buttons`) para `Puntos_Esfuerzo` (1 a 5) y penalización `Puntos_Error` (0 a -3 con default `0`).
 * **Campos automáticos:** `ID_Registro` y `Fecha_Hora` ocultos bajo autocomputo (`UNIQUEID()`, `NOW()`).
-* **Recarga automática:** Configuración de `Finish view = REGISTRO_DIARIO_Form` para limpiar y dejar el formulario listo para el siguiente despacho inmediatamente al guardar.
+* **Recarga automática continua:** Configuración de `Auto re-open = ON` y `Finish view = Auto assign (Go Back)` para mantener el formulario abierto y limpio para el siguiente despacho de forma ininterrumpida.
 
 ### 5.2. Vista: Historial del Día (`HISTORIAL HOY`)
 * **Tipo:** `Table` en posición central (`middle`), alimentada exclusivamente por el Slice `REGISTRO_HOY` (`[Fecha_Hora] > TODAY()`).

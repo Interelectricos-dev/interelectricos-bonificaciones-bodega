@@ -21,7 +21,7 @@ La solución opera bajo un esquema cliente-servidor en la nube:
 2. **FILTRO_FECHAS:** Módulo de control de consulta dinámica.
 3. **REGISTRO_DIARIO:** Tabla transaccional para el registro histórico de órdenes despachadas.
 4. **CONFIGURACION:** Centralización de variables financieras (metas, bono base y matriz de escalas).
-5. **RESUMEN_SEMANAL / RESUMEN_MENSUAL:** Tablas de liquidación consolidada en modo de solo lectura.
+5. **RESUMEN_QUINCENAL / RESUMEN_MENSUAL:** Tablas de liquidación consolidada en modo de solo lectura.
 
 ## Organización del Repositorio
 * `/docs`: Documentación técnica del sistema, manuales de usuario y reglas de negocio:
