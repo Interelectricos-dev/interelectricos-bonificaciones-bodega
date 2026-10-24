@@ -139,77 +139,166 @@ Recupera la denominación textual asociada al identificador para facilitar la le
 * `FALSO`: Parámetro de coincidencia exacta obligatoria.
 
 #### 4.2.3. Columna C: Total Puntos Acumulados (`Total_Puntos`)
-Totaliza los puntos devengados exclusivamente por calificación del despacho en el período:
+Totaliza los puntos devengados por concepto de calificación operativa de despachos en el período:
 
-* **En `RESUMEN_QUINCENAL`:**
+* **En `RESUMEN_QUINCENAL` (Cálculo directo por suma condicional):**
   ```excel
   =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$D$2 + 1)))
   ```
-* **En `RESUMEN_MENSUAL`:**
-  ```excel
-  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$F$2 + 1)))
-  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de control de fila. Si no existe identificador de empleado en la celda `A2`, la celda permanece en blanco para mantener la estética limpia de la tabla.
+  * `SUMAR.SI.CONJUNTO(...)`: Función de agregación condicional con criterios múltiples simultáneos:
+    * `REGISTRO_DIARIO!$E:$E`: Rango de suma. Columna `Puntos_Esfuerzo` que contiene el puntaje asignado al alistamiento (1 a 5 puntos).
+    * `REGISTRO_DIARIO!$C:$C; A2`: Rango y criterio de empleado. Filtra únicamente las filas que correspondan al `ID_Empleado` de la fila actual.
+    * `REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2`: Rango y criterio de inicio de ciclo. Restringe la suma a marcas de tiempo mayores o iguales a la fecha de inicio quincenal (`Quincena_Inicio`).
+    * `REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$D$2 + 1)`: Rango y criterio de cierre de ciclo. Se adiciona `+ 1` a la fecha final (`Quincena_Fin`) para abarcar la totalidad de registros generados durante la jornada hasta las 23:59:59.
 
-* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SUMAR.SI.CONJUNTO(...)`: Función de suma condicional:
-  * `REGISTRO_DIARIO!$E:$E`: Rango de suma. Columna `Puntos_Esfuerzo` donde se registra el puntaje único de despacho asignado por el despachador (1 a 5).
-  * `REGISTRO_DIARIO!$C:$C`: Rango de criterios 1. Columna de empleados en el histórico de despachos.
-  * `A2`: Criterio 1. Código identificador `ID_Empleado` a evaluar.
-  * `REGISTRO_DIARIO!$B:$B`: Rango de criterios 2 y 3. Columna que contiene la marca de tiempo de auditoría (`DateTime`).
-  * `">=" & FILTRO_FECHAS!$C$2` *(o `$E$2` en mensual)*: Criterio 2. Limita los registros a aquellos cuya fecha sea mayor o igual al inicio del ciclo de consulta.
-  * `"<=" & (FILTRO_FECHAS!$D$2 + 1)` *(o `$F$2 + 1` en mensual)*: Criterio 3. Limita los registros a aquellos cuya fecha sea menor o igual al día final del periodo más 1 unidad para incluir todas las transacciones hasta las 23:59:59.
+* **En `RESUMEN_MENSUAL` (Consolidación de Quincena 1 + Quincena 2):**
+  ```excel
+  =SI(A2 = ""; ""; H2 + L2)
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad ante filas vacías.
+  * `H2`: Celda que almacena el total de puntos acumulados en la Quincena 1 (días 1 al 15 del mes).
+  * `+`: Operador de adición aritmética directa.
+  * `L2`: Celda que almacena el total de puntos acumulados en la Quincena 2 (días 16 al fin de mes).
+  * *Propósito:* Consolida el volumen total de despachos procesados en los 30/31 días del mes calendario.
+
+---
 
 #### 4.2.4. Columna D: Bono de Productividad
-Determina la retribución económica correspondiente a los puntos obtenidos evaluando la matriz escalonada:
-```excel
-=SI(A2 = ""; ""; SI(C2 <= CONFIGURACION!$B$2; 0; BUSCARV(C2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
-```
-* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SI(C2 <= CONFIGURACION!$B$2; 0; ...)`: Umbral de rentabilidad operativa. Evalúa el acumulado de puntos de la celda `C2` (`Total_Puntos`) frente a la meta mínima fijada en `CONFIGURACION!$B$2` (`100` puntos). Si no se supera el umbral, asigna `$0`.
-* `BUSCARV(...)` *(Búsqueda escalonada)*:
-  * `C2`: Valor de entrada a calificar (`Total_Puntos`).
-  * `CONFIGURACION!$A$8:$C$11`: Matriz fija de escalas salariales (`101 pts → $150.000`, `121 pts → $300.000`, `151 pts → $450.000`, `181 pts → $600.000`).
-  * `3`: Indicador de la columna que devuelve el valor monetario correspondiente.
-  * `VERDADERO`: Búsqueda de aproximación que localiza el escalón numérico inmediatamente inferior o igual al valor obtenido.
+Calcula la retribución económica correspondiente al volumen de esfuerzo alcanzado evaluando la matriz de escalas salariales:
+
+* **En `RESUMEN_QUINCENAL` (Cálculo directo sobre matriz):**
+  ```excel
+  =SI(A2 = ""; ""; SI(C2 <= CONFIGURACION!$B$2; 0; BUSCARV(C2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+  * `SI(C2 <= CONFIGURACION!$B$2; 0; ...)`: **Umbral de rentabilidad operativa.** Compara los puntos obtenidos en `C2` frente a la meta mínima fijada en `CONFIGURACION!$B$2` (`100` puntos quincenales). Si el acumulado es menor o igual a 100, asigna `$0`.
+  * `BUSCARV(...)` *(Búsqueda aproximada en matriz de escala)*:
+    * `C2`: Valor de entrada a calificar (`Total_Puntos`).
+    * `CONFIGURACION!$A$8:$C$11`: Matriz fija de rangos salariales (`101 pts → $150.000`, `121 pts → $300.000`, `151 pts → $450.000`, `181 pts → $600.000`).
+    * `3`: Indicador de la columna de la matriz que retorna el valor monetario a pagar.
+    * `VERDADERO`: Búsqueda por aproximación que ubica el escalón salarial inmediatamente inferior o igual alcanzado por el trabajador.
+
+* **En `RESUMEN_MENSUAL` (Consolidación financiera exacta):**
+  ```excel
+  =SI(A2 = ""; ""; I2 + M2)
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+  * `I2`: Importe monetario devengado por bono de productividad en la Quincena 1.
+  * `+`: Adición financiera de beneficios quincenales causados.
+  * `M2`: Importe monetario devengado por bono de productividad en la Quincena 2.
+  * *Principio de equidad financiera:* La liquidación mensual no evalúa la suma total de puntos sobre la escala quincenal (lo que inflaría indebidamente el bono al rango máximo de $600.000). En su lugar, totaliza de manera estricta lo ganado en cada quincena independiente.
+
+---
 
 #### 4.2.5. Columna E: Total Errores Acumulados (`Total_Errores`)
-Totaliza las penalizaciones asignadas por fallas en el despacho dentro del periodo:
+Totaliza las penalizaciones numéricas asignadas por fallas en el despacho dentro del periodo evaluado:
 
-* **En `RESUMEN_QUINCENAL`:**
+* **En `RESUMEN_QUINCENAL` (Cálculo directo por suma condicional):**
   ```excel
   =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$D$2 + 1)))
   ```
-* **En `RESUMEN_MENSUAL`:**
-  ```excel
-  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$F$2 + 1)))
-  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+  * `SUMAR.SI.CONJUNTO(...)`:
+    * `REGISTRO_DIARIO!$F:$F`: Rango de suma. Columna `Puntos_Error` donde se asientan las penalizaciones negativas (`0, -1, -2, -3`).
+    * `REGISTRO_DIARIO!$C:$C; A2`: Filtro restrictivo por el código identificador del colaborador.
+    * `REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$C$2`: Delimitador temporal de inicio de quincena.
+    * `REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$D$2 + 1)`: Delimitador temporal de cierre de quincena (incluye jornada completa).
 
-* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SUMAR.SI.CONJUNTO(...)`: Función de suma condicional:
-  * `REGISTRO_DIARIO!$F:$F`: Rango de la suma. Columna que registra las deducciones numéricas negativas asignadas por el despachador (`0, -1, -2, -3`).
-  * `REGISTRO_DIARIO!$C:$C; A2`: Filtro por código de empleado.
-  * Intervalo temporal: Filtro de contención temporal entre fecha de inicio y fecha de cierre del periodo consultado.
+* **En `RESUMEN_MENSUAL` (Consolidación de Quincena 1 + Quincena 2):**
+  ```excel
+  =SI(A2 = ""; ""; J2 + N2)
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad ante filas vacías.
+  * `J2`: Total de penalizaciones registradas durante la Quincena 1 (valor negativo o cero).
+  * `+`: Operador de suma aritmética que acumula los errores de ambos ciclos.
+  * `N2`: Total de penalizaciones registradas durante la Quincena 2 (valor negativo o cero).
+
+---
 
 #### 4.2.6. Columna F: Bono de Calidad con Protección de Saldo y Umbral Mínimo
-Calcula la retención del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador y condicionando su cobro al cumplimiento de la meta mínima de puntos:
-```excel
-=SI(A2 = ""; ""; SI(C2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (E2 * CONFIGURACION!$B$4))))
-```
-* `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
-* `SI(C2 < CONFIGURACION!$B$2; 0; ...)`: **Condición habilitadora de calidad dinámica.** Evalúa si el total de puntos alcanzado `C2` cumple o supera la meta mínima fijada en `CONFIGURACION!$B$2` (`100` puntos quincenales). Si el colaborador no alcanza la meta (`C2 < CONFIGURACION!$B$2`), se le asigna `$0`. Al igualar o superar la meta (`C2 >= CONFIGURACION!$B$2`), se liquida el bono de calidad.
-* `CONFIGURACION!$B$3`: Valor base garantizado del bono de calidad (`$200.000`).
-* `(E2 * CONFIGURACION!$B$4)`: **Producto del castigo.** Multiplica el acumulado de puntos de error (`E2`, que es un valor numérico negativo o cero) por la penalización unitaria fijada en `CONFIGURACION!$B$4` (`$40.000`). Al ser `E2` negativo, el signo `+` ejecuta una sustracción financiera directa (ejemplo: `$200.000 + (-2 * $40.000) = $200.000 - $80.000 = $120.000`).
-* `MAX(0; ...)`: **Función de barrera o piso financiero.** Compara el saldo resultante contra 0 y devuelve el valor mayor. Evita que un exceso de equivocaciones genere descuentos sobre el salario base o saldos negativos para la empresa.
+Calcula la retención y entrega del fondo de calidad asegurando que las penalizaciones no generen saldos en contra del trabajador y condicionando su cobro al cumplimiento de la meta quincenal:
+
+* **En `RESUMEN_QUINCENAL` (Cálculo directo con piso de protección):**
+  ```excel
+  =SI(A2 = ""; ""; SI(C2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (E2 * CONFIGURACION!$B$4))))
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+  * `SI(C2 < CONFIGURACION!$B$2; 0; ...)`: **Condición habilitadora de calidad dinámica.** Compara el total de puntos `C2` frente a la meta base de `100` puntos (`CONFIGURACION!$B$2`). Si el trabajador no alcanza la meta quincenal (`C2 < 100`), se le asigna `$0`. Al igualar o superar la meta (`C2 >= 100`), tiene derecho a liquidar el bono de calidad.
+  * `CONFIGURACION!$B$3`: Valor base inicial garantizado del bono de calidad (`$200.000`).
+  * `(E2 * CONFIGURACION!$B$4)`: **Cálculo del descuento por error.** Multiplica el total de errores de la celda `E2` (número negativo) por el valor unitario fijado en `CONFIGURACION!$B$4` (`$40.000`). Como `E2` es negativo, el signo `+` efectúa una resta directa (ejemplo: `$200.000 + (-2 * $40.000) = $200.000 - $80.000 = $120.000`).
+  * `MAX(0; ...)`: **Piso financiero de seguridad laboral.** Compara el resultado obtenido contra cero y retorna el mayor. Impide que un exceso de errores genere descuentos sobre el salario base o saldos en contra del colaborador.
+
+* **En `RESUMEN_MENSUAL` (Consolidación financiera exacta):**
+  ```excel
+  =SI(A2 = ""; ""; K2 + O2)
+  ```
+  * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
+  * `K2`: Monto de bono de calidad liquidado y obtenido en la Quincena 1.
+  * `+`: Adición financiera de beneficios quincenales causados.
+  * `O2`: Monto de bono de calidad liquidado y obtenido en la Quincena 2.
+  * *Regla de independencia de ciclos:* Si en la Quincena 1 el empleado no alcanzó la meta de 100 puntos y cometió errores, dichos errores no contaminan ni restan el bono de la Quincena 2 donde sí cumplió la meta de calidad.
+
+---
 
 #### 4.2.7. Columna G: Total Bonificación (`Total_Bonificacion`)
-Totaliza la liquidación neta a transferir o entregar en nómina al colaborador:
+Totaliza la compensación monetaria neta a transferir o pagar en nómina al colaborador:
 ```excel
 =SI(A2 = ""; ""; D2 + F2)
 ```
 * `=SI(A2 = ""; ""; ...)`: Condicional de seguridad por ausencia de empleado.
 * `D2`: Importe ganado por concepto de productividad (`Bono_Productividad`).
-* `F2`: Importe remanente por concepto de calidad y precisión de entrega (`Bono_Calidad`).
-* `+`: Adición simple que consolida el beneficio económico total devengado en el ciclo evaluado.
+* `+`: Operador de consolidación neta.
+* `F2`: Importe ganado por concepto de precisión operativa (`Bono_Calidad`).
+
+---
+
+#### 4.2.8. Columnas Auxiliares de Auditoría Quincenal en `RESUMEN_MENSUAL` (`H:O`)
+Para hacer posible el cálculo mensual exacto sin alterar la compatibilidad con AppSheet, la hoja `RESUMEN_MENSUAL` implementa 8 columnas de cálculo técnico a partir de la columna `H` (ocultas en Sheets y configuradas con `SHOW? = FALSE` en AppSheet):
+
+##### Bloque 1: Liquidación Quincena 1 (Días 1 al 15 del mes de consulta)
+* **Columna H (`Puntos_Q1`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$E$2 + 15)))
+  ```
+  * Suma los puntos `Puntos_Esfuerzo` del colaborador entre el inicio del mes `FILTRO_FECHAS!$E$2` (día 1) y el día 15 inclusive (`$E$2 + 15` para abarcar el día completo).
+* **Columna I (`Bono_Prod_Q1`):**
+  ```excel
+  =SI(A2 = ""; ""; SI(H2 <= CONFIGURACION!$B$2; 0; BUSCARV(H2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
+  ```
+  * Califica los puntos de la Quincena 1 (`H2`) contra la meta mínima (`CONFIGURACION!$B$2`) y ubica el valor en la escala salarial de productividad.
+* **Columna J (`Errores_Q1`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & FILTRO_FECHAS!$E$2; REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$E$2 + 15)))
+  ```
+  * Totaliza las penalizaciones negativas registradas durante los primeros 15 días del mes.
+* **Columna K (`Bono_Cal_Q1`):**
+  ```excel
+  =SI(A2 = ""; ""; SI(H2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (J2 * CONFIGURACION!$B$4))))
+  ```
+  * Liquida el fondo de calidad de la Quincena 1 ($200.000 menos deducciones de errores de `J2`), condicionado a que los puntos de `H2` alcancen la meta mínima.
+
+##### Bloque 2: Liquidación Quincena 2 (Días 16 al fin de mes de consulta)
+* **Columna L (`Puntos_Q2`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$E:$E; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & (FILTRO_FECHAS!$E$2 + 15); REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$F$2 + 1)))
+  ```
+  * Suma los puntos entre el día 16 del mes (`$E$2 + 15`) y el último día del mes `FILTRO_FECHAS!$F$2` (`$F$2 + 1` para abarcar hasta las 23:59:59).
+* **Columna M (`Bono_Prod_Q2`):**
+  ```excel
+  =SI(A2 = ""; ""; SI(L2 <= CONFIGURACION!$B$2; 0; BUSCARV(L2; CONFIGURACION!$A$8:$C$11; 3; VERDADERO)))
+  ```
+  * Califica los puntos de la Quincena 2 (`L2`) frente a la meta y devuelve el bono de productividad devengado en la segunda mitad del mes.
+* **Columna N (`Errores_Q2`):**
+  ```excel
+  =SI(A2 = ""; ""; SUMAR.SI.CONJUNTO(REGISTRO_DIARIO!$F:$F; REGISTRO_DIARIO!$C:$C; A2; REGISTRO_DIARIO!$B:$B; ">=" & (FILTRO_FECHAS!$E$2 + 15); REGISTRO_DIARIO!$B:$B; "<=" & (FILTRO_FECHAS!$F$2 + 1)))
+  ```
+  * Totaliza las penalizaciones negativas registradas entre el día 16 y el cierre del mes.
+* **Columna O (`Bono_Cal_Q2`):**
+  ```excel
+  =SI(A2 = ""; ""; SI(L2 < CONFIGURACION!$B$2; 0; MAX(0; CONFIGURACION!$B$3 + (N2 * CONFIGURACION!$B$4))))
+  ```
+  * Liquida el fondo de calidad de la Quincena 2 ($200.000 menos deducciones de `N2`), condicionado al cumplimiento de la meta quincenal en `L2`.
 
 ---
 

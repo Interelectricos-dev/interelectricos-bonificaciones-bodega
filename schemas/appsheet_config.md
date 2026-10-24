@@ -166,7 +166,9 @@ Esta tabla cuenta **exclusivamente con sus 6 columnas físicas** provenientes de
 
 ### 2.4. Tablas: `RESUMEN_QUINCENAL` y `RESUMEN_MENSUAL`
 
-Ambas comparten la misma estructura de 7 columnas base provenientes de Google Sheets:
+Ambas tablas exponen en AppSheet las mismas 7 columnas visibles de liquidación consolidada calculadas en Google Sheets. 
+
+En `RESUMEN_MENSUAL`, la liquidación corresponde a la **suma financiera exacta de lo devengado en la Quincena 1 (días 1 al 15) más la Quincena 2 (días 16 al fin de mes)**. Para garantizar este desglose sin distorsionar las escalas quincenales, la hoja en Google Sheets contiene 8 columnas auxiliares de cálculo analítico (`H:O`) que en AppSheet se mantienen con `SHOW? = FALSE`.
 
 #### A. Columnas base (provenientes de Google Sheets)
 
@@ -181,10 +183,15 @@ Ambas comparten la misma estructura de 7 columnas base provenientes de Google Sh
 | `Bono_Calidad` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Bono Calidad` |
 | `Total_Bonificacion` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Bono Neto` |
 
+#### A.1. Columnas auxiliares de auditoría quincenal (Exclusivas de `RESUMEN_MENSUAL`)
+*Las siguientes 8 columnas físicas existen en Google Sheets (`H:O`) para desglosar la liquidación de cada quincena y se configuran en AppSheet con `SHOW? = FALSE`:*
+* `Puntos_Q1` (`Number`), `Bono_Prod_Q1` (`Price`), `Errores_Q1` (`Number`), `Bono_Cal_Q1` (`Price`).
+* `Puntos_Q2` (`Number`), `Bono_Prod_Q2` (`Price`), `Errores_Q2` (`Number`), `Bono_Cal_Q2` (`Price`).
+
 > **Ajustes internos:**
 > * **`ID_Empleado`:**
 >   * **Type Details > Source table:** `EMPLEADOS`
-> * **Columnas monetarias (`Bono_Productividad`, `Bono_Calidad`, `Total_Bonificacion`):**
+> * **Columnas monetarias (`Bono_Productividad`, `Bono_Calidad`, `Total_Bonificacion` y auxiliares):**
 >   * **Type Details > Currency symbol:** `$`
 >   * **Type Details > Decimal digits:** `0` *(ej. `$150.000`, sin centavos)*
 >
