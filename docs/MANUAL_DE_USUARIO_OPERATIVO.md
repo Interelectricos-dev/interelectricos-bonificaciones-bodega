@@ -5,9 +5,9 @@
 <!-- En el PDF, la PORTADA ocupa la PÁGINA 1 completa con:              -->
 <!-- - Logo de INTERELECTRICOS GROUP SAS                                -->
 <!-- - Título: MANUAL DE USUARIO OPERATIVO - SISTEMA BONIFICACIONES     -->
-<!-- - Subtítulo: Módulo Móvil (AppSheet)                              -->
+<!-- - Subtítulo: Módulo Móvil (AppSheet) — Versión 2.0                 -->
 <!-- - Autor: Mauricio Sierra - Aprendiz ADSO SENA                      -->
-<!-- - Fecha: Octubre de 2026 | Versión 2.0 (Producción)                -->
+<!-- - Fecha: Octubre de 2026 | Versión 2.0 (Producción Optimizada)     -->
 <!--                                                                    -->
 <!-- PÁGINA 2: TABLA DE CONTENIDO (sola en su página).                  -->
 <!-- PÁGINA 3: Inicia el contenido a partir de la Sección 1.            -->
@@ -20,27 +20,31 @@
 
 El aplicativo móvil **BONIFICACIONES** es la herramienta digital oficial para auditar y registrar el desempeño operativo en la zona de despachos de Intereléctricos Group SAS. Sustituye el antiguo conteo por rayas en tablero físico, garantizando que a cada colaborador se le reconozca equitativamente tanto el volumen documental procesado (complejidad de facturas) como el desgaste físico real (cortes de cable, cargue pesado, uso de maquinaria), protegiendo la calidad del despacho y garantizando total transparencia financiera.
 
+En su **Versión 2.0**, el aplicativo incorpora un diseño enfocado en la ergonomía táctil en bodega:
+* **Teclado numérico puro:** Separación del tipo de factura y el número consecutivo para digitar números a máxima velocidad.
+* **Recarga continua:** El formulario queda automáticamente en blanco tras guardar para registrar múltiples alistamientos sin interrupciones.
+* **Consulta histórica perpetua:** Módulo de liquidación unificado con navegación táctil por Año, Mes y Quincena, eliminando la necesidad de seleccionar fechas en calendarios.
+
 ---
 
 ## 2. Interfaz y Menú Principal de Navegación
 
-Al ingresar a la aplicación en el dispositivo móvil, el usuario encontrará una barra de navegación inferior permanente compuesta por 4 módulos de trabajo:
+Al ingresar a la aplicación en el dispositivo móvil o equipo de escritorio, el usuario encontrará una barra de navegación inferior permanente compuesta por **3 módulos de trabajo**:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Menú Principal de Navegación" width="340">
+  <img src="images/appsheet_config_v2/18_app_pantalla_historial.jpg" alt="Menú Principal de Navegación" width="300">
 </p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En la imagen de arriba '0_menu_app.png', resalte con recuadros o   -->
-<!-- flechas los 4 iconos para que el operario los identifique:         -->
+<!-- En la barra inferior de '18_app_pantalla_historial.jpg', resalte   -->
+<!-- los 3 iconos del menú: NUEVO REGISTRO, HISTORIAL HOY, LIQUIDACION. -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-* **1. NUEVO REGISTRO:** Formulario de captura rápida para registrar cada factura alistada en tiempo real.
-* **2. HISTORIAL HOY:** Listado cronológico de las órdenes despachadas durante la jornada actual para verificación operativa.
-* **3. RESUMEN:** Tablero analítico consolidado (Quincenal y Mensual) de puntos y liquidación monetaria.
-* **4. SELECCIONE FECHA:** Selector interactivo para auditar quincenas o meses pasados.
+* **1. NUEVO REGISTRO (`first`):** Formulario de captura rápida para registrar cada factura alistada en tiempo real. Es la pantalla de inicio predeterminada al abrir la aplicación.
+* **2. HISTORIAL HOY (`middle`):** Listado cronológico de las órdenes despachadas durante la jornada actual con hora exacta para verificación inmediata.
+* **3. LIQUIDACION (`last`):** Tablero centralizado de consulta histórica quincenal y mensual que permite revisar el acumulado de puntos y bonificaciones ganadas por colaborador.
 
 ---
 
@@ -52,32 +56,20 @@ Al ingresar a la aplicación en el dispositivo móvil, el usuario encontrará un
 
 ## 3. Flujo Diario: Registro de un Despacho
 
-Cada vez que un auxiliar de bodega entregue un pedido alistado junto con la factura física para su revisión en mostrador, el despachador registrará la información siguiendo estos pasos secuenciales:
+Cada vez que un auxiliar de bodega entregue un pedido alistado junto con el comprobante físico (factura o remisión) para su revisión en mostrador, el despachador registrará la información siguiendo estos pasos secuenciales:
 
 ### 3.1. Acceso al Formulario de Captura
-En la barra de navegación inferior, toque el ícono **NUEVO REGISTRO**:
+Al abrir el aplicativo, el sistema se posiciona automáticamente en el formulario. Si se encuentra en otra pantalla, toque el ícono **NUEVO REGISTRO** en la barra inferior:
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Nuevo Registro" width="340">
+  <img src="images/appsheet_config_v2/17_app_pantalla_formulario.jpg" alt="Formulario de Nuevo Registro" width="300">
 </p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En el recorte de la barra '0_menu_app.png', resalte con un cuadro  -->
-<!-- VERDE únicamente el botón 'NUEVO REGISTRO'.                        -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-La aplicación abrirá automáticamente la pantalla en blanco con los campos obligatorios listos para registrar:
-
-<p align="center">
-  <img src="images/manual_operativo/5_menu_nuevo_registro.png" alt="Formulario Nuevo Registro Vacío" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En la imagen '5_menu_nuevo_registro.png', observe que los campos   -->
-<!-- tienen asterisco azul (*), lo cual indica que son obligatorios.    -->
+<!-- En '17_app_pantalla_formulario.jpg', observe que los campos con    -->
+<!-- asterisco azul (*) son de diligenciamiento obligatorio:            -->
+<!-- Empleado*, N° Factura*, Puntos Esfuerzo*, Puntos Error*.          -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
@@ -87,57 +79,41 @@ La aplicación abrirá automáticamente la pantalla en blanco con los campos obl
 
 Complete la información del alistamiento utilizando las entradas táctiles optimizadas:
 
-<p align="center">
-  <img src="images/manual_operativo/6_menu_nuevo_registro_lleno.png" alt="Formulario Diligenciado Completo" width="280">
-</p>
+#### Paso A: Seleccionar al Empleado Responsable (`Empleado *`)
+Toque la lista desplegable y elija al auxiliar que alistó la orden. El sistema muestra de forma limpia **únicamente los colaboradores activos** por su nombre completo, asociando internamente su identificador de nómina.
 
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
-<!-- En la imagen '6_menu_nuevo_registro_lleno.png', marque con        -->
-<!-- recuadros o flechas numeradas:                                     -->
-<!-- 1. El desplegable 'Empleado *' mostrando el nombre 'Empleado 1'.   -->
-<!-- 2. La casilla 'N° Factura *' con el número digitado '09102601'.    -->
-<!-- 3. Los 3 botones táctiles seleccionados en color AZUL (2, 2 y -1). -->
-<!-- 4. El botón 'Save' en la esquina inferior derecha.                 -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
+#### Paso B: Seleccionar el Tipo de Comprobante (`Tipo Factura`)
+Toque el botón correspondiente a la serie del documento físico entregado:
+* **`IC`:** Factura comercial estándar de venta.
+* **`DP`:** Despacho interno o traslado de bodega.
+* **`IR`:** Remisión de mercancía.
 
-#### Detalle y Criterios de Calificación:
+#### Paso C: Digitar el Consecutivo (`N° Factura *`)
+Al tocar la casilla `N° Factura`, el celular levantará automáticamente el **teclado numérico puro con dígitos grandes**:
+* Digite únicamente los números del comprobante (ejemplo: `36278` o `48351`).
+* **Ventaja:** No requiere alternar entre letras y números ni teclear guiones a mano. El sistema unifica automáticamente el tipo y el número (ejemplo: `DP-36278`) como identificador oficial.
 
-* **Paso A: Seleccionar al Empleado Responsable (`Empleado *`):**  
-  Toque la lista desplegable y elija al auxiliar que alistó la orden. El sistema muestra de forma limpia únicamente los colaboradores activos por su nombre completo, asociando internamente su identificador de control.
+#### Paso D: Calificar Puntaje de Despacho (`Puntos Esfuerzo *`)
+Presione un botón táctil del **1 al 5** evaluando de forma integral la complejidad del pedido y el esfuerzo físico invertido:
+* **1 pt:** Factura simple con pocos artículos livianos, sin exigencia física extra.
+* **2 a 4 pts:** Pedidos medianos con múltiples referencias o que requirieron cortes de cable conductor, mangueras, alambre o cargue de tubería pesada.
+* **5 pts:** Despacho complejo con alta densidad de renglones, bobinas industriales pesadas o maniobras con montacargas.
 
-* **Paso B: Digitar el Número de Factura (`N° Factura *`):**  
-  En la casilla de texto, escriba el número consecutivo impreso en la factura o remisión física (ejemplo: `09102601`). *(Campo obligatorio para evitar registros huérfanos).*
-
-* **Paso C: Calificar Puntaje de Despacho (`Puntos_Esfuerzo`):**  
-  Presione un botón táctil del **1 al 5** evaluando de forma integral la complejidad del pedido y el esfuerzo físico invertido:
-  * **1 pt:** Factura simple con pocos artículos livianos, sin exigencia física extra.
-  * **2 a 4 pts:** Pedidos medianos con múltiples referencias o que requirieron cortes de cable conductor, mangueras, alambre o cargue de tubería pesada.
-  * **5 pts:** Despacho complejo con alta densidad de renglones, bobinas industriales pesadas o maniobras con montacargas.
-
-* **Paso D: Calificar Puntos de Error (`Puntos_Error`):**  
-  Viene preseleccionado automáticamente en **0** (despacho correcto sin penalización). Solo cámbielo si detecta alguna falla:
-  * **0 pts:** Despacho exacto y perfecto, sin ninguna inconsistencia *(valor por defecto)*.
-  * **-1 pt:** Error leve subsanable (ejemplo: olvido de un ítem menor o conteo corregido en mostrador).
-  * **-2 pts:** Dos errores leves detectados en la misma entrega.
-  * **-3 pts:** Falta crítica (ejemplo: corte erróneo de cable conductor o equivocación que cause reclamo formal).
+#### Paso E: Calificar Puntos de Error (`Puntos Error *`)
+Viene preseleccionado automáticamente en **0** (despacho correcto sin penalización). Solo cámbielo si detecta alguna inconformidad en el mostrador:
+* **0 pts:** Despacho exacto y conforme, sin ninguna inconsistencia *(valor predeterminado)*.
+* **-1 pt:** Error leve subsanable (ejemplo: omisión de un artículo menor o conteo corregido en mostrador).
+* **-2 pts:** Dos errores leves detectados en la misma entrega.
+* **-3 pts:** Falta crítica (ejemplo: corte erróneo de cable conductor o equivocación que cause devolución formal).
 
 ---
 
-### 3.3. Guardar y Sincronizar el Registro
-Una vez diligenciados los campos, toque el botón **Save** (Guardar) ubicado en la esquina inferior derecha:
+### 3.3. Guardar y Recarga Continua
 
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- Aquí puede insertar un recorte enfocado en la esquina inferior     -->
-<!-- derecha donde se ubica el botón 'Save', resaltándolo con un        -->
-<!-- círculo verde o rojo.                                              -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
+Una vez diligenciados los campos, toque el botón azul **Save** (Guardar) ubicado en la esquina inferior derecha:
 
-* **Confirmación Inmediata:** Los datos se transmiten automáticamente a la base de datos en la nube (Google Sheets).
-* **Limpieza de Formulario:** La pantalla se reinicia en blanco para recibir el siguiente alistamiento sin demoras.
+* **Transmisión Inmediata:** Los datos se sincronizan al instante en la base de datos corporativa en la nube.
+* **Recarga Continua (`Auto re-open`):** Gracias a la configuración operativa V2.0, al guardar el despacho el formulario **permanece abierto y se limpia automáticamente en blanco**, listo para capturar el siguiente comprobante sin clics innecesarios.
 
 ---
 
@@ -147,83 +123,35 @@ Una vez diligenciados los campos, toque el botón **Save** (Guardar) ubicado en 
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-## 4. Historial del Turno y Auditoría de Facturas
+## 4. Historial del Turno y Auditoría Diaria
 
-Para auditar o consultar los despachos ingresados durante la jornada de trabajo, el despachador cuenta con el módulo **HISTORIAL HOY**:
+Para auditar o verificar los despachos ingresados durante la jornada de trabajo, el equipo cuenta con el módulo **HISTORIAL HOY**:
 
 ### 4.1. Acceso a la Pestaña Historial
-En la barra inferior de navegación, toque el ícono **HISTORIAL HOY**:
+En la barra inferior de navegación, toque el ícono **HISTORIAL HOY** (icono de reloj):
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Historial Hoy" width="340">
+  <img src="images/appsheet_config_v2/18_app_pantalla_historial.jpg" alt="Pantalla Historial Hoy" width="300">
 </p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En el recorte de la barra '0_menu_app.png', resalte con un cuadro  -->
-<!-- VERDE el botón 'HISTORIAL HOY' (segundo icono con el reloj).       -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
 
 ---
 
 ### 4.2. Navegación en la Tabla de Despachos del Día
-La aplicación despliega la lista cronológica de todas las entregas registradas en la fecha actual:
+La aplicación despliega la lista cronológica ordenada de forma descendente (los despachos más recientes arriba):
 
-| Vista Inicial: Factura y Empleado | Vista Desplazada: Puntos y Errores |
-| :---: | :---: |
-| <img src="images/manual_operativo/1_menu_historial_hoy_parte_1.png" alt="Historial Hoy - Parte 1" width="220"> | <img src="images/manual_operativo/2_menu_historial_hoy_parte_2.png" alt="Historial Hoy - Parte 2" width="220"> |
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En '1_menu_historial_hoy_parte_1.png' señale las columnas          -->
-<!-- N° Factura y Empleado.                                             -->
-<!-- En '2_menu_historial_hoy_parte_2.png' coloque una flecha horizontal-->
-<!-- indicando: 'Deslice con el dedo hacia la derecha para ver puntos   -->
-<!-- de esfuerzo y penalizaciones de error'.                            -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* **Desplazamiento Táctil:** Deslice horizontalmente con el dedo sobre la pantalla para visualizar todas las columnas del registro (`N° Factura`, `Empleado`, `Puntos Esfuerzo` y `Puntos Error`).
+* **Columna `Hora`:** Registra la hora exacta en formato 12 horas con minutos (ejemplo: `12:57 p. m.`).
+* **Columna `Factura`:** Muestra la identificación completa del comprobante (ejemplo: `DP-36278`, `IR-48351`, `IC-104703`).
+* **Columna `Empleado`:** Nombre completo del auxiliar responsable del alistamiento.
+* **Desplazamiento Horizontal:** Deslice el dedo hacia la derecha en la tabla para auditar los `Puntos Esfuerzo` y `Puntos Error` asignados a cada registro.
 
 ---
 
 ### 4.3. Detalle Individual de la Transacción
-Al tocar sobre cualquier fila de la tabla, se abre la vista de detalle con la información completa de esa entrega:
-
-<p align="center">
-  <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Detalle de Fila en Historial" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En la imagen '3_detalle_fila_tabla_historial_hoy.png', resalte con -->
-<!-- un círculo rojo la flecha '>' ubicada al frente del nombre del     -->
-<!-- empleado ('Empleado 1').                                           -->
-<!-- Indique con texto: 'Toque la flecha > para abrir el consolidado'.  -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
----
-
-### 4.4. Consulta de Despachos por Empleado
-Al presionar la flecha `>` junto al nombre del trabajador, la aplicación abre la ficha técnica del auxiliar:
-
-<p align="center">
-  <img src="images/manual_operativo/4_detalle_empleado_todos_registros.png" alt="Ficha del Empleado y Registros Relacionados" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En la imagen '4_detalle_empleado_todos_registros.png', resalte:    -->
-<!-- 1. El contador 'Historial de Despachos' (Related REGISTRO_DIARIOs, -->
-<!--    indica cuántas facturas lleva alistadas ese trabajador en el    -->
-<!--    turno).                                                         -->
-<!-- 2. La tabla inferior con el listado individual de sus facturas.    -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* **Conteo Rápido:** La sección `Historial de Despachos` (relación del sistema `Related REGISTRO_DIARIOs`) permite al supervisor y al operario auditar exactamente cuántas órdenes ha alistado ese colaborador durante el día y revisar el detalle de cada factura.
+Al tocar sobre cualquier fila dentro de `HISTORIAL HOY`, se abre la vista de detalle con la información completa de la entrega (`Detalle del Despacho`):
+* Fecha y hora exacta con timestamp.
+* Comprobante unificado.
+* Empleado asignado.
+* Calificación de esfuerzo y penalizaciones.
 
 ---
 
@@ -235,32 +163,17 @@ Al presionar la flecha `>` junto al nombre del trabajador, la aplicación abre l
 
 ## 5. Regla de Seguridad y Auditoría: Ventana de Edición de 15 Minutos
 
-El sistema cuenta con una política de seguridad estricta para resolver errores de digitación sin alterar la trazabilidad del proceso:
+El sistema cuenta con una política de seguridad estricta para resolver errores de digitación en bodega sin alterar la trazabilidad del proceso:
 
-### Comparativa Visual: Registro Reciente vs. Registro Bloqueado
+<p align="center">
+  <img src="images/appsheet_config_v2/14_action_bloqueo_15min.png" alt="Regla de Comportamiento 15 Minutos" width="500">
+</p>
 
-| Caso A: Dentro de los 15 Minutos (Editable) | Caso B: Superados los 15 Minutos (Bloqueado) |
-| :---: | :---: |
-| <img src="images/manual_operativo/3b_registro_editable_menor_15_min.png" alt="Registro Editable" width="220"> | <img src="images/manual_operativo/3_detalle_fila_tabla_historial_hoy.png" alt="Registro Bloqueado" width="220"> |
-| **Aparece el botón flotante de edición (ícono de lápiz)** | **El botón de edición desaparece por completo** |
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
-<!-- En la imagen de la izquierda (Caso A):                             -->
-<!-- * Destaque con un círculo rojo llamativo el botón azul flotante con-->
-<!--   icono de lápiz en la esquina inferior derecha.                   -->
-<!-- * Texto guía: 'Botón habilitado para corregir datos (≤ 15 min)'.   -->
-<!-- En la imagen de la derecha (Caso B):                               -->
-<!-- * Señale con una X o flecha la esquina inferior derecha vacía.     -->
-<!-- * Texto guía: 'Registro protegido en modo Solo Lectura (> 15 min)'.-->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-### Protocolo de Auditoría:
+### Protocolo Operativo:
 1. **Ventana de Autocorrección (≤ 15 minutos):**  
-   Si el despachador detecta que ingresó un número de factura equivocado o seleccionó un colaborador por error, abre el registro desde **HISTORIAL HOY**, toca el botón flotante de **edición (lápiz)**, modifica el campo y presiona **Save**.
+   Si el despachador detecta que ingresó un número de factura equivocado o seleccionó un colaborador por error, abre el registro desde **HISTORIAL HOY**, toca el botón flotante de **edición (lápiz)** en la esquina inferior derecha, corrige el campo y presiona **Save**.
 2. **Cierre de Ventana (> 15 minutos):**  
-   Transcurrido el umbral temporal, el botón de edición se oculta automáticamente y el registro queda congelado para auditoría en modo de solo lectura. Para ajustes extemporáneos, se debe remitir la solicitud a la Jefatura con el soporte físico de la factura.
+   Transcurridos 15 minutos exactos desde la creación del registro, el botón de edición se oculta automáticamente. El registro queda congelado para auditoría en modo de solo lectura. Para ajustes extemporáneos, se debe remitir la solicitud al Administrador con el soporte físico de la factura.
 3. **Inhabilitación de Eliminaciones (Deletes):**  
    Ningún usuario operativo cuenta con permisos para eliminar registros, garantizando la conservación histórica íntegra de la base de datos.
 
@@ -272,185 +185,94 @@ El sistema cuenta con una política de seguridad estricta para resolver errores 
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-## 6. Consulta de Resúmenes y Liquidación de Bonificaciones
+## 6. Consulta de Bonificaciones y Liquidación Quincenal
 
-Para conocer el acumulado de puntos y la compensación económica generada, ingrese al módulo **RESUMEN**:
+Para conocer el acumulado de puntos y la compensación económica generada, ingrese al módulo **LIQUIDACION**:
 
-### 6.1. Acceso a la Pestaña Resumen
-En la barra inferior de navegación, toque el ícono **RESUMEN**:
+### 6.1. Acceso a la Pestaña Liquidación
+En la barra inferior de navegación, toque el ícono **LIQUIDACION** (icono de comprobante `file-invoice`):
+
+---
+
+### 6.2. Navegación Jerárquica Táctil (Drill-Down)
+En dispositivos móviles, la vista de liquidación no sobrecarga la pantalla con información excesiva. En su lugar, guía al usuario a través de una navegación jerárquica fluida:
+
+| Paso 1: Selección de Año | Paso 2: Selección de Mes |
+| :---: | :---: |
+| Toque el año a consultar (ejemplo: `2026 >`). | <img src="images/appsheet_config_v2/19_app_pantalla_liquidacion_mes.jpg" alt="Selección de Mes" width="220"><br>Toque el mes deseado (ejemplo: `Octubre >`). |
+
+---
+
+### 6.3. Tabla Quincenal Consolidada de Desempeño
+Al ingresar al mes, la aplicación despliega la tabla consolidada dividida automáticamente en **1ra Quincena** (días 1 al 15) y **2da Quincena** (días 16 al fin de mes):
+
+| Vista 1: Nombres y Puntos de Esfuerzo | Vista 2: Penalizaciones y Total BONO |
+| :---: | :---: |
+| <img src="images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_01.jpg" alt="Tabla Quincenal - Nombres y Puntos" width="240"> | <img src="images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_02.jpg" alt="Tabla Quincenal - Bonos Ganados" width="240"> |
+
+<!-- ================================================================= -->
+<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
+<!-- En '20_app_pantalla_liquidacion_tabla_01.jpg' y '02.jpg':          -->
+<!-- 1. Destaque el orden descendente por puntos de esfuerzo.          -->
+<!-- 2. Resalte en AZUL los colaboradores que superaron la meta base   -->
+<!--    (ejemplo: Edward Sanchez con 455 pts).                         -->
+<!-- 3. Resalte en VERDE con icono 'usd-circle' el bono ganado         -->
+<!--    (ejemplo: $300.000). Quienes tienen $0 no muestran icono.      -->
+<!-- [FIN - NO COPIAR AL PDF]                                           -->
+<!-- ================================================================= -->
+
+#### Características Operativas de la Tabla:
+* **Orden por Desempeño:** Los colaboradores aparecen ordenados de mayor a menor esfuerzo (`Pts_Esfuerzo Descending`). Los auxiliares más productivos de la quincena figuran en los primeros renglones.
+* **Lupa de Búsqueda:** En la esquina superior derecha, la lupa permite buscar instantáneamente a cualquier colaborador por su nombre.
+* **Reglas de Formato Visual:**
+  * **AZUL:** Destaca a los colaboradores que alcanzaron o superaron la meta base quincenal (300 puntos).
+  * **ROJO:** Alerta sobre penalizaciones registradas por errores en despacho.
+  * **VERDE con ícono `usd-circle`:** Resalta el **Total BONO** generado cuando supera `$0`. Los colaboradores que no alcanzaron bono muestran `$0` limpio sin recarga visual.
+
+---
+
+### 6.4. Desglose Financiero Individual del Colaborador
+Al presionar sobre el nombre de cualquier trabajador dentro de la tabla de liquidación, se despliega su ficha analítica en formato de dos columnas (*Side-by-side*):
 
 <p align="center">
-  <img src="images/manual_operativo/0_menu_app.png" alt="Barra Menú - Resumen" width="340">
+  <img src="images/appsheet_config_v2/13_view_base_historica_detail_01.png" alt="Detalle de Liquidación Individual" width="320">
 </p>
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En el recorte de la barra '0_menu_app.png', resalte con un cuadro  -->
-<!-- VERDE el botón 'RESUMEN' (tercer icono).                           -->
+<!-- En '13_view_base_historica_detail_01.png', observe que el título   -->
+<!-- de la pantalla muestra la quincena consultada en la barra superior -->
+<!-- (ejemplo: '1ra Quincena · Octubre 2026').                          -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
----
-
-### 6.2. Visualización de Reportes Quincenal y Mensual (Navegación por Pestañas)
-En dispositivos móviles, el dashboard organiza los dos cortes temporales mediante **pestañas superiores táctiles** para alternar de forma inmediata sin recargar:
-
-| Pestaña QUINCENAL (Día 1-15 o 16-Fin de Mes) | Pestaña MENSUAL (Mes Completo) |
-| :---: | :---: |
-| <img src="images/manual_operativo/7_menu_resumen_parte_1.png" alt="Resumen Parte 1" width="220"> | <img src="images/manual_operativo/8_menu_resumen_parte_2.png" alt="Resumen Parte 2" width="220"> |
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
-<!-- En '7_menu_resumen_parte_1.png' y '8_menu_resumen_parte_2.png':   -->
-<!-- 1. Resalte con un recuadro las dos pestañas superiores de bloque: -->
-<!--    * 'QUINCENAL (dd/mm/aaaa al dd/mm/aaaa)': Período de quincena.  -->
-<!--    * 'MENSUAL (Mes aaaa)': Período de mes calendario.              -->
-<!-- 2. Señale el código de colores corporativos en las tablas:         -->
-<!--    * AZUL: Total Puntos ganados.                                   -->
-<!--    * ROJO: Total de Errores acumulados.                            -->
-<!--    * VERDE con icono de billete: Bono Neto a cobrar.               -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* **Pestaña QUINCENAL:** Consolida los puntos acumulados de la quincena comercial consultada en `FILTRO_FECHAS`.
-* **Pestaña MENSUAL:** Presenta el consolidado desde el primer hasta el último día del mes calendario en curso.
-* **Navegación Táctil:** Toque directamente sobre la pestaña deseada en la parte superior de la pantalla para alternar entre el resumen quincenal y mensual.
-
----
-
-### 6.3. Desglose Financiero Individual y Auditoría de Facturas
-Al presionar sobre la fila de cualquier trabajador en el resumen, se despliega su informe analítico individual en formato de dos columnas (*Side-by-side*):
-
-<p align="center">
-  <img src="images/manual_operativo/9_detalle_fila_tabla_resumen.png" alt="Detalle de Fila en Resumen" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL - RESALTAR ELEMENTOS]     -->
-<!-- En '9_detalle_fila_tabla_resumen.png', destaque con un recuadro    -->
-<!-- los tres renglones económicos finales:                             -->
-<!-- * Bono Productividad                                              -->
-<!-- * Bono Calidad                                                    -->
-<!-- * Bono Neto                                                       -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-#### Conceptos del Desglose:
-* **Empleado / ID:** Nombre completo y código identificador del auxiliar.
-* **Puntos Esfuerzo:** Puntaje de calificación obtenido por el colaborador en cada despacho (escala 1 a 5).
-* **Total Puntos:** Sumatoria consolidada de los puntos del período (`Total_Puntos`).
-* **Bono Productividad:** Retribución monetaria por superar el umbral mínimo de 100 puntos quincenales.
-* **Total Errores:** Cantidad de penalizaciones registradas en el ciclo.
-* **Bono Calidad:** Fondo de calidad restante ($200.000 garantizados menos $40.000 por cada error). **Requisito indispensable:** Solo se liquida si el colaborador alcanza o supera la meta mínima de puntos del ciclo (fijada en la celda `B2` de `CONFIGURACION`, base 100 puntos). Si no alcanza la meta mínima, se liquida en $0.
-* **Bono Neto:** Importe neto total a transferir o pagar al colaborador (`Productividad + Calidad`).
-* **Despachos Quincena / Despachos Mes:** Lista desplegable inferior que muestra todas las facturas despachadas por ese colaborador acotadas estrictamente al ciclo seleccionado, permitiendo validar cada despacho en detalle.
+#### Rubros del Desglose:
+* **Nombre / ID:** Nombre completo y código identificador del trabajador.
+* **Puntos Esfuerzo:** Sumatoria total de puntos acumulados en la quincena.
+* **Puntos Error:** Conteo consolidado de penalizaciones en el ciclo.
+* **Bono Productivo:** Retribución monetaria escalonada por superar la meta base (300 puntos).
+* **Bono Calidad:** Fondo de calidad quincenal condicionado al cumplimiento de la meta base y descontado por cada error auditado.
+* **Total BONO:** Valor total a pagar en nómina al colaborador (`Bono Productivo + Bono Calidad`).
 
 ---
 
 <!-- ================================================================= -->
 <!-- [INICIO - NO COPIAR AL PDF: SALTO DE PÁGINA]                       -->
-<!-- Se recomienda iniciar la Sección 7 en una página nueva del PDF.   -->
+<!-- Se recomienda ubicar la Sección 7 en la página final del PDF.      -->
 <!-- [FIN - NO COPIAR AL PDF]                                           -->
 <!-- ================================================================= -->
 
-## 7. Consulta de Periodos Históricos (Módulo Seleccione Fecha)
+## 7. Guía Rápida de Parámetros Económicos y Calibración
 
-Para auditar semanas o meses pasados sin modificar fórmulas ni fórmulas de cálculo, siga este procedimiento paso a paso:
+Para resolver dudas e inquietudes operativas a los auxiliares de bodega, el esquema de incentivos opera bajo las siguientes reglas institucionales:
 
-### Paso 1: Ingresar al Módulo y Activar Edición
-En la barra inferior, toque el ícono **SELECCIONE FECHA**. La pantalla mostrará la fecha de referencia activa y los rangos calculados de semana y mes:
-
-<p align="center">
-  <img src="images/manual_operativo/10_menu_selecione_fecha.png" alt="Pantalla Seleccione Fecha con Botón Lápiz" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En '10_menu_selecione_fecha.png', resalte con círculo rojo el      -->
-<!-- botón flotante del lápiz en la esquina inferior derecha o la       -->
-<!-- casilla de fecha directa con QuickEdit.                            -->
-<!-- Texto guía: 'Toque la fecha o el lápiz para cambiar el período'.   -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* **Opción Rápida (Recomendada):** Gracias a la propiedad *QuickEdit*, toque directamente sobre la casilla interactiva de fecha (`Seleccionar Fecha*` o su icono de calendario) para abrir el selector en un solo toque.
-* **Opción Alternativa:** Toque el **botón azul flotante de edición (lápiz)** en la esquina inferior derecha para abrir el formulario de edición.
-
----
-
-### Paso 2: Abrir el Selector de Calendario
-Toque directamente sobre la casilla de fecha:
-
-<p align="center">
-  <img src="images/manual_operativo/11_formulario_seleccione_fecha.png" alt="Formulario Seleccionar Fecha" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En '11_formulario_seleccione_fecha.png', señale con una flecha el  -->
-<!-- campo de fecha con el icono de calendario a la derecha.            -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
----
-
-### Paso 3: Escoger la Fecha en el Calendario
-El sistema abrirá el calendario interactivo del teléfono:
-
-<p align="center">
-  <img src="images/manual_operativo/12_seleciona_fecha.png" alt="Modal Calendario" width="280">
-</p>
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En '12_seleciona_fecha.png', resalte:                              -->
-<!-- 1. El día seleccionado en el círculo verde/turquesa.              -->
-<!-- 2. La opción 'ESTABLECER' en la esquina inferior derecha del modal.-->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* Seleccione cualquier día que pertenezca a la semana o mes que desea auditar.
-* Toque la opción **ESTABLECER**.
-
----
-
-### Paso 4: Confirmar y Guardar el Filtro
-El valor seleccionado se reflejará en la casilla:
-
-| Guardar el Cambio | Fecha Actualizada en el Sistema |
-| :---: | :---: |
-| <img src="images/manual_operativo/13_fecha_cambiada_a_guardar.png" alt="Fecha Cambiada a Guardar" width="220"> | <img src="images/manual_operativo/14_fecha_cambiada.png" alt="Fecha Cambiada Confirmada" width="220"> |
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: GUÍA VISUAL]                           -->
-<!-- En '13_fecha_cambiada_a_guardar.png', resalte con un círculo el    -->
-<!-- botón 'Save' en la esquina inferior derecha.                       -->
-<!-- En '14_fecha_cambiada.png', resalte la nueva fecha activa.         -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-* Toque el botón **Save** (Guardar).
-* **Actualización en Cascada:** Al regresar a la pestaña **RESUMEN**, todas las tablas, cálculos y títulos dinámicos se habrán actualizado automáticamente para corresponder a la fecha seleccionada.
-
----
-
-<!-- ================================================================= -->
-<!-- [INICIO - NO COPIAR AL PDF: SALTO DE PÁGINA]                       -->
-<!-- Se recomienda ubicar la Sección 8 en la página final del PDF.      -->
-<!-- [FIN - NO COPIAR AL PDF]                                           -->
-<!-- ================================================================= -->
-
-## 8. Guía Rápida de Parámetros Económicos
-
-Para resolver inquietudes operativas a los colaboradores de bodega, el esquema financiero del sistema opera bajo las siguientes reglas claras:
-
-| Parámetro Operativo | Valor / Condición | Regla de Aplicación |
+| Parámetro Operativo | Valor / Condición | Regla de Aplicación en Bodega |
 | :--- | :---: | :--- |
-| **Meta Base de Productividad** | **100 puntos** | Cubierta por el salario ordinario. A partir del punto 101 se liquidan bonos escalonados. |
-| **Escalón 1 de Productividad** | 101 a 120 puntos | Bonificación de **$150.000** |
-| **Escalón 2 de Productividad** | 121 a 150 puntos | Bonificación de **$300.000** |
-| **Escalón 3 de Productividad** | 151 a 180 puntos | Bonificación de **$450.000** |
-| **Escalón 4 de Productividad** | 181 o más puntos | Bonificación de **$600.000** (Escala máxima) |
-| **Fondo Base de Calidad** | **$200.000** | Monto base disponible al inicio del ciclo de medición. **Requisito indispensable:** Alcanzar la meta mínima de puntos acumulados (`CONFIGURACION!$B$2`, base 100 puntos). Si no se alcanza la meta mínima, se liquida en **$0**. |
-| **Penalización por Error** | **-$40.000** por punto de error | Se descuenta directamente del fondo base de calidad según las faltas auditadas (siempre que se alcance la meta mínima de puntos). |
-| **Protección Salarial (Piso $0)** | **$0 mínimo** | El bono de calidad nunca genera saldo en contra ni efectúa deducciones del sueldo ordinario. |
+| **Meta Base Quincenal** | **300 puntos** | Nivel de rendimiento estándar cubierto por el salario ordinario. A partir de 301 puntos se desbloquean los bonos. |
+| **Tramo 1 de Productividad** | 301 a 350 puntos | Bonificación quincenal de reconocimiento inicial por sobre-esfuerzo. |
+| **Tramo 2 de Productividad** | 351 a 400 puntos | Bonificación quincenal por rendimiento medio-alto sostenido. |
+| **Tramo 3 de Productividad** | 401 a 450 puntos | Bonificación quincenal por alto rendimiento operativo. |
+| **Tramo 4 de Productividad** | 451 o más puntos | Bonificación máxima por sobre-esfuerzo destacado. |
+| **Fondo Base de Calidad** | Quincenal | Reconocimiento a la exactitud y cuidado en el despacho. **Requisito obligatorio:** Solo se otorga si el auxiliar alcanza o supera la Meta Base (300 puntos). Si no alcanza la meta, se liquida en **$0**. |
+| **Penalización por Error** | Por cada falta auditada | Se descuenta directamente del Fondo de Calidad según los errores registrados en el ciclo. |
+| **Protección Salarial (Piso $0)** | **$0 mínimo** | Las penalizaciones nunca generan saldo en contra ni se descuentan del salario ordinario ni de los bonos de productividad ganados. |

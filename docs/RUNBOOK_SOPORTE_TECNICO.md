@@ -3,7 +3,7 @@
 **Empresa:** Intereléctricos Group SAS  
 **Proyecto:** Sistema Control de Bonificaciones Operativas en Bodega  
 **Destinatarios:** Equipo de Soporte Técnico, Administrador de Sistemas y Jefatura de Operaciones  
-**Versión:** 2.0 (Arquitectura Híbrida AppSheet + Google Sheets)  
+**Versión:** 2.0 (Arquitectura Centralizada con Base Histórica Dinámica y Drill-Down)  
 **Estado:** Producción  
 
 ---
@@ -12,12 +12,13 @@
 
 Este documento provee los lineamientos técnicos para el mantenimiento, soporte operativo de nivel 2 y 3, diagnóstico de fallas y protocolos de contingencia del aplicativo de control de despachos y bonificaciones de Intereléctricos Group SAS.
 
-* **Arquitectura del Sistema:** Frontend en AppSheet (PWA instalada en navegador) / Backend en Google Sheets.
+* **Arquitectura del Sistema:** Frontend en AppSheet (PWA instalada en navegador y app nativa móvil) / Backend en Google Sheets.
 * **Alojamiento de Base de Datos:** Google Drive (Carpeta corporativa: `01_SISTEMA_BONIFICACIONES`).
 * **Archivo Maestro:** `BD_BONIFICACIONES_BODEGA` (Libro nativo de Google Sheets).
 * **Plantilla de Respaldo:** [`BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/templates/BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx).
 * **Guía Canónica de Configuración AppSheet:** [`schemas/appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md).
-* **Entorno de Ejecución en Bodega:** Portátil dedicado para despacho ejecutando aplicación PWA (Google Chrome / Microsoft Edge).
+* **Manual Técnico de Arquitectura:** [`docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md).
+* **Entorno de Ejecución en Bodega:** Teléfonos móviles Android dedicados para despachadores y terminal de mostrador (PWA en Google Chrome / Microsoft Edge).
 * **Orquestador de Sincronización:** Motor en la nube de AppSheet.
 * **Propiedad y Credenciales:** Cuenta oficial del departamento de sistemas (excluida de control de versiones).
 
@@ -29,46 +30,69 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 
 | Tabla | Permiso en AppSheet | Gestión en Backend | Propósito Operativo |
 | :--- | :---: | :---: | :--- |
-| **`REGISTRO_DIARIO`** | `Adds_and_Updates` | Auditoría histórica | Registro transaccional de facturas despachadas. Eliminación deshabilitada. |
-| **`EMPLEADOS`** | `Read_Only` | Google Sheets directo | Catálogo maestro de colaboradores. Altas/bajas exclusivas por el administrador. |
-| **`FILTRO_FECHAS`** | `Updates_Only` | Google Sheets / AppSheet | Selector de fecha interactivo (`B2`) y motor de delimitación de fechas (`C2:F2`). |
-| **`CONFIGURACION`** | *(Sin vista directa)* | Google Sheets directo | Parámetros financieros: meta base (`B2`), bono calidad (`B3`), castigo error (`B4`) y escalas salariales (`A8:C11`). |
-| **`RESUMEN_QUINCENAL`** | `Read_Only` | Fórmulas matriciales | Liquidación consolidada quincenal según `FILTRO_FECHAS!$C$2:$D$2`. |
-| **`RESUMEN_MENSUAL`** | `Read_Only` | Fórmulas matriciales | Liquidación consolidada mensual según `FILTRO_FECHAS!$E$2:$F$2`. |
+| **`REGISTRO_DIARIO`** | `Updates, Adds`<br>*(Deletes desmarcado)* | Auditoría histórica atómica | Registro transaccional en caliente de comprobantes despachados. Eliminación bloqueada. |
+| **`EMPLEADOS`** | `Read-only` | Google Sheets directo | Catálogo maestro de colaboradores. Altas y bajas exclusivas por el administrador. |
+| **`BASE_HISTORICA`** | `Read-only` | Fórmulas matriciales automáticas | Matriz histórica consolidada calculada al vuelo (`LET` + `MAP` + `QUERY`). Alimenta la vista `LIQUIDACION`. |
+| **`CONFIGURACION`** | *(Sin vista en AppSheet)* | Google Sheets directo | Parámetros financieros: Meta base (`B3`), fondo calidad (`B4`), castigo error (`B5`) y matriz de tramos (`A8:C12`). |
+| **`LIQUIDACION_MES`** | *(Sin vista en AppSheet)* | Google Sheets directo | Dashboard ejecutivo para consulta y exportación de nóminas quincenales y mensuales. |
+
+> **Nota de Soporte V2.0:**  
+> Las tablas `FILTRO_FECHAS`, `RESUMEN_QUINCENAL` y `RESUMEN_MENSUAL` de la V1.0 fueron **retiradas y eliminadas definitivamente**. No deben existir en la consola de AppSheet ni en el libro de Google Sheets.
 
 ---
 
 ## 3. Procedimientos de Soporte y Resolución de Incidentes (Troubleshooting)
 
+---
+
 ### Incidente 1: Corrección de un registro bloqueado por tiempo (Fuera de los 15 minutos)
-* **Síntoma:** El despachador reporta un número de factura mal digitado o un empleado erróneo, pero el botón de edición (ícono de lápiz) ya desapareció en AppSheet.
+* **Síntoma:** El despachador reporta un número de factura mal digitado, una serie errónea o un empleado equivocado, pero el botón de edición (ícono de lápiz) ya desapareció en AppSheet.
 * **Causa:** Regla de comportamiento `TOTALMINUTES(NOW() - [Fecha_Hora]) <= 15` cumplida para preservar auditoría.
 * **Procedimiento de Solución:**
   1. El usuario operativo remite la solicitud formal a soporte indicando: **Fecha/Hora exacta**, **ID_Registro** (o Número de Factura actual), y el **valor corregido**.
   2. El Administrador de Sistemas abre el libro `BD_BONIFICACIONES_BODEGA` en Google Drive.
   3. Ingresa a la pestaña `REGISTRO_DIARIO`.
-  4. Localiza la fila presionando `Ctrl + F` y buscando por el número de factura o timestamp.
-  5. Enmienda el valor en la celda correspondiente (`Numero_Factura`, `Empleado`, o puntos).
-  6. La aplicación en bodega reflejará la corrección en su siguiente sincronización automática.
+  4. Localiza la fila presionando `Ctrl + F` y buscando por el consecutivo numérico (`Numero_Factura`), la serie (`Tipo_Factura`) o el timestamp.
+  5. Enmienda el valor en la celda correspondiente:
+     * Columna C: `Empleado` (ID del colaborador).
+     * Columna D: `Numero_Factura` (Consecutivo numérico puro).
+     * Columna E: `Puntos_Esfuerzo` (1 a 5).
+     * Columna F: `Puntos_Error` (0 a -3).
+     * Columna G: `Tipo_Factura` (`IC`, `DP` o `IR`).
+  6. **Efecto Inmediato:** La corrección impactará automáticamente en segundos la hoja `BASE_HISTORICA` (recalculando puntos y bonos) y se reflejará en la aplicación móvil en su siguiente sincronización.
 
 ---
 
-### Incidente 2: Desconfiguración de botoneras táctiles (Aparecen controles `+` y `-` o teclado libre)
-* **Síntoma:** En el formulario de despacho, los campos de puntos ya no muestran los botones táctiles y solicitan teclado o botones de incremento.
+### Incidente 2: Desconfiguración de botoneras táctiles o teclado numérico
+* **Síntoma:** En el formulario de despacho, el campo `Numero_Factura` abre el teclado alfanumérico completo en vez del teclado numérico, o los puntos/errores aparecen como casillas de texto libre.
 * **Causa:** Pérdida de metadatos de columna tras una regeneración de esquema o cambio de tipo automático en AppSheet.
 * **Procedimiento de Solución:**
   1. Ingresar a la consola de administración de AppSheet.
   2. Ir a **Data > Columns > REGISTRO_DIARIO**.
   3. Verificar y restablecer la siguiente configuración estricta para cada campo:
+     * **`Tipo_Factura`:**
+       * `Type`: **Enum** | `Base type`: **Text** | `Input mode`: **Buttons**
+       * `Values`: `IC, DP, IR`
+       * `Display name`: `Tipo Factura`
+     * **`Numero_Factura`:**
+       * `Type`: **Number** *(dispara el teclado numérico de dígitos grandes en el celular)*
+       * `Require?`: `TRUE` (marcado)
+       * `Display name`: `N° Factura`
      * **`Puntos_Esfuerzo`:**
        * `Type`: **Enum** | `Base type`: **Number** | `Input mode`: **Buttons**
        * `Values`: `1, 2, 3, 4, 5`
-       * `Display name`: `Puntaje Despacho`
+       * `Require?`: `TRUE` (marcado)
+       * `Display name`: `Puntos Esfuerzo`
      * **`Puntos_Error`:**
        * `Type`: **Enum** | `Base type`: **Number** | `Input mode`: **Buttons**
        * `Values`: `0, -1, -2, -3`
        * `Initial value`: `0`
-  4. Hacer clic en **Save** en la esquina superior derecha.
+       * `Require?`: `TRUE` (marcado)
+       * `Display name`: `Puntos Error`
+  4. Verificar las columnas virtuales:
+     * **`Factura`:** Fórmula `[Tipo_Factura] & "-" & [Numero_Factura]`, `LABEL? = TRUE`, `SEARCH? = TRUE`.
+     * **`Hora`:** Fórmula `TEXT([Fecha_Hora], "H:MM AM/PM")`, `SHOW? = TRUE`, `SEARCH? = TRUE`.
+  5. Hacer clic en **Save** en la esquina superior derecha.
 
 ---
 
@@ -76,61 +100,78 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 * **Síntoma:** Los despachadores reciben un mensaje de error bloqueante al guardar registros o la app muestra advertencia roja de sincronización.
 * **Causa:** Se renombró, insertó o eliminó una columna en Google Sheets sin actualizar la definición de datos en AppSheet.
 * **Procedimiento de Solución:**
-  1. Verificar que las columnas en Google Sheets coincidan con la estructura canónica:
+  1. Verificar que las columnas en Google Sheets coincidan exactamente con la estructura canónica V2.0:
      * `EMPLEADOS`: `ID_Empleado`, `Nombre_Completo`, `Activo`.
-     * `REGISTRO_DIARIO`: `ID_Registro`, `Fecha_Hora`, `Empleado`, `Numero_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`.
-     * `FILTRO_FECHAS`: `ID_Filtro`, `Fecha_Referencia`, `Quincena_Inicio`, `Quincena_Fin`, `Mes_Inicio`, `Mes_Fin`.
-     * `RESUMEN_QUINCENAL` / `RESUMEN_MENSUAL`: `ID_Empleado`, `Nombre_Empleado`, `Total_Puntos`, `Bono_Productividad`, `Total_Errores`, `Bono_Calidad`, `Total_Bonificacion`.
+     * `REGISTRO_DIARIO`: `ID_Registro`, `Fecha_Hora`, `Empleado`, `Numero_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`, `Tipo_Factura`.
+     * `BASE_HISTORICA`: `Año`, `Mes`, `Quincena`, `ID_Empleado`, `Pts_Esfuerzo`, `Pts_Error`, `Nombre`, `Bono Productivo`, `Bono Calidad`, `Total BONO`.
   2. En el editor de AppSheet, ir a **Data > Tables**.
   3. Seleccionar la tabla en conflicto y hacer clic en **Regenerate Schema**.
-  4. Validar que en `EMPLEADOS` la columna `Nombre_Completo` conserve la propiedad Label activada (`TRUE`), que `Activo` tenga `SHOW? = FALSE`, y que las columnas virtuales (`Activo?`, `Despachos_Quincena`, `Despachos_Mes`) se mantengan conforme a [`schemas/appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md).
+  4. Validar propiedades críticas tras la regeneración:
+     * En `EMPLEADOS`: `Nombre_Completo` con `LABEL? = TRUE`, `Activo` con `SHOW? = FALSE`. Verificar que la virtual `Activo?` se conserve y que **NO existan** las virtuales obsoletas `Despachos_Quincena` o `Despachos_Mes`.
+     * En `REGISTRO_DIARIO`: `Factura` con `LABEL? = TRUE`.
+     * En `BASE_HISTORICA`: `ID_Liquidacion` con `KEY? = TRUE` y `SHOW? = TRUE`. `Nombre` con `LABEL? = TRUE`.
   5. Guardar los cambios (**Save**).
 
 ---
 
-### Incidente 4: Selector de Fecha bloqueado en modo "Read-Only" en la app
-* **Síntoma:** El usuario entra a la pestaña `FILTRO FECHAS`, pero el calendario no se deja editar interactivamente.
-* **Causa:** Alguien escribió por error una fórmula de Google Sheets (como `=HOY()`) en la celda `B2` de la hoja `FILTRO_FECHAS`. Al detectar fórmulas de celda en el backend, AppSheet bloquea la columna automáticamente para proteger el cálculo.
+### Incidente 4: Error de desbordamiento en matriz dinámica (`BASE_HISTORICA`) — Error `#REF!`
+* **Síntoma:** En Google Sheets, la hoja `BASE_HISTORICA` muestra `#REF!` en la celda `A1` con el mensaje: *"Array result was not expanded because it would overwrite data in..."*, o la vista `LIQUIDACION` en AppSheet aparece vacía.
+* **Causa:** Un usuario escribió manualmente en las filas inferiores de `BASE_HISTORICA` (en el rango `A2:F`), interrumpiendo el espacio de derrame de la fórmula matricial `LET` + `QUERY` en `A1`.
 * **Procedimiento de Solución:**
   1. Abrir `BD_BONIFICACIONES_BODEGA` en Google Sheets.
-  2. Ir a la pestaña `FILTRO_FECHAS`.
-  3. Revisar la celda `B2`: **Debe ser un valor estático de fecha**, NO una fórmula. Borrar cualquier fórmula y dejar una fecha fija (ej. la fecha actual).
-  4. En AppSheet (**Data > Columns > FILTRO_FECHAS**), verificar que `Spreadsheet formula` esté en blanco, `Initial value` tenga `TODAY()` y la propiedad `Editable?` esté activa (`TRUE`).
+  2. Ir a la pestaña `BASE_HISTORICA`.
+  3. Seleccionar el rango desde la fila 2 hacia abajo en las columnas A a F (`A2:F`) y presionar **Supr** (Delete) para limpiar cualquier contenido estático escrito por error.
+  4. Verificar que la celda `A1` conserve intacta la fórmula matricial canónica:
+     ```excel
+     =LET(
+       fechas; REGISTRO_DIARIO!B2:B; 
+       quincenas; MAP(fechas; LAMBDA(f; SI(f=""; ""; SI(DIA(f)<=15; "Q1"; "Q2")))); 
+       meses; MAP(fechas; LAMBDA(f; SI(f=""; ""; MES(f)))); 
+       QUERY(
+         {REGISTRO_DIARIO!A2:G\ quincenas\ meses}; 
+         "SELECT YEAR(Col2), Col9, Col8, Col3, SUM(Col6), SUM(Col7) 
+          WHERE Col1 IS NOT NULL 
+          GROUP BY YEAR(Col2), Col9, Col8, Col3 
+          ORDER BY YEAR(Col2) DESC, Col9 DESC, Col8 ASC 
+          LABEL YEAR(Col2) 'Año', Col9 'Mes', Col8 'Quincena', Col3 'ID_Empleado', SUM(Col6) 'Pts_Esfuerzo', SUM(Col7) 'Pts_Error'"
+       )
+     )
+     ```
+  5. Una vez despejado el rango, la matriz se expandirá automáticamente repoblando todo el histórico quincenal.
 
 ---
 
-### Incidente 5: Tablas de resumen vacías o con error `#N/A` generalizado
-* **Síntoma:** Las vistas `RESUMEN_QUINCENAL` o `RESUMEN_MENSUAL` no muestran colaboradores o exhiben error de cálculo matricial.
-* **Causa:** La fórmula `=SI.ERROR(FILTER(EMPLEADOS!A2:A1000; EMPLEADOS!C2:C1000 = VERDADERO); "")` no encuentra ningún trabajador con la casilla `Activo` en `VERDADERO` / `TRUE`.
-* **Procedimiento de Solución:**
-  1. Abrir la pestaña `EMPLEADOS` en Google Sheets.
-  2. Verificar que existan registros y que la columna `Activo` (`Columna C`) tenga casillas marcadas (`TRUE`).
-  3. Verificar que los IDs de la columna `A` no tengan espacios en blanco al inicio o al final.
-  4. Una vez marcado al menos un colaborador activo, las fórmulas matriciales y de consolidación por `SUMAR.SI.CONJUNTO` se restablecerán inmediatamente.
+### Incidente 5: Un empleado activo no figura en la tabla de liquidación quincenal
+* **Síntoma:** Luis o el auxiliar preguntan por qué un empleado que está activo en la empresa no aparece en la tabla de `LIQUIDACION` de una quincena específica.
+* **Causa:** **Comportamiento esperado del sistema V2.0.** A diferencia de las hojas rígidas de la V1.0 que listaban a todos los trabajadores con ceros, el motor matricial `QUERY` de la V2.0 opera bajo optimización analítica y agrupa exclusivamente los colaboradores que registraron al menos un despacho en el período consultado. Si un empleado no alistó pedidos (por vacaciones, incapacidad u otras funciones), no genera fila en esa quincena.
+* **Procedimiento de Explicación / Solución:**
+  1. Aclarar al usuario que la tabla de liquidación es un reporte de rendimiento por despacho: solo muestra personal con operaciones reales.
+  2. Si el colaborador sí despachó pero no figura, verificar que sus despachos en `REGISTRO_DIARIO` tengan la fecha dentro de la quincena correspondiente y que su nombre haya sido seleccionado correctamente en el campo `Empleado`.
 
 ---
 
 ### Incidente 6: Usuario bloqueado por permisos de cuenta ("Access Denied / Not Authorized")
 * **Síntoma:** Al abrir el acceso directo en el celular o iniciar sesión con Google, el usuario recibe un mensaje indicando que no cuenta con autorización para acceder a la aplicación.
-* **Causa:** El aplicativo se encuentra configurado con control de acceso por lista blanca y el correo del colaborador aún no ha sido dado de alta en la consola de usuarios.
+* **Causa:** El aplicativo se encuentra configurado con control de acceso por lista blanca y el correo del colaborador no ha sido dado de alta en la consola de usuarios.
 * **Procedimiento de Solución:**
-  1. El colaborador remite formalmente a soporte su dirección de correo electrónico (ej. `pepito@correo.com`).
+  1. El colaborador remite formalmente a soporte su dirección de correo corporativa o autorizada.
   2. El Administrador de Sistemas ingresa al editor de AppSheet con las credenciales maestras.
   3. Accede al apartado **Users** (o **Share App**).
-  4. Agrega la dirección de correo en la lista de usuarios autorizados con rol de usuario estándar (`User`) y guarda los cambios.
-  5. En caso de que la directriz gerencial sea mantener el acceso libre provisional sin autenticación obligatoria, verificar la política de seguridad vigente en los ajustes del aplicativo.
+  4. Agrega la dirección de correo en la lista de usuarios autorizados con rol estándar (`User`) y guarda los cambios.
+  5. En caso de que la directriz gerencial sea mantener el acceso libre provisional en bodega sin autenticación obligatoria, verificar la política en los ajustes de seguridad de la app.
 
 ---
 
-### Incidente 7: El formulario de despacho se cierra tras guardar dos registros consecutivos
-* **Síntoma:** El despachador guarda un despacho y el formulario se recarga, pero al guardar el segundo despacho la app se sale del formulario y vuelve a la vista previa. Al tocar de nuevo el botón en el menú, el ciclo se repite cada dos registros.
-* **Causa:** La opción nativa `Auto re-open` está desactivada (`OFF`) o `Finish view` apunta a la vista de sistema `REGISTRO_DIARIO_Form` (la cual no tiene configurado retorno automático por defecto).
+### Incidente 7: El formulario de despacho se cierra tras guardar un registro
+* **Síntoma:** Al guardar un despacho, la aplicación vuelve a la vista de historial o al menú principal, obligando al despachador a presionar nuevamente `NUEVO REGISTRO` para el siguiente alistamiento.
+* **Causa:** La opción `Auto re-open` está desactivada (`OFF`) o `Finish view` tiene una asignación de redirección no estándar.
 * **Procedimiento de Solución:**
   1. Ingresar al editor de AppSheet.
-  2. Ir a **Views > NUEVO REGISTRO** (y verificar también en **SYSTEM GENERATED > REGISTRO_DIARIO_Form**).
+  2. Ir a **Views > NUEVO REGISTRO**.
   3. Activar el switch **Auto re-open** (en posición `ON` / azul).
   4. En el campo **Finish view**, seleccionar **`Auto assign (Go Back)`**.
-  5. Guardar los cambios (**Save**). Con esto el formulario se mantendrá abierto indefinidamente tras cada guardado hasta que el usuario pulse conscientemente *Cancel*.
+  5. Verificar que en **Settings > Views > General**, la propiedad **`Starting view`** tenga asignado **`NUEVO REGISTRO`**.
+  6. Guardar los cambios (**Save**). Con esto el formulario se mantendrá abierto indefinidamente tras cada guardado hasta que el usuario pulse conscientemente *Cancel*.
 
 ---
 
@@ -139,30 +180,30 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 ### 4.1. Alta o Baja de Personal Operativo
 * **Altas:** 
   1. Ir a `EMPLEADOS` en Google Sheets.
-  2. Agregar fila con nuevo `ID_Empleado` consecutivo (ej. `B-008`), `Nombre_Completo` y marcar la casilla `Activo` en `VERDADERO`.
-  3. En minutos, la app de bodega lo listará en el desplegable de despacho.
+  2. Agregar fila con nuevo `ID_Empleado` consecutivo, `Nombre_Completo` y marcar la casilla `Activo` en `VERDADERO` (`TRUE`).
+  3. En minutos, la app de bodega lo listará automáticamente en el desplegable de despacho (`Valid_If`).
 * **Bajas:**
   1. **NUNCA eliminar la fila del colaborador** (rompería la integridad de los registros históricos de despacho).
-  2. Desmarcar únicamente la casilla `Activo` (`FALSE`). El bodeguero desaparecerá de las liquidaciones vigentes pero su historial de despachos se mantendrá intacto para auditoría.
+  2. Desmarcar únicamente la casilla `Activo` (`FALSE`). El auxiliar desaparecerá de inmediato del formulario de captura para nuevos despachos, pero su historial transaccional de meses pasados permanecerá intacto para auditoría y pago de liquidaciones.
 
-### 4.2. Ajuste de Parámetros de Liquidación y Metas
-* Si la gerencia aprueba cambios en el esquema de bonificación:
-  1. Ir a la pestaña `CONFIGURACION` en Google Sheets.
-  2. Ajustar los valores en las celdas correspondientes:
-     * `B2`: Meta mínima de puntos (Base: `100`). Define el umbral indispensable para tener derecho a liquidar el Bono de Calidad (`Puntos Totales >= B2`) y el punto de partida de la escala de productividad. Cualquier calibración tras la prueba piloto se propaga automáticamente a ambas liquidaciones.
-     * `B3`: Bono base de calidad (Base: `$200.000`).
-     * `B4`: Penalización por error (Base: `$40.000`).
-     * `A8:C11`: Rangos y valores de la escala salarial de productividad.
-  3. Los cambios entrarán en vigencia de inmediato para los ciclos que se consulten.
+### 4.2. Calibración de Parámetros de Liquidación y Metas
+Si la Gerencia General aprueba modificaciones en el esquema de compensación o la meta base:
+1. Ir a la pestaña `CONFIGURACION` en Google Sheets.
+2. Ajustar los valores en las celdas correspondientes:
+   * `B3`: **Meta Base Quincenal** (Base calibrada: `300` puntos). Al modificar esta celda, toda la matriz de tramos dinámicos (`A8:C12`) se recalcula automáticamente por fórmulas relativas (`$B$3 + 50`, `$B$3 + 100`, etc.).
+   * `B4`: **Bono Base de Calidad** (Base: `$70.000` quincenales).
+   * `B5`: **Penalización por Error** (Base: `-$15.000` por punto de error).
+   * `C9:C12`: Valores en pesos ($) de los tramos de sobre-esfuerzo de productividad.
+3. **Efecto Inmediato:** Los cambios se propagan de forma instantánea a toda la hoja `BASE_HISTORICA` y al dashboard `LIQUIDACION_MES` sin necesidad de tocar ninguna fórmula matricial ni código de programación.
 
 ---
 
 ## 5. Protocolo de Contingencia por Caída de Conectividad o Servicio
 
-1. **Falla de conexión Wi-Fi en Bodega:**
-   * AppSheet cuenta con soporte offline básico en la PWA; los registros se encolarán localmente en el almacenamiento del navegador.
-   * Al restablecerse la red, el despachador debe presionar el ícono de las **dos flechas circulares (Sincronizar)** en la esquina superior derecha de la aplicación.
-2. **Caída total del servicio en la nube:**
-   * El despachador debe llevar un registro temporal de contingencia físico (Formato impreso de remisión con Número de Factura, Bodeguero, Complejidad y Errores).
-   * Al reanudarse el servicio, el despachador o soporte digita los registros en la app con la marca temporal correspondiente.
-  
+1. **Falla de conexión Wi-Fi / Datos móviles en Bodega:**
+   * AppSheet cuenta con soporte offline nativo en la app móvil y en la PWA. Los despachos registrados se encolarán de manera segura en el almacenamiento local del dispositivo.
+   * El operario puede continuar despachando normalmente.
+   * Al restablecerse la red, el despachador debe presionar el ícono de las **dos flechas circulares (Sincronizar)** en la esquina superior derecha para vaciar la cola de envíos hacia Google Sheets.
+2. **Caída total del servicio en la nube (Incidente Mayor):**
+   * El despachador debe llevar un registro temporal de contingencia físico en planilla de papel (Serie de Factura, Número de Consecutivo, Colaborador, Puntos de Esfuerzo 1-5, Errores).
+   * Al reanudarse el servicio en la nube, el personal de bodega o soporte digita los registros en la app con la marca temporal correspondiente para garantizar su incorporación a la liquidación de la quincena.
