@@ -59,10 +59,10 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `_RowNumber` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | *(vacío)* |
-| `ID_Empleado` | `Text` | ☑️ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `ID` |
-| `Nombre_Completo` | `Text` | ⬜ | ☑️ | ☑️ | ⬜ | ⬜ | ☑️ | `Nombre Completo` |
-| `Activo` | `Yes/No` | ⬜ | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | *(vacío)* |
+| `_RowNumber` | `Number` | - | - | - | - | - | - | *(vacío)* |
+| `ID_Empleado` | `Text` | Sí | - | Sí | - | - | - | `ID` |
+| `Nombre_Completo` | `Text` | - | Sí | Sí | - | - | Sí | `Nombre Completo` |
+| `Activo` | `Yes/No` | - | - | - | Sí | - | - | *(vacío)* |
 
 > **Notas técnicas:**
 > * `Activo` se mantiene con `SHOW? = FALSE` porque el estado operativo se expone a través de la columna virtual `Activo?`.
@@ -72,7 +72,7 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `Activo?` | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `Activo?` |
+| `Activo?` | `Text` | - | - | Sí | - | - | Sí | `Activo?` |
 
 > **Ajustes internos:**
 > * **`Activo?`:**
@@ -93,21 +93,21 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | INITIAL VALUE | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| `_RowNumber` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | *(vacío)* | *(vacío)* |
-| `ID_Registro` | `Text` | ☑️ | ⬜ | ⬜ | ⬜ | ☑️ | ⬜ | `UNIQUEID()` | *(vacío)* |
-| `Fecha_Hora` | `DateTime` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | `NOW()` | *(vacío)* |
-| `Empleado` | `Ref` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ☑️ | *(vacío)* | `Empleado` |
-| `Tipo_Factura` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ⬜ | ⬜ | *(vacío)* | `Tipo Factura` |
-| `Numero_Factura` | `Number` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | *(vacío)* | `N° Factura` |
-| `Puntos_Esfuerzo` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | *(vacío)* | `Puntos Esfuerzo` |
-| `Puntos_Error` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | `0` | `Puntos Error` |
+| `_RowNumber` | `Number` | - | - | - | - | - | - | *(vacío)* | *(vacío)* |
+| `ID_Registro` | `Text` | Sí | - | - | - | Sí | - | `UNIQUEID()` | *(vacío)* |
+| `Fecha_Hora` | `DateTime` | - | - | - | - | - | - | `NOW()` | *(vacío)* |
+| `Empleado` | `Ref` | - | - | Sí | Sí | Sí | Sí | *(vacío)* | `Empleado` |
+| `Tipo_Factura` | `Enum` | - | - | Sí | Sí | - | - | *(vacío)* | `Tipo Factura` |
+| `Numero_Factura` | `Number` | - | - | Sí | Sí | Sí | - | *(vacío)* | `N° Factura` |
+| `Puntos_Esfuerzo` | `Enum` | - | - | Sí | Sí | Sí | - | *(vacío)* | `Puntos Esfuerzo` |
+| `Puntos_Error` | `Enum` | - | - | Sí | Sí | Sí | - | `0` | `Puntos Error` |
 
 #### B. Columnas virtuales en `REGISTRO_DIARIO`
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | FORMULA | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| `Factura` | `Text` | ⬜ | ☑️ | ☑️ | ⬜ | ⬜ | ☑️ | `[Tipo_Factura] & "-" & [Numero_Factura]` | `Factura` |
-| `Hora` | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `TEXT([Fecha_Hora], "H:MM AM/PM")` | `Hora` |
+| `Factura` | `Text` | - | Sí | Sí | - | - | Sí | `[Tipo_Factura] & "-" & [Numero_Factura]` | `Factura` |
+| `Hora` | `Text` | - | - | Sí | - | - | Sí | `TEXT([Fecha_Hora], "H:MM AM/PM")` | `Hora` |
 
 > **Ajustes internos de `REGISTRO_DIARIO`:**
 > * **`ID_Registro`:**
@@ -166,25 +166,25 @@ Esta tabla se alimenta de la hoja `BASE_HISTORICA` en Google Sheets (generada po
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `_RowNumber` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | *(vacío)* |
-| `Año` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | *(vacío)* |
-| `Mes` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | *(oculto: 1..12)* |
-| `Quincena` | `Text` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | *(oculto: Q1/Q2)* |
-| `ID_Empleado` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `ID` |
-| `Nombre` | `Text` | ⬜ | ☑️ | ☑️ | ⬜ | ⬜ | ☑️ | `Nombre` |
-| `Pts_Esfuerzo` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Puntos Esfuerzo` |
-| `Pts_Error` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `Puntos Error` |
-| `Bono Productivo` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | *(vacío)* |
-| `Bono Calidad` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | *(vacío)* |
-| `Total BONO` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | *(vacío)* |
+| `_RowNumber` | `Number` | - | - | - | - | - | - | *(vacío)* |
+| `Año` | `Number` | - | - | Sí | - | - | Sí | *(vacío)* |
+| `Mes` | `Number` | - | - | - | - | - | - | *(oculto: 1..12)* |
+| `Quincena` | `Text` | - | - | - | - | - | - | *(oculto: Q1/Q2)* |
+| `ID_Empleado` | `Number` | - | - | Sí | - | - | - | `ID` |
+| `Nombre` | `Text` | - | Sí | Sí | - | - | Sí | `Nombre` |
+| `Pts_Esfuerzo` | `Number` | - | - | Sí | - | - | - | `Puntos Esfuerzo` |
+| `Pts_Error` | `Number` | - | - | Sí | - | - | - | `Puntos Error` |
+| `Bono Productivo` | `Price` | - | - | Sí | - | - | - | *(vacío)* |
+| `Bono Calidad` | `Price` | - | - | Sí | - | - | - | *(vacío)* |
+| `Total BONO` | `Price` | - | - | Sí | - | - | - | *(vacío)* |
 
 #### B. Columnas virtuales en `BASE_HISTORICA`
 
 | NAME | TYPE | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | FORMULA | DISPLAY NAME |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
-| `ID_Liquidacion` | `Text` | ☑️ | ⬜ | ☑️ | ⬜ | ⬜ | ⬜ | `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])` | *(vacío)* |
-| `Mes_Nombre` | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `SWITCH([Mes], 1, "Enero", 2, "Febrero", ..., 12, "Diciembre", "")` | `"Mes"` |
-| `Quincena_Nombre` | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | ☑️ | `IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]` | `Quincena` |
+| `ID_Liquidacion` | `Text` | Sí | - | Sí | - | - | - | `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])` | *(vacío)* |
+| `Mes_Nombre` | `Text` | - | - | Sí | - | - | Sí | `SWITCH([Mes], 1, "Enero", 2, "Febrero", ..., 12, "Diciembre", "")` | `"Mes"` |
+| `Quincena_Nombre` | `Text` | - | - | Sí | - | - | Sí | `IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]` | `Quincena` |
 
 > **Ajustes internos de `BASE_HISTORICA`:**
 > * **`ID_Liquidacion` (Clave Primaria Virtual):**
