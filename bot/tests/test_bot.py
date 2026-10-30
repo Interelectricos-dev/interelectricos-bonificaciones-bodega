@@ -26,8 +26,7 @@ def cargar_env(env_path: Path) -> None:
 def escuchar_whatsapp_continuo() -> None:
     """
     Escucha de forma continua la cola de Green API.
-    Cada vez que envíes un TEXTO o NOTA DE VOZ al WhatsApp, lo procesa con Gemini,
-    lo guarda en Google Sheets (REGISTRO_DIARIO) y responde al WhatsApp.
+    Soporta tanto 1 despacho individual como múltiples despachos en un mismo audio/texto.
     Para detenerlo: presiona Ctrl + C en la terminal.
     """
     wa = GreenAPIService()
@@ -41,8 +40,9 @@ def escuchar_whatsapp_continuo() -> None:
 
     print("\n" + "=" * 70, flush=True)
     print("🎧 BOT ESCUCHANDO WHATSAPP EN VIVO (Presiona Ctrl + C para salir)", flush=True)
-    print("📱 Envía todas las NOTAS DE VOZ o TEXTOS que quieras probar", flush=True)
-    print("   Ejemplo: 'IC 2021 Edward 2 puntos 1 error'", flush=True)
+    print("📱 Soporta 1 despacho suelto o BLOQUES de varios despachos en 1 audio/texto", flush=True)
+    print("   • Individual: 'IC 2021 Edward 2 puntos 1 error'", flush=True)
+    print("   • En bloque:  'IC 2021 Edward 2 puntos, DP 3040 Sneider 3 puntos'", flush=True)
     print("=" * 70, flush=True)
 
     try:
@@ -73,31 +73,37 @@ def escuchar_whatsapp_continuo() -> None:
                     print("🎙️ Tipo: NOTA DE VOZ -> Descargando audio desde Green API...", flush=True)
                     audio_bytes, mime_type = wa.descargar_archivo(audio_url)
                     print(f"🤖 Analizando audio ({len(audio_bytes)} bytes) con Gemini API...", flush=True)
-                    datos_json = parse_con_gemini(audio_bytes=audio_bytes, mime_type=mime_type)
+                    lote_despachos = parse_con_gemini(audio_bytes=audio_bytes, mime_type=mime_type)
                 else:
                     print(f"💬 Tipo: TEXTO -> '{texto}'", flush=True)
                     print("🤖 Analizando texto con Gemini API...", flush=True)
-                    datos_json = parse_con_gemini(texto=texto)
+                    lote_despachos = parse_con_gemini(texto=texto)
 
-                print("\n1️⃣ JSON EXTRAÍDO POR GEMINI:", flush=True)
-                print(json.dumps(datos_json, indent=2, ensure_ascii=False), flush=True)
+                print(f"\n1️⃣ DESPACHOS EXTRAÍDOS POR GEMINI ({len(lote_despachos)}):", flush=True)
+                print(json.dumps(lote_despachos, indent=2, ensure_ascii=False), flush=True)
 
                 print("\n2️⃣ GUARDANDO EN GOOGLE SHEETS (REGISTRO_DIARIO)...", flush=True)
-                registro = guardar_en_google_sheets(datos_json)
-                print("   ✅ Fila insertada:", registro["fila_sheets"], flush=True)
+                registros = guardar_en_google_sheets(lote_despachos)
+                for r in registros:
+                    print("   ✅ Fila insertada:", r["fila_sheets"], flush=True)
 
-                confirmacion = formatear_mensaje_confirmacion(registro, datos_json)
+                confirmacion = formatear_mensaje_confirmacion(registros)
                 print("\n3️⃣ ENVIANDO CONFIRMACIÓN A WHATSAPP...", flush=True)
                 wa.enviar_mensaje(chat_id, confirmacion)
                 print("   ✅ ¡Confirmación enviada! Esperando el siguiente mensaje...", flush=True)
 
             except Exception as err:
-                print(f"❌ Error procesando mensaje: {err}", flush=True)
+                msg_err = str(err)
+                if "NO_ES_DESPACHO" in msg_err:
+                    print("ℹ️ Mensaje conversacional ignorado (no es un despacho).", flush=True)
+                    continue
+                print(f"❌ Error validando despacho: {msg_err}", flush=True)
                 try:
                     wa.enviar_mensaje(
                         chat_id,
-                        f"⚠️ *No se pudo registrar el despacho:*\n{err}\n\n"
-                        "💡 *Ejemplo válido:* `IC2021 Edward 2 puntos 1 error`",
+                        f"⚠️ *No se pudo registrar en Google Sheets:*\n{msg_err}\n\n"
+                        "💡 *Ejemplo individual:* `IC2021 Edward 2 puntos 1 error`\n"
+                        "💡 *Ejemplo por bloque:* `IC2021 Edward 2 puntos, DP3040 Sneider 3 puntos`",
                     )
                 except Exception:
                     pass

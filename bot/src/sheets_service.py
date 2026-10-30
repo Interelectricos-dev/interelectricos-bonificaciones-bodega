@@ -3,7 +3,7 @@ import os
 import unicodedata
 import uuid
 from datetime import datetime, timezone, timedelta
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Catálogo local por defecto (tomado de BD_BONIFICACIONES_BODEGA.xlsx) para pruebas sin conexión
 EMPLEADOS_DEFAULT = [
@@ -45,7 +45,11 @@ def resolver_empleado(
         nombre_norm = _quitar_acentos(nombre_completo)
         partes = nombre_norm.split()
 
-        if buscado_norm == nombre_norm or buscado_norm in partes or nombre_norm.startswith(buscado_norm):
+        if (
+            buscado_norm == nombre_norm
+            or buscado_norm in partes
+            or nombre_norm.startswith(buscado_norm)
+        ):
             return str(emp["ID_Empleado"]), nombre_completo
 
     nombres_disponibles = [
@@ -60,44 +64,56 @@ def resolver_empleado(
     )
 
 
-def construir_fila_registro(
-    datos_json: Dict[str, Any],
+def construir_filas_registros(
+    lote_datos: Union[Dict[str, Any], List[Dict[str, Any]]],
     catalogo_empleados: Optional[List[Dict[str, Any]]] = None,
-) -> Dict[str, Any]:
+) -> List[Dict[str, Any]]:
     """
-    Construye el diccionario exacto con las 7 columnas físicas de REGISTRO_DIARIO V2.0:
+    Construye una lista de registros validados (1 o N despachos) con las 7 columnas físicas
+    exactas de REGISTRO_DIARIO V2.0:
     [ID_Registro, Fecha_Hora, Empleado, Tipo_Factura, Numero_Factura, Puntos_Esfuerzo, Puntos_Error]
     """
-    id_empleado, nombre_oficial = resolver_empleado(
-        datos_json["nombre_empleado"], catalogo_empleados
-    )
-    id_registro = uuid.uuid4().hex[:8]
+    items = [lote_datos] if isinstance(lote_datos, dict) else lote_datos
     ahora_col = datetime.now(TZ_COLOMBIA).strftime("%Y-%m-%d %H:%M:%S")
 
-    fila = [
-        id_registro,
-        ahora_col,
-        id_empleado,
-        datos_json["tipo_factura"],
-        datos_json["numero_factura"],
-        datos_json["puntos_esfuerzo"],
-        datos_json["puntos_error"],
-    ]
+    registros: List[Dict[str, Any]] = []
+    for datos_json in items:
+        id_empleado, nombre_oficial = resolver_empleado(
+            datos_json["nombre_empleado"], catalogo_empleados
+        )
+        id_registro = uuid.uuid4().hex[:8]
+        fila = [
+            id_registro,
+            ahora_col,
+            id_empleado,
+            datos_json["tipo_factura"],
+            datos_json["numero_factura"],
+            datos_json["puntos_esfuerzo"],
+            datos_json["puntos_error"],
+        ]
+        registros.append(
+            {
+                "id_registro": id_registro,
+                "fecha_hora": ahora_col,
+                "id_empleado": id_empleado,
+                "nombre_oficial": nombre_oficial,
+                "factura_label": f"{datos_json['tipo_factura']}-{datos_json['numero_factura']}",
+                "puntos_esfuerzo": datos_json["puntos_esfuerzo"],
+                "puntos_error": datos_json["puntos_error"],
+                "fila_sheets": fila,
+            }
+        )
 
-    return {
-        "id_registro": id_registro,
-        "fecha_hora": ahora_col,
-        "id_empleado": id_empleado,
-        "nombre_oficial": nombre_oficial,
-        "factura_label": f"{datos_json['tipo_factura']}-{datos_json['numero_factura']}",
-        "fila_sheets": fila,
-    }
+    return registros
 
 
-def guardar_en_google_sheets(datos_json: Dict[str, Any]) -> Dict[str, Any]:
+def guardar_en_google_sheets(
+    lote_datos: Union[Dict[str, Any], List[Dict[str, Any]]]
+) -> List[Dict[str, Any]]:
     """
-    Se conecta a Google Sheets usando Service Account (soporta google-api-python-client
-    ya instalado en tu venv o gspread), lee EMPLEADOS en vivo e inserta la fila en REGISTRO_DIARIO.
+    Se conecta a Google Sheets usando Service Account, lee EMPLEADOS una sola vez,
+    valida todos los despachos del lote y los inserta de un solo golpe (batch append)
+    en REGISTRO_DIARIO.
     """
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
@@ -125,7 +141,7 @@ def guardar_en_google_sheets(datos_json: Dict[str, Any]) -> Dict[str, Any]:
 
     service = build("sheets", "v4", credentials=creds)
 
-    # 1. Leer catálogo EMPLEADOS en vivo
+    # 1. Leer catálogo EMPLEADOS en vivo (1 sola lectura para todo el bloque)
     res_emp = (
         service.spreadsheets()
         .values()
@@ -145,18 +161,19 @@ def guardar_en_google_sheets(datos_json: Dict[str, Any]) -> Dict[str, Any]:
                 }
             )
 
-    # 2. Construir fila validada
-    registro = construir_fila_registro(
-        datos_json, empleados_records if empleados_records else None
+    # 2. Validar todos los despachos antes de insertar (atomicidad del lote)
+    registros = construir_filas_registros(
+        lote_datos, empleados_records if empleados_records else None
     )
 
-    # 3. Hacer append en REGISTRO_DIARIO
+    # 3. Hacer append de todas las filas en 1 sola llamada a Google Sheets
+    filas_a_insertar = [r["fila_sheets"] for r in registros]
     service.spreadsheets().values().append(
         spreadsheetId=sheet_id,
         range="REGISTRO_DIARIO!A:G",
         valueInputOption="USER_ENTERED",
         insertDataOption="INSERT_ROWS",
-        body={"values": [registro["fila_sheets"]]},
+        body={"values": filas_a_insertar},
     ).execute()
 
-    return registro
+    return registros

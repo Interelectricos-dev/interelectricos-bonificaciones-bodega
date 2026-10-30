@@ -17,7 +17,7 @@ from src.whatsapp_service import GreenAPIService, formatear_mensaje_confirmacion
 class handler(BaseHTTPRequestHandler):
     """
     Endpoint Serverless en Vercel (/api/webhook) que recibe los Webhooks
-    entrantes de Green API cuando Luis envía un texto o nota de voz.
+    entrantes de Green API cuando Luis envía 1 o múltiples despachos por texto o voz.
     """
 
     def do_GET(self) -> None:
@@ -64,18 +64,23 @@ class handler(BaseHTTPRequestHandler):
             try:
                 if audio_url:
                     audio_bytes, mime_type = wa.descargar_archivo(audio_url)
-                    datos_json = parse_con_gemini(
+                    lote_despachos = parse_con_gemini(
                         audio_bytes=audio_bytes, mime_type=mime_type
                     )
                 else:
-                    datos_json = parse_con_gemini(texto=texto)
+                    lote_despachos = parse_con_gemini(texto=texto)
 
-                registro = guardar_en_google_sheets(datos_json)
-                confirmacion = formatear_mensaje_confirmacion(registro, datos_json)
+                registros = guardar_en_google_sheets(lote_despachos)
+                confirmacion = formatear_mensaje_confirmacion(registros)
                 wa.enviar_mensaje(chat_id, confirmacion)
 
                 self._responder_json(
-                    200, {"status": "registered", "registro": registro["fila_sheets"]}
+                    200,
+                    {
+                        "status": "registered",
+                        "count": len(registros),
+                        "rows": [r["fila_sheets"] for r in registros],
+                    },
                 )
             except Exception as err_negocio:
                 msg_err = str(err_negocio)
@@ -84,11 +89,12 @@ class handler(BaseHTTPRequestHandler):
                     self._responder_json(200, {"status": "ignored_non_dispatch"})
                     return
 
-                # Si sí intentaba registrar un despacho pero faltó un dato, avisar por WhatsApp
+                # Si sí intentaba registrar despachos pero faltó un dato, avisar por WhatsApp
                 wa.enviar_mensaje(
                     chat_id,
-                    f"⚠️ *No se pudo registrar el despacho:*\n{msg_err}\n\n"
-                    "💡 *Ejemplo válido:* `IC2021 Edward 2 puntos 1 error`",
+                    f"⚠️ *No se pudo registrar en Google Sheets:*\n{msg_err}\n\n"
+                    "💡 *Ejemplo individual:* `IC2021 Edward 2 puntos 1 error`\n"
+                    "💡 *Ejemplo por bloque:* `IC2021 Edward 2 puntos, DP3040 Sneider 3 puntos`",
                 )
                 self._responder_json(200, {"status": "validation_error", "detail": msg_err})
 
@@ -100,4 +106,3 @@ class handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.end_headers()
         self.wfile.write(json.dumps(payload, ensure_ascii=False).encode("utf-8"))
-

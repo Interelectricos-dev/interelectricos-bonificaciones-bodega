@@ -1,7 +1,7 @@
 import json
 import os
 import urllib.request
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 
 class GreenAPIService:
@@ -52,7 +52,7 @@ class GreenAPIService:
 
         if borrar_al_leer and data and "receiptId" in data:
             receipt_id = data["receiptId"]
-            del_url = f"{self.host}/waInstance{self.id_instance}/deleteNotification/{self.api_token}/{receipt_id}"
+            del_url = f"{self.host}/waInstance{self.id_instance}/deleteNotification/{self.id_instance if False else self.api_token}/{receipt_id}"
             del_req = urllib.request.Request(del_url, method="DELETE")
             try:
                 urllib.request.urlopen(del_req, timeout=10).read()
@@ -92,13 +92,27 @@ class GreenAPIService:
         return chat_id, None, None
 
 
-def formatear_mensaje_confirmacion(registro: Dict[str, Any], datos_json: Dict[str, Any]) -> str:
-    """Genera el mensaje de respuesta para Luis en WhatsApp."""
-    return (
-        "✅ *¡Despacho registrado con éxito!*\n"
-        f"📄 *Documento:* {registro['factura_label']}\n"
-        f"👷 *Auxiliar:* {registro['nombre_oficial']} (ID: {registro['id_empleado']})\n"
-        f"⚡ *Esfuerzo:* {datos_json['puntos_esfuerzo']} pts | "
-        f"⚠️ *Errores:* {datos_json['puntos_error']}\n"
-        f"🕒 *Hora:* {registro['fecha_hora']} (ID: `{registro['id_registro']}`)"
-    )
+def formatear_mensaje_confirmacion(registros: List[Dict[str, Any]]) -> str:
+    """
+    Genera el mensaje de respuesta para Luis en WhatsApp.
+    Si es 1 despacho muestra tarjeta detallada; si son varios muestra resumen por bloque.
+    """
+    if len(registros) == 1:
+        r = registros[0]
+        return (
+            "✅ *¡Despacho registrado con éxito!*\n"
+            f"📄 *Documento:* {r['factura_label']}\n"
+            f"👷 *Auxiliar:* {r['nombre_oficial']} (ID: {r['id_empleado']})\n"
+            f"⚡ *Esfuerzo:* {r['puntos_esfuerzo']} pts | "
+            f"⚠️ *Errores:* {r['puntos_error']}\n"
+            f"🕒 *Hora:* {r['fecha_hora']} (ID: `{r['id_registro']}`)"
+        )
+
+    lineas = [f"✅ *¡{len(registros)} despachos registrados en bloque!*"]
+    for idx, r in enumerate(registros, start=1):
+        lineas.append(
+            f"{idx}. *{r['factura_label']}* — {r['nombre_oficial']} "
+            f"({r['puntos_esfuerzo']} pts | {r['puntos_error']} err)"
+        )
+    lineas.append(f"🕒 *Hora:* {registros[0]['fecha_hora']}")
+    return "\n".join(lineas)
