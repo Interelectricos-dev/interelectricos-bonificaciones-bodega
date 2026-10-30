@@ -55,12 +55,11 @@ def escuchar_whatsapp_continuo() -> None:
             if not chat_id or (not texto and not audio_url):
                 continue
 
-            # SEGURO DE PRIVACIDAD: Solo escuchar al número configurado en CHAT_ID_PRUEBA
+            # SEGURO DE PRIVACIDAD ESTRICTO (Fail-Closed): Solo escuchar a CHAT_ID_PRUEBA
             chat_autorizado = os.getenv("CHAT_ID_PRUEBA", "").strip()
-            if chat_autorizado:
-                lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
-                if chat_id not in lista_chats:
-                    continue
+            lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
+            if not lista_chats or chat_id not in lista_chats:
+                continue
 
             # Ignorar los mensajes de respuesta que envía el propio bot
             if texto and texto.startswith(("✅", "⚠️")):
