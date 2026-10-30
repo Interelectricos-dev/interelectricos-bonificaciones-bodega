@@ -1,0 +1,110 @@
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+# Permitir importar desde bot/src
+BOT_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(BOT_DIR))
+
+from src.parser_ai import parse_con_gemini
+from src.sheets_service import guardar_en_google_sheets
+from src.whatsapp_service import GreenAPIService, formatear_mensaje_confirmacion
+
+
+def cargar_env(env_path: Path) -> None:
+    """Carga variables del archivo .env."""
+    if env_path.exists():
+        for line in env_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                os.environ[k.strip()] = v.strip()
+
+
+def escuchar_whatsapp_continuo() -> None:
+    """
+    Escucha de forma continua la cola de Green API.
+    Cada vez que envíes un TEXTO o NOTA DE VOZ al WhatsApp, lo procesa con Gemini,
+    lo guarda en Google Sheets (REGISTRO_DIARIO) y responde al WhatsApp.
+    Para detenerlo: presiona Ctrl + C en la terminal.
+    """
+    wa = GreenAPIService()
+
+    print("🧹 Limpiando notificaciones antiguas pendientes en la cola...", flush=True)
+    limpiadas = 0
+    while wa.recibir_notificacion_cola(borrar_al_leer=True) is not None:
+        limpiadas += 1
+    if limpiadas:
+        print(f"   ({limpiadas} notificaciones antiguas descartadas)", flush=True)
+
+    print("\n" + "=" * 70, flush=True)
+    print("🎧 BOT ESCUCHANDO WHATSAPP EN VIVO (Presiona Ctrl + C para salir)", flush=True)
+    print("📱 Envía todas las NOTAS DE VOZ o TEXTOS que quieras probar", flush=True)
+    print("   Ejemplo: 'IC 2021 Edward 2 puntos 1 error'", flush=True)
+    print("=" * 70, flush=True)
+
+    try:
+        while True:
+            try:
+                body = wa.recibir_notificacion_cola(borrar_al_leer=True)
+            except Exception as e:
+                print(f"⚠️ Error consultando cola: {e}", flush=True)
+                time.sleep(2)
+                continue
+
+            if not body:
+                time.sleep(2)
+                continue
+
+            chat_id, texto, audio_url = wa.extraer_contenido_webhook(body)
+            if not chat_id or (not texto and not audio_url):
+                continue
+
+            # Ignorar los mensajes de respuesta que envía el propio bot
+            if texto and texto.startswith(("✅", "⚠️")):
+                continue
+
+            print("\n" + "-" * 65, flush=True)
+            print(f"📥 ¡Nuevo mensaje recibido del chat {chat_id}!", flush=True)
+            try:
+                if audio_url:
+                    print("🎙️ Tipo: NOTA DE VOZ -> Descargando audio desde Green API...", flush=True)
+                    audio_bytes, mime_type = wa.descargar_archivo(audio_url)
+                    print(f"🤖 Analizando audio ({len(audio_bytes)} bytes) con Gemini API...", flush=True)
+                    datos_json = parse_con_gemini(audio_bytes=audio_bytes, mime_type=mime_type)
+                else:
+                    print(f"💬 Tipo: TEXTO -> '{texto}'", flush=True)
+                    print("🤖 Analizando texto con Gemini API...", flush=True)
+                    datos_json = parse_con_gemini(texto=texto)
+
+                print("\n1️⃣ JSON EXTRAÍDO POR GEMINI:", flush=True)
+                print(json.dumps(datos_json, indent=2, ensure_ascii=False), flush=True)
+
+                print("\n2️⃣ GUARDANDO EN GOOGLE SHEETS (REGISTRO_DIARIO)...", flush=True)
+                registro = guardar_en_google_sheets(datos_json)
+                print("   ✅ Fila insertada:", registro["fila_sheets"], flush=True)
+
+                confirmacion = formatear_mensaje_confirmacion(registro, datos_json)
+                print("\n3️⃣ ENVIANDO CONFIRMACIÓN A WHATSAPP...", flush=True)
+                wa.enviar_mensaje(chat_id, confirmacion)
+                print("   ✅ ¡Confirmación enviada! Esperando el siguiente mensaje...", flush=True)
+
+            except Exception as err:
+                print(f"❌ Error procesando mensaje: {err}", flush=True)
+                try:
+                    wa.enviar_mensaje(
+                        chat_id,
+                        f"⚠️ *No se pudo registrar el despacho:*\n{err}\n\n"
+                        "💡 *Ejemplo válido:* `IC2021 Edward 2 puntos 1 error`",
+                    )
+                except Exception:
+                    pass
+    except KeyboardInterrupt:
+        print("\n👋 Bot detenido manualmente por el usuario.", flush=True)
+
+
+if __name__ == "__main__":
+    cargar_env(BOT_DIR / ".env")
+    escuchar_whatsapp_continuo()
