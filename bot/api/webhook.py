@@ -53,12 +53,13 @@ class handler(BaseHTTPRequestHandler):
                 self._responder_json(200, {"status": "ignored_bot_reply"})
                 return
 
-            # Filtro opcional de chats autorizados (si se define CHATS_AUTORIZADOS en Vercel)
-            chats_permitidos = os.getenv("CHATS_AUTORIZADOS", "").strip()
-            if chats_permitidos:
-                lista_chats = [c.strip() for c in chats_permitidos.split(",") if c.strip()]
+            # SEGURO DE PRIVACIDAD: Solo procesar mensajes del número autorizado en CHAT_ID_PRUEBA
+            # Cualquier otro chat normal del celular se ignora por completo sin responder ni gastar cuota.
+            chat_autorizado = os.getenv("CHAT_ID_PRUEBA", "").strip()
+            if chat_autorizado:
+                lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
                 if chat_id not in lista_chats:
-                    self._responder_json(200, {"status": "ignored_unauthorized_chat"})
+                    self._responder_json(200, {"status": "ignored_other_chat"})
                     return
 
             try:

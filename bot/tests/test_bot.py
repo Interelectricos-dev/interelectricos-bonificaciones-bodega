@@ -31,13 +31,6 @@ def escuchar_whatsapp_continuo() -> None:
     """
     wa = GreenAPIService()
 
-    print("🧹 Limpiando notificaciones antiguas pendientes en la cola...", flush=True)
-    limpiadas = 0
-    while wa.recibir_notificacion_cola(borrar_al_leer=True) is not None:
-        limpiadas += 1
-    if limpiadas:
-        print(f"   ({limpiadas} notificaciones antiguas descartadas)", flush=True)
-
     print("\n" + "=" * 70, flush=True)
     print("🎧 BOT ESCUCHANDO WHATSAPP EN VIVO (Presiona Ctrl + C para salir)", flush=True)
     print("📱 Soporta 1 despacho suelto o BLOQUES de varios despachos en 1 audio/texto", flush=True)
@@ -61,6 +54,13 @@ def escuchar_whatsapp_continuo() -> None:
             chat_id, texto, audio_url = wa.extraer_contenido_webhook(body)
             if not chat_id or (not texto and not audio_url):
                 continue
+
+            # SEGURO DE PRIVACIDAD: Solo escuchar al número configurado en CHAT_ID_PRUEBA
+            chat_autorizado = os.getenv("CHAT_ID_PRUEBA", "").strip()
+            if chat_autorizado:
+                lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
+                if chat_id not in lista_chats:
+                    continue
 
             # Ignorar los mensajes de respuesta que envía el propio bot
             if texto and texto.startswith(("✅", "⚠️")):
