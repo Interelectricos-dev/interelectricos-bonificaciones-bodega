@@ -303,14 +303,15 @@ Para resolver dudas operativas a los auxiliares de bodega, el esquema de incenti
 
 | Parámetro Operativo | Valor / Condición | Regla de Aplicación en Bodega |
 | :--- | :---: | :--- |
-| **Meta Base Quincenal** | **300 puntos** | Nivel de rendimiento estándar cubierto por el salario ordinario. A partir de 301 puntos se desbloquea el derecho a bonificación. |
-| **Tramo 1 de Productividad** | 301 a 350 puntos | Bonificación quincenal de reconocimiento inicial por sobre-esfuerzo operativo. |
-| **Tramo 2 de Productividad** | 351 a 400 puntos | Bonificación quincenal intermedia por alto rendimiento sostenido. |
-| **Tramo 3 de Productividad** | 401 a 450 puntos | Bonificación quincenal destacada por sobre-esfuerzo sobresaliente. |
-| **Tramo 4 de Productividad** | 451 o más puntos | Bonificación máxima quincenal por productividad excepcional en bodega. |
-| **Fondo Base de Calidad** | Quincenal fijo | Reconocimiento a la exactitud en el alistamiento. **Condición obligatoria:** Solo se liquida si el colaborador alcanza la meta base (300 puntos). Si no alcanza la meta, se liquida automáticamente en **$0**. |
-| **Castigo por Error** | Por cada falta auditada | Se deduce directamente del Fondo de Calidad según el número de errores registrados en el ciclo quincenal. |
-| **Protección Salarial (Piso $0)** | **$0 mínimo** | Los errores y penalizaciones nunca generan saldos negativos ni se descuentan del salario base ni de los bonos de productividad ganados. |
+| **Meta Base Quincenal** | **`300 puntos`** | Nivel mínimo esperado cubierto por el salario ordinario (`$2.000.000` con auxilio de transporte). A partir de `301 puntos` se activa el derecho a bonificación. |
+| **Tramo 1 (`301 - 350 pts`)** | **`$50.000`** | Primer escalón de bonificación productiva quincenal por superar la meta base. |
+| **Tramo 2 (`351 - 400 pts`)** | **`$100.000`** | Segundo escalón productivo (+`$50.000` adicionales por rendimiento sostenido). |
+| **Tramo 3 (`401 - 450 pts`)** | **`$150.000`** | Tercer escalón productivo (+`$50.000` adicionales por alto desempeño operativo). |
+| **Tramo 4 (`451 o más pts`)** | **`$200.000`** | Tope máximo de bonificación por productividad quincenal. |
+| **Bono Calidad Quincenal** | **`$100.000`** | Reconocimiento fijo a la exactitud en el alistamiento. **Condición obligatoria:** Solo se liquida si el colaborador alcanza la meta base (`300 puntos`). Si no alcanza la meta, se liquida en **`$0`**. |
+| **Descuento por Error** | **`-$20.000` / error** | Se deduce directamente del Bono de Calidad (`$100.000`) por cada punto de error registrado en la quincena. |
+| **Tope Neto Quincenal** | **`$300.000`** | Suma máxima quincenal (`$200.000` Bono Productivo + `$100.000` Bono Calidad sin errores). |
+| **Protección Salarial (Piso `$0`)** | **`$0` mínimo** | Los errores y penalizaciones nunca generan saldos negativos ni se descuentan del salario base ni de los bonos de productividad ganados. |
 
 ---
 

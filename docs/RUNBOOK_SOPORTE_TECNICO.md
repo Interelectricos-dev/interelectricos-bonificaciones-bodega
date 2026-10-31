@@ -190,10 +190,10 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 Si la Gerencia General aprueba modificaciones en el esquema de compensación o la meta base:
 1. Ir a la pestaña `CONFIGURACION` en Google Sheets.
 2. Ajustar los valores en las celdas correspondientes:
-   * `B3`: **Meta Base Quincenal** (Base calibrada: `300` puntos). Al modificar esta celda, toda la matriz de tramos dinámicos (`A8:C12`) se recalcula automáticamente por fórmulas relativas (`$B$3 + 50`, `$B$3 + 100`, etc.).
-   * `B4`: **Bono Base de Calidad** (Base: `$70.000` quincenales).
-   * `B5`: **Penalización por Error** (Base: `-$15.000` por punto de error).
-   * `C9:C12`: Valores en pesos ($) de los tramos de sobre-esfuerzo de productividad.
+   * `B3`: **Meta Base Quincenal** (Base configurada: `300` puntos).
+   * `B4`: **Bono Calidad Quincenal** (Base configurada: `$100.000` quincenales).
+   * `B5`: **Descuento Unitario por Error** (Base configurada: `$20.000` por cada punto de error).
+   * `A9:C12`: **Escala de Productividad** en números cerrados (`301-350` → `$50.000`, `351-400` → `$100.000`, `401-450` → `$150.000`, `451 o más` → `$200.000`, alcanzando un bono neto máximo de `$300.000` quincenales sumando calidad).
 3. **Efecto Inmediato:** Los cambios se propagan de forma instantánea a toda la hoja `BASE_HISTORICA` y al dashboard `LIQUIDACION_MES` sin necesidad de tocar ninguna fórmula matricial ni código de programación.
 
 ---

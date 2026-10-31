@@ -159,21 +159,21 @@ BD_BONIFICACIONES_BODEGA.xlsx
 ---
 
 ### 3.5. Hoja: `CONFIGURACION` (Parámetros Financieros Globales)
-Centraliza la matriz de incentivos económicos para permitir modificaciones gerenciales con propagación inmediata en cascada:
+Centraliza la matriz de incentivos económicos en cifras cerradas para facilitar la auditoría contable y permitir modificaciones gerenciales con propagación inmediata en cascada:
 
 | Celda / Rango | Parámetro | Valor Calibrado | Justificación Operativa |
 | :---: | :--- | :---: | :--- |
-| **`B2`** | `SMLV` | `$1.300.000` | Salario Mínimo Legal Vigente de referencia. |
-| **`B3`** | `Meta Base Quincenal` | `300 pts` | Volumen estándar esperado (~115 despachos en 15 días). |
-| **`B4`** | `Bono Calidad Base` | `$70.000` | Fondo quincenal por cuidado (~5% del salario básico). |
-| **`B5`** | `Penalización por Error` | `-$15.000` | Deducción por error. Al 5to error se agota el fondo de calidad. |
-| **`A8:C12`** | `Escala de Productividad` | Tramos dinámicos | Matriz de sobre-esfuerzo anclada a la meta base (`$B$3`). |
+| **`Referencia`** | `SMLV + Aux. Transporte` | `$2.000.000` | Remuneración mensual base vigente en Colombia con auxilio de transporte. |
+| **`B3`** | `Meta Base Quincenal` | `300 pts` | Volumen mínimo quincenal esperado para habilitar bonificaciones. |
+| **`B4`** | `Bono Calidad Quincenal` | `$100.000` | Reconocimiento fijo quincenal por exactitud y cuidado en el despacho. |
+| **`B5`** | `Descuento Unitario por Error` | `$20.000` | Deducción por cada punto de error. Al 5to error se agota el fondo de calidad. |
+| **`A8:C12`** | `Escala de Productividad` | Tramos de `$50.000` | Escala progresiva en números cerrados desde `$50.000` hasta `$200.000`. |
 
-* **Matriz de Tramos Dinámicos (`A8:C12`):**
-  * Tramo 1 (`A9:C9`): De `=$B$3 + 1` a `=$B$3 + 50` (301 a 350 pts) → **$50.000**
-  * Tramo 2 (`A10:C10`): De `=B9 + 1` a `=$B$3 + 100` (351 a 400 pts) → **$90.000**
-  * Tramo 3 (`A11:C11`): De `=B10 + 1` a `=$B$3 + 150` (401 a 450 pts) → **$130.000**
-  * Tramo 4 (`A12:C12`): De `=B11 + 1` en adelante (451+ pts) → **$180.000** (Tope máximo)
+* **Matriz de Escala de Productividad (`A8:C12`):**
+  * Tramo 1 (`A9:C9`): De `301` a `350` pts → **`$50.000`**
+  * Tramo 2 (`A10:C10`): De `351` a `400` pts → **`$100.000`**
+  * Tramo 3 (`A11:C11`): De `401` a `450` pts → **`$150.000`**
+  * Tramo 4 (`A12:C12`): De `451` o más pts → **`$200.000`** (Tope máximo productivo, alcanzando un **Total BONO neto de `$300.000`** al sumar los `$100.000` de calidad).
 
 ---
 
@@ -266,12 +266,12 @@ Una vez consolidada la matriz base en columnas `A:F`, las columnas `G` a `J` cal
 ))
 ```
 * **Lógica del Árbol de Decisión:**
-  * Si `puntos < Meta Base` (`$B$3`, 300 pts) → Retorna **$0** (no hay bonificación).
-  * Si `300 <= puntos < 350` (`Meta + 50`) → Retorna Tramo 1 (`$C$9` = **$50.000**).
-  * Si `350 <= puntos < 400` (`Meta + 100`) → Retorna Tramo 2 (`$C$10` = **$90.000**).
-  * Si `400 <= puntos < 450` (`Meta + 150`) → Retorna Tramo 3 (`$C$11` = **$130.000**).
-  * Si `puntos >= 450` → Retorna Tramo 4 (`$C$12` = **$180.000** - Tope Máximo).
-* **Propagación Dinámica:** Al estar anclada a la celda `CONFIGURACION!$B$3`, si la Gerencia modifica la meta de 300 a 250 puntos, todos los límites de los tramos se recalculan automáticamente en todo el histórico sin tocar el código.
+  * Si `puntos <= 300` (no supera la `Meta Base` de `$B$3`) → Retorna **`$0`** (no hay bonificación).
+  * Si `301 a 350 pts` → Retorna Tramo 1 (`$C$9` = **`$50.000`**).
+  * Si `351 a 400 pts` → Retorna Tramo 2 (`$C$10` = **`$100.000`**).
+  * Si `401 a 450 pts` → Retorna Tramo 3 (`$C$11` = **`$150.000`**).
+  * Si `451 o más pts` → Retorna Tramo 4 (`$C$12` = **`$200.000`** - Tope Máximo Productivo).
+* **Propagación Dinámica:** Al estar vinculada a la hoja `CONFIGURACION`, cualquier ajuste gerencial en la meta base o en los montos de los tramos se recalcula automáticamente en todo el histórico sin tocar el código.
 
 #### C. Columna I (`Bono Calidad`): Condición Habilitadora y Piso de Protección
 ```excel
@@ -284,12 +284,12 @@ Una vez consolidada la matriz base en columnas `A:F`, las columnas `G` a `J` cal
 ))
 ```
 * **Iteración Bivariada en `MAP`:** La función procesa dos vectores simultáneamente: el vector de puntos de esfuerzo (`pts` en columna E) y el vector de penalizaciones por error (`err` en columna F).
-* **Barrera de Calidad Condicionada:** `SI(pts < CONFIGURACION!$B$3; 0; ...)`: El bono de calidad **no es un derecho garantizado por el mero paso del tiempo**. Si el auxiliar no alcanza la meta de esfuerzo operativo de 300 puntos, el bono de calidad se liquida en **$0**, incentivando tanto el volumen como la presencia activa en bodega.
+* **Barrera de Calidad Condicionada:** `SI(pts < CONFIGURACION!$B$3; 0; ...)`: El bono de calidad **no es un derecho garantizado por el mero paso del tiempo**. Si el auxiliar no alcanza la meta mínima de 300 puntos, el bono de calidad se liquida en **`$0`**, incentivando tanto el volumen como la presencia activa en bodega.
 * **Mecanismo de Descuento con Piso Financiero:**
   * **Fórmula aplicada:** `Bono Calidad = MAX(0; Fondo Base + (errores × Descuento))`
-  * Dado que `err` almacena valores negativos o cero (ej. `-2`), la operación `+ (err × $15.000)` ejecuta una sustracción aritmética directa:
-    `$70.000 + (-2 × $15.000) = $70.000 - $30.000 = $40.000`
-  * La función `MAX(0; ...)` actúa como un **fusible financiero laboral**: si el auxiliar comete 6 errores (`-$90.000`), el cálculo arroja `-$20.000`, pero la función retorna **$0**, garantizando que las fallas nunca generen deuda para el colaborador ni toquen su salario base.
+  * Dado que `err` almacena valores negativos o cero (ej. `-2`), la operación `+ (err × $20.000)` ejecuta una sustracción aritmética directa sobre el fondo de `$100.000`:
+    `$100.000 + (-2 × $20.000) = $100.000 - $40.000 = $60.000`
+  * La función `MAX(0; ...)` actúa como un **fusible financiero laboral**: si el auxiliar acumula 6 puntos de error (`-$120.000`), el cálculo arroja `-$20.000`, pero la función retorna **`$0`**, garantizando que las fallas nunca generen deuda para el colaborador ni toquen su salario base.
 
 #### D. Columna J (`Total BONO`): Consolidación Vectorial Neta
 ```excel
@@ -334,29 +334,30 @@ En la legislación laboral colombiana, los pagos por concepto de bonificaciones 
 
 #### Riesgo Detectado en la Arquitectura V1.0:
 En la versión inicial se había configurado un bono máximo de **`$600.000` por productividad** más **`$200.000` por calidad**, para un total de **`$800.000` quincenales (`$1.600.000` mensuales)**.  
-Para un auxiliar de bodega con Salario Mínimo Legal Vigente (~`$1.300.000` básicos):
-* **Remuneración Total:** `$1.300.000 + $1.600.000 = $2.900.000`
-* **Tope Legal del 40%:** `$2.900.000 × 40% = $1.160.000`
-* **Excedente Gravable:** `$1.600.000 - $1.160.000 =` **`$440.000`**
+Para un auxiliar de bodega con el Salario Mínimo Legal Vigente en Colombia incluyendo auxilio de transporte (**`$2.000.000` mensuales**):
+* **Remuneración Total en V1.0:** `$2.000.000 + $1.600.000 = $3.600.000`
+* **Tope Legal del 40% (Ley 1393/2010):** `$3.600.000 × 40% = $1.440.000`
+* **Excedente Gravable en V1.0:** `$1.600.000 - $1.440.000 =` **`$160.000`**
 
-Ese excedente de $440.000 debía cotizar obligatoriamente a seguridad social (Salud, Pensión, ARL y Parafiscales), generando contingencias sancionatorias severas ante la **UGPP** (Unidad de Gestión Pensional y Parafiscales) y sobrecostos no presupuestados para la empresa.
+Ese excedente sobre el límite legal del 40% obligaba a cotizar seguridad social adicional (Salud, Pensión, ARL y Parafiscales), generando contingencias sancionatorias ante la **UGPP** (Unidad de Gestión Pensional y Parafiscales) y sobrecostos desproporcionados para la operación.
 
 ---
 
-### 5.2. Calibración de la Meta Base y Tramos de Esfuerzo
+### 5.2. Calibración de la Meta Base (300 pts) y Tramos en Cifras Cerradas
 
-Para solucionar definitivamente esta contingencia, en la Versión 2.0 se recalculó la escala garantizando que **incluso en el escalón de máximo rendimiento, el bono mensual jamás supere el tope del 40% del salario total**:
+Para eliminar definitivamente esta contingencia y facilitar la liquidación contable, en la Versión 2.0 se definieron topes en **números cerrados**, con una **meta mínima quincenal de `300 puntos`**, un **bono de calidad de `$100.000`** y un **bono productivo que inicia en `$50.000` y aumenta de `$50.000` en `$50.000` hasta llegar a `$200.000`**, logrando un **bono neto máximo de `$300.000` quincenales** (`$600.000` mensuales) cuando el empleado alcanza 451 puntos o más:
 
-| Componente | Configuración V1.0 (Riesgo UGPP) | Propuesta V2.0 Calibrada (Salario Mínimo) | Impacto Financiero y Jurídico |
+| Componente | Configuración V1.0 (Riesgo UGPP) | Configuración V2.0 (Cifras Cerradas en Producción) | Impacto Financiero y Jurídico |
 | :--- | :---: | :---: | :--- |
-| **Bono Base Calidad (Quincenal)** | $200.000 | **$70.000** | Proporcional al básico quincenal (~10% del básico quincenal). |
-| **Penalización por Error** | -$40.000 / error | **-$15.000 / error** | Al 5to error pierde el bono de calidad sin tocar su sueldo. |
-| **Productividad - Tramo 1** | $150.000 | **$50.000** | Reconocimiento por superar la meta base (+~7% básico). |
-| **Productividad - Tramo 2** | $300.000 | **$90.000** | Rendimiento constante destacado (+~13% básico). |
-| **Productividad - Tramo 3** | $450.000 | **$130.000** | Alto desempeño operativo (+~19% básico). |
-| **Productividad - Tramo 4 (Tope)** | $600.000 | **$180.000** | Tope máximo por sobre-esfuerzo quincenal (+~26% básico). |
-| **Tope Máximo Quincenal (Prod + Cal)**| **$800.000** | **$250.000** | Máximo acumulable en 15 días. |
-| **Tope Máximo Mensual (Prod + Cal)** | **$1.600.000** *(Supera 100% SMLV)*| **$500.000** *(~35% de la remuneración)* | **100% blindado ante auditorías de la UGPP.** |
+| **Meta Mínima Quincenal** | 100 pts | **`300 pts`** | Umbral operativo base para habilitar bonos de productividad y calidad. |
+| **Bono Base Calidad (Quincenal)** | `$200.000` | **`$100.000`** | Reconocimiento fijo quincenal por exactitud si cumple la meta de 300 pts. |
+| **Descuento por Error** | `-$40.000` / error | **`-$20.000` / error** | Al 5to error se agota el bono de calidad (`$100.000`) sin tocar el sueldo. |
+| **Productividad - Tramo 1 (`301 - 350 pts`)** | `$150.000` | **`$50.000`** | Escalón inicial por superar la meta base de 300 puntos. |
+| **Productividad - Tramo 2 (`351 - 400 pts`)** | `$300.000` | **`$100.000`** | Segundo escalón (+`$50.000` adicionales por rendimiento sostenido). |
+| **Productividad - Tramo 3 (`401 - 450 pts`)** | `$450.000` | **`$150.000`** | Tercer escalón (+`$50.000` adicionales por alto desempeño operativo). |
+| **Productividad - Tramo 4 (`451 o más pts`)** | `$600.000` | **`$200.000`** | Tope máximo de productividad quincenal. |
+| **Tope Neto Quincenal (`Prod + Cal`)** | **`$800.000`** | **`$300.000`** | Máximo neto quincenal (`$200.000` productivo + `$100.000` calidad). |
+| **Tope Neto Mensual (`2 Quincenas`)** | **`$1.600.000`** *(Supera el tope del 40%)* | **`$600.000`** *(~23% de la remuneración total)* | **100% blindado bajo la regla del 40% de la Ley 1393 de 2010 (UGPP).** |
 
 #### Justificación de los Tramos de 50 Puntos:
 * En AppSheet, el promedio real auditado por despacho es de **2.6 puntos de esfuerzo**.
@@ -453,7 +454,7 @@ Para fines de control documental, auditoría técnica de sistemas y entregables 
 | **Navegación Móvil** | 4 accesos: Nuevo Registro, Historial Hoy, Resumen (Dashboard) y Seleccione Fecha. | 3 accesos: `NUEVO REGISTRO` (`first`), `HISTORIAL HOY` (`middle`) y `LIQUIDACION` (`last`). | Interfaz enfocada, limpia y ergonómica. Carga cognitiva mínima para el despachador. |
 | **Pantalla de Inicio** | Abría por defecto en la primera vista genérica. | `Starting view = NUEVO REGISTRO` configurado en `Settings > Views > General`. | Al abrir la app en bodega, entra directamente al formulario de captura listo para registrar. |
 | **Estilo de Formulario** | Formulario vertical tradicional. | `Form style = Side-by-side` con recarga continua (`Auto re-open = ON`). | Compactación visual en escritorio, adaptación vertical en móvil y captura masiva ininterrumpida. |
-| **Calibración Financiera** | Escala quincenal de `$800.000` (`$1.600.000` mensual) con riesgo severo ante la UGPP. | Escala calibrada con tope quincenal de `$250.000` (`$500.000` mensual) y tramos de 50 pts. | **100% blindado ante la regla del 40% de la Ley 1393 de 2010**. Estímulo quincenal sostenido sin sobrecostos fiscales. |
+| **Calibración Financiera** | Escala quincenal de `$800.000` (`$1.600.000` mensual) con riesgo severo ante la UGPP. | Escala en números cerrados con meta de `300 pts`, calidad de `$100.000`, tramos productivos de `$50.000` a `$200.000` y tope neto quincenal de `$300.000` (`$600.000` mensual). | **100% blindado ante la regla del 40% de la Ley 1393 de 2010** sobre el salario mínimo vigente con auxilio de transporte (`$2.000.000`). |
 | **Captura por WhatsApp (V2.1)** | Registro exclusivamente manual desde el formulario de la app. | Microservicio Serverless en Vercel (`/bot`) + Green API + Gemini Multimodal (`gemini-3.5-flash`). | Permite a la jefatura de bodega registrar despachos individuales o por bloques mediante notas de voz o texto en WhatsApp. |
 
 ---

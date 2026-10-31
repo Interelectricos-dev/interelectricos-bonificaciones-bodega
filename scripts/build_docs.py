@@ -1093,7 +1093,7 @@ def generate_architecture_diagram_png(out_path='docs/images/arquitectura_flujo_v
     # Boxes Layer 3
     draw_box(80, 822, 560, 975, "Tabla REGISTRO_DIARIO", ["7 Columnas físicas atómicas", "(ID, Fecha_Hora, Empleado, Tipo, N°,", "Puntos_Esfuerzo, Puntos_Error)"], border="#15803D", header_bg="#15803D")
     draw_box(640, 822, 1140, 975, "Tabla EMPLEADOS", ["Catálogo maestro de personal", "(ID_Empleado, Nombre_Completo, Activo)", "Validación de operarios activos"], border="#15803D", header_bg="#15803D")
-    draw_box(1200, 822, 1720, 975, "Tabla CONFIGURACION", ["Parámetros salariales y Ley 1393", "Meta Base (300 pts), Bono Calidad ($70.000)", "Matriz dinámica de tramos (A8:C12)"], border="#15803D", header_bg="#15803D")
+    draw_box(1200, 822, 1720, 975, "Tabla CONFIGURACION", ["Parámetros salariales y Ley 1393", "Meta Base (300 pts), Bono Calidad ($100.000)", "Tramos de $50k a $200k (Tope neto $300.000)"], border="#15803D", header_bg="#15803D")
 
     draw_box(120, 1045, 1040, 1200, "Motor Matricial BASE_HISTORICA (En Memoria RAM)", ["Fórmula única en A1: LET + MAP + LAMBDA + QUERY", "Agrupa por Año, Mes, Quincena (Q1/Q2) e ID_Empleado y liquida Bonos (G1:J1)"], border="#1E293B", header_bg="#1E293B")
     draw_box(1140, 1045, 1720, 1200, "Dashboard LIQUIDACION_MES", ["Tablero ejecutivo para Gerencia y Nómina", "Filtro dinámico por Año, Mes y Quincena"], border="#334155", header_bg="#334155")
