@@ -328,3 +328,28 @@ Por estrictas políticas de auditoría, el sistema bloquea la edición local pas
 
 ### ¿Dónde solicitar soporte técnico?
 Para soporte de conectividad, cambio de terminales móviles, restablecimiento de accesos o dudas sobre la liquidación de puntos, comuníquese con el Departamento de Sistemas de Intereléctricos Group SAS a través del canal corporativo oficial.
+
+---
+
+## 8. Canal Alternativo: Registro Rápido por WhatsApp (Notas de Voz y Texto)
+
+Además del formulario táctil en la aplicación móvil, la Jefatura de Bodega cuenta con el **Bot Automatizado de WhatsApp** para registrar despachos mediante **notas de voz** o **mensajes de texto**, tanto de forma individual como por bloques acumulados.
+
+### 8.1. Estructura del Mensaje o Nota de Voz
+Para registrar uno o varios despachos, envíe un audio o texto al contacto oficial del Bot indicando los siguientes datos:
+* **Tipo y Número de Comprobante:** `IC`, `DP` o `IR` seguido del consecutivo numérico (ej. `IC 2021`).
+* **Nombre del Auxiliar:** Nombre del colaborador activo (ej. `Edward`, `Sneider`, `Fabian`, `Sergio`, `Estebi`).
+* **Puntos de Esfuerzo:** Calificación de `1` a `5` puntos (si no se menciona, asigna `1` por defecto).
+* **Puntos de Error (Opcional):** Si el despacho no tuvo errores, **no es necesario mencionarlos** (el sistema asigna `0` automáticamente). Si tuvo errores, mencione `1 error`, `2 errores` o `3 errores`.
+
+### 8.2. Modalidades de Envío Permitidas
+1. **Registro Individual (1 despacho por audio o texto):**
+   * *"IC 2021 Edward 2 puntos"* *(asigna 0 errores automáticamente)*.
+   * *"DP 3040 Sneider 3 puntos 1 error"*.
+2. **Registro por Bloque (Varios despachos en un solo audio o texto):**
+   * *"IC 2021 Edward 2 puntos, DP 3040 Sneider 3 puntos y el IR 47960 para Fabián con 1 punto y 1 error"*.
+   * *"Para Edward: IC 2021 2 puntos, IC 2022 3 puntos y DP 1050 1 punto"*.
+
+### 8.3. Confirmación y Control de Errores en WhatsApp
+* **Confirmación inmediata (`✅`):** En pocos segundos, el bot responde confirmando el documento, auxiliar, puntos registrados y hora exacta. Los registros aparecen reflejados de inmediato en la pestaña **HISTORIAL HOY** de la aplicación móvil.
+* **Aviso de datos faltantes (`⚠️`):** Si en el audio no se escuchó con claridad el número de factura, el tipo de documento o el nombre del auxiliar, el sistema **no guardará el registro incompleto** y responderá indicando exactamente qué dato faltó para que pueda enviarse nuevamente.

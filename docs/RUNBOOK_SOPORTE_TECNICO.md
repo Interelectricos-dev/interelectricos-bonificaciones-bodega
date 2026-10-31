@@ -207,3 +207,19 @@ Si la Gerencia General aprueba modificaciones en el esquema de compensación o l
 2. **Caída total del servicio en la nube (Incidente Mayor):**
    * El despachador debe llevar un registro temporal de contingencia físico en planilla de papel (Serie de Factura, Número de Consecutivo, Colaborador, Puntos de Esfuerzo 1-5, Errores).
    * Al reanudarse el servicio en la nube, el personal de bodega o soporte digita los registros en la app con la marca temporal correspondiente para garantizar su incorporación a la liquidación de la quincena.
+
+
+---
+
+## 6. Soporte y Mantenimiento del Bot de WhatsApp (`/bot` — Vercel + Green API + Gemini)
+
+### 6.1. Cambio o Adición del Número Autorizado (`CHAT_ID_PRUEBA`)
+Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los mensajes que provengan del número configurado en `CHAT_ID_PRUEBA`. Para actualizarlo en producción:
+1. Ingresar a **Vercel** → Proyecto `interelectricos-bonificaciones-bodega` → **Environment Variables**.
+2. Localizar la variable **`CHAT_ID_PRUEBA`**, hacer clic en **`⋯` > Edit** y colocar el número en formato internacional de WhatsApp (`573XXXXXXXXX@c.us`). Si se desean autorizar dos números simultáneamente, separarlos por coma (`573134040002@c.us,573XXXXXXXXX@c.us`).
+3. Guardar los cambios (**Save**), ir a la pestaña **Deployments** y seleccionar **Redeploy** sobre el último despliegue activo.
+
+### 6.2. Diagnóstico cuando el Bot de WhatsApp no responde
+1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Bot WhatsApp Bonificaciones Bodega - Intereléctricos"}`.
+2. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
+3. **Pruebas desde consola local:** Para depurar el flujo en tiempo real desde un computador de soporte, ejecutar `python -X utf8 bot/tests/test_bot.py`.

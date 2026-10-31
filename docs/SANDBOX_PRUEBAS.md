@@ -59,9 +59,9 @@ Crear una **Columna Virtual** llamada `Factura_Completa` y configurarla como el 
 | :---: | :--- | :--- | :--- | :---: |
 | 23/10/2026 | Inserción de Columna G en Sheets | No alterar fórmulas de `RESUMEN_QUINCENAL` | Verificado. Ninguna fórmula de resumen se movió ni afectó. | Exitoso |
 | 23/10/2026 | Configuración de `LABEL` | Resolver duplicidad de números entre tipos de factura | Verificado con columna virtual `Factura_Completa` como LABEL. | Exitoso |
-| 24/10/2026 | Auditoría de liquidación en `RESUMEN_MENSUAL` (400 registros) | Consolidar bonos mensuales como la suma exacta de Q1 + Q2 independiente | Identificado desfase por acumulación de puntos mensuales sobre escala quincenal. Se implementaron columnas auxiliares H:O para desglosar Q1 y Q2 y totalizar en A:G. Regenerate Schema ejecutado y columnas ocultas. Resultados exactos ($150k prod, $120k cal). | Exitoso |
+| 24/10/2026 | Auditoría de liquidación en `RESUMEN_MENSUAL` (400 registros) | Consolidar bonos mensuales como la suma exacta de Q1 + Q2 independiente | Identificado desfase por acumulación de puntos mensuales sobre escala quincenal. Se implementaron columnas auxiliares H:O para desglosar Q1 y Q2 y totalizar en A:G. Regenerate Schema ejecutado y columnas ocultas. Resultados exactos (`$150k` prod, `$120k` cal). | Exitoso |
 | 26/10/2026 | Diseño de Escala Dinámica en `CONFIGURACION` | Que al cambiar la Meta Base (`B2`), los tramos de puntos se recalculen solos | Fórmulas relativas evaluadas (`$B$2 + 1`, `$B$2 + 20`, etc.). Verificada compatibilidad total con `BUSCARV(..., TRUE)` en `RESUMEN_QUINCENAL` y `RESUMEN_MENSUAL` sin tocar ninguna fórmula de liquidación. | Documentado para Sandbox |
-| 26/10/2026 | Calibración Financiera y Escala de Puntos (Salario Mínimo) | Definir montos y escalas acordes a Ley 1393/2010 (Regla del 40%) y flujo real de bodega | Identificado que la escala actual ($800k quincenal) duplica el SMLV y colapsa ante la UGPP. Diseñada propuesta con tope quincenal de $250k (~35% SMLV), tramos de 50 pts por sobre-esfuerzo y protocolo para incorporar las IR. | Documentado para Decisión Gerencial |
+| 26/10/2026 | Calibración Financiera y Escala de Puntos (Salario Mínimo) | Definir montos y escalas acordes a Ley 1393/2010 (Regla del 40%) y flujo real de bodega | Identificado que la escala actual (`$800k` quincenal) duplica el SMLV y colapsa ante la UGPP. Diseñada propuesta con tope quincenal de `$250k` (~35% SMLV), tramos de 50 pts por sobre-esfuerzo y protocolo para incorporar las IR. | Documentado para Decisión Gerencial |
 | 27/10/2026 | Arquitectura de Liquidación Dinámica y Dashboard Ejecutivo | Automatizar la liquidación quincenal y mensual con cero filas manuales y cero redundancias en `REGISTRO_DIARIO` | Creado motor en memoria en `BASE_HISTORICA` con `LET` + `MAP` + `QUERY` generando Quincenas (Q1/Q2) y Meses (1..12). Se eliminaron columnas calculadas repetitivas en `REGISTRO_DIARIO` (vuelve a 7 columnas puras). Creado Dashboard interactivo `LIQUIDACION_MES` con selectores dinámicos y valores en pesos ($). | Validado en Sandbox |
 | 27/10/2026 | Centralización de Vistas en AppSheet y Depuración de Tablas | Unificar vistas de consulta en una sola pantalla ejecutiva (`Liquidación`) y retirar dependencias frágiles | Conectada `BASE_HISTORICA` a AppSheet con drill-down (Año > Mes > Quincena). Se eliminaron las vistas y tablas obsoletas `RESUMEN_QUINCENAL`, `RESUMEN_MENSUAL` y `FILTRO_FECHAS`. Se sanearon y eliminaron las columnas virtuales `Despachos_Quincena` y `Despachos_Mes` en `EMPLEADOS`, eliminando errores de sincronización y acelerando la app. Calibrada Meta Base en 300 pts. | Exitoso en Sandbox |
 
@@ -86,16 +86,16 @@ Al convertir los límites de los tramos en fórmulas relativas ancladas a la cel
 ### C. Simulación de Comportamiento
 
 * **Escenario Actual (Meta Base `B2 = 100`):**
-  * Tramo 1: `101` a `120` $\rightarrow$ $150.000
-  * Tramo 2: `121` a `150` $\rightarrow$ $300.000
-  * Tramo 3: `151` a `180` $\rightarrow$ $450.000
-  * Tramo 4: `181` o más $\rightarrow$ $600.000
+  * Tramo 1: `101` a `120` → $150.000
+  * Tramo 2: `121` a `150` → $300.000
+  * Tramo 3: `151` a `180` → $450.000
+  * Tramo 4: `181` o más → $600.000
 
 * **Escenario de Ajuste (Meta Base `B2 = 200`):**
-  * Tramo 1: `201` a `220` $\rightarrow$ $150.000
-  * Tramo 2: `221` a `250` $\rightarrow$ $300.000
-  * Tramo 3: `251` a `280` $\rightarrow$ $450.000
-  * Tramo 4: `281` o más $\rightarrow$ $600.000
+  * Tramo 1: `201` a `220` → $150.000
+  * Tramo 2: `221` a `250` → $300.000
+  * Tramo 3: `251` a `280` → $450.000
+  * Tramo 4: `281` o más → $600.000
 
 ### D. Impacto Técnico en el Sistema
 * **Cero cambios en `RESUMEN_QUINCENAL` y `RESUMEN_MENSUAL`:**
@@ -109,7 +109,7 @@ Al convertir los límites de los tramos en fórmulas relativas ancladas a la cel
 ### 6.1. Marco Legal y Fiscal: La Regla del 40% (Ley 1393 de 2010 / UGPP)
 En Colombia, los pagos laborales no constitutivos de salario (bonificaciones por mera liberalidad o metas operativas) **no pueden exceder el 40% de la remuneración total mensual del colaborador**.
 * Si el bono excede ese 40%, el excedente debe cotizar obligatoriamente a seguridad social (salud, pensión y ARL), generando sobrecostos imprevistos o sanciones de la UGPP.
-* Para un operario con Salario Mínimo Legal Vigente (~$1.300.000 a $1.400.000 básico), el **tope máximo mensual seguro de bonificaciones** debe situarse entre **$450.000 y $500.000** (es decir, un máximo quincenal de **$225.000 a $250.000** sumando calidad y productividad).
+* Para un operario con Salario Mínimo Legal Vigente (~`$1.300.000` a `$1.400.000` básico), el **tope máximo mensual seguro de bonificaciones** debe situarse entre **`$450.000` y `$500.000`** (es decir, un máximo quincenal de **`$225.000` a `$250.000`** sumando calidad y productividad).
 
 ### 6.2. Comparativa Financiera: Configuración Actual vs. Propuesta Calibrada
 
@@ -181,7 +181,7 @@ Para evitar la duplicación de datos y la sobrecarga de fórmulas fijas en hojas
 * **Columnas Calculadas de Liquidación Financiera:**
   * **G1 (`Nombre`):** `=MAP(D2:INDEX(D:D, COUNTA(D:D)), LAMBDA(id, IF(id="", "", IFERROR(VLOOKUP(id, EMPLEADOS!A:B, 2, FALSE), id))))`
   * **H1 (`Bono Productivo`):** `=MAP(E2:INDEX(E:E, COUNTA(D:D)), LAMBDA(pts, IF(pts="", "", IF(pts < CONFIGURACION!$B$3, 0, IF(pts < (CONFIGURACION!$B$3 + 50), CONFIGURACION!$C$9, IF(pts < (CONFIGURACION!$B$3 + 100), CONFIGURACION!$C$10, IF(pts < (CONFIGURACION!$B$3 + 150), CONFIGURACION!$C$11, CONFIGURACION!$C$12)))))))`
-  * **I1 (`Bono Calidad`):** Condicionado al cumplimiento de la meta base (`E < CONFIGURACION!$B$3` $\rightarrow$ `$0`):
+  * **I1 (`Bono Calidad`):** Condicionado al cumplimiento de la meta base (`E < CONFIGURACION!$B$3` → `$0`):
     `=MAP(E2:INDEX(E:E, COUNTA(D:D)), F2:INDEX(F:F, COUNTA(D:D)), LAMBDA(pts, err, IF(pts="", "", IF(pts < CONFIGURACION!$B$3, 0, MAX(0, CONFIGURACION!$B$4 + (err * CONFIGURACION!$B$5))))))`
   * **J1 (`Total BONO`):** `=MAP(H2:INDEX(H:H, COUNTA(D:D)), I2:INDEX(I:I, COUNTA(D:D)), LAMBDA(prod, cal, IF(prod="", "", prod + cal)))`
 

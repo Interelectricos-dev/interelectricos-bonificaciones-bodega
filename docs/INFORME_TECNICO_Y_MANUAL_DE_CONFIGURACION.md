@@ -53,40 +53,13 @@ La **Versión 2.0** constituye un salto cualitativo hacia una **arquitectura des
 
 ## 2. Arquitectura General y Flujo de Información
 
-La solución se estructura en dos capas principales conectadas mediante servicios en la nube:
+La solución se estructura en tres capas principales conectadas mediante servicios en la nube:
 
-```mermaid
-flowchart TD
-    subgraph Frontend["Capa de Captura y Consulta (AppSheet Mobile & PWA)"]
-        A1["Formulario NUEVO REGISTRO<br>(Botonera Comprobante + Teclado Numérico)"]
-        A2["Tabla HISTORIAL HOY<br>(Despachos de la jornada + Columna Hora)"]
-        A3["Tabla LIQUIDACION<br>(Drill-Down: Año > Mes > Quincena)"]
-    end
+<img src="images/arquitectura_flujo_v2.png" alt="Arquitectura General y Flujo de Información (Versión 2.1)" width="440">
 
-    subgraph Sync["Orquestador de Sincronización en la Nube"]
-        B1["AppSheet Core Engine<br>(Procesamiento de Reglas, Validaciones y Format Rules)"]
-    end
-
-    subgraph Backend["Capa de Almacenamiento y Motor de Cálculo (Google Sheets)"]
-        C1[("REGISTRO_DIARIO<br>7 Columnas Físicas Atómicas")]
-        C2[("EMPLEADOS<br>Catálogo Maestro de Personal")]
-        C3["BASE_HISTORICA<br>Motor Matricial en Memoria<br>(LET + MAP + LAMBDA + QUERY)"]
-        C4["LIQUIDACION_MES<br>Dashboard Dinámico de Nómina"]
-        C5["CONFIGURACION<br>Parámetros Salariales y Escalas"]
-    end
-
-    A1 -->|Inserta transacción| B1
-    B1 -->|Escribe fila física| C1
-    C1 -.->|Lectura vectorial continua| C3
-    C2 -.->|Cruza nombres de colaboradores| C3
-    C5 -.->|Suministra meta base y tramos| C3
-    C3 -->|Alimenta vista jerárquica| B1
-    B1 -->|Renderiza resultados en vivo| A3
-    C3 -.->|Extrae subconjunto por período| C4
-```
-
-1. **Frontend (AppSheet):** Ejecutado en dispositivos móviles Android/iOS de bodega y en terminales web de mostrador. Provee una interfaz táctil instantánea, validaciones de integridad en cliente y renderizado progresivo de datos.
-2. **Backend (Google Sheets):** Actúa como base de datos relacional y motor de cálculo de alta velocidad. Implementa un modelo de datos normalizado donde las transacciones no se mezclan con cálculos auxiliares.
+1. **Capa de Captura y Consulta (AppSheet Mobile/PWA + WhatsApp):** Ejecutada en dispositivos móviles Android/iOS de bodega, terminales web de mostrador y canal conversacional de WhatsApp para jefatura de bodega.
+2. **Capa de Orquestación en la Nube (AppSheet Engine + Bot Serverless en Vercel):** Procesa validaciones de integridad, columnas virtuales, reglas de seguridad y extracción multimodal estructurada con IA (`gemini-3.5-flash`).
+3. **Capa de Almacenamiento y Motor de Cálculo (Google Sheets):** Actúa como base de datos relacional y motor matricial en memoria (`BASE_HISTORICA`) donde las transacciones atómicas se consolidan en tiempo real.
 
 ---
 
@@ -197,10 +170,10 @@ Centraliza la matriz de incentivos económicos para permitir modificaciones gere
 | **`A8:C12`** | `Escala de Productividad` | Tramos dinámicos | Matriz de sobre-esfuerzo anclada a la meta base (`$B$3`). |
 
 * **Matriz de Tramos Dinámicos (`A8:C12`):**
-  * Tramo 1 (`A9:C9`): De `=$B$3 + 1` a `=$B$3 + 50` (301 a 350 pts) $\rightarrow$ **$50.000**
-  * Tramo 2 (`A10:C10`): De `=B9 + 1` a `=$B$3 + 100` (351 a 400 pts) $\rightarrow$ **$90.000**
-  * Tramo 3 (`A11:C11`): De `=B10 + 1` a `=$B$3 + 150` (401 a 450 pts) $\rightarrow$ **$130.000**
-  * Tramo 4 (`A12:C12`): De `=B11 + 1` en adelante (451+ pts) $\rightarrow$ **$180.000** (Tope máximo)
+  * Tramo 1 (`A9:C9`): De `=$B$3 + 1` a `=$B$3 + 50` (301 a 350 pts) → **$50.000**
+  * Tramo 2 (`A10:C10`): De `=B9 + 1` a `=$B$3 + 100` (351 a 400 pts) → **$90.000**
+  * Tramo 3 (`A11:C11`): De `=B10 + 1` a `=$B$3 + 150` (401 a 450 pts) → **$130.000**
+  * Tramo 4 (`A12:C12`): De `=B11 + 1` en adelante (451+ pts) → **$180.000** (Tope máximo)
 
 ---
 
@@ -242,13 +215,15 @@ En la celda `A1` de `BASE_HISTORICA` reside la siguiente expresión algorítmica
 
 1. **La Función de Ámbito en Memoria `LET`:**
    * Tradicionalmente, anidar funciones complejas obliga a evaluar el mismo rango de celdas repetidamente, multiplicando el uso de CPU.
-   * `LET` crea un entorno de ejecución con variables locales temporales (`fechas`, `quincenas`, `meses`). Estas variables se evalúan una única vez en memoria y se pasan como referencias vectoriales a la consulta final, garantizando una complejidad temporal lineal $\mathcal{O}(n)$.
+   * `LET` crea un entorno de ejecución con variables locales temporales (`fechas`, `quincenas`, `meses`). Estas variables se evalúan una única vez en memoria y se pasan como referencias vectoriales a la consulta final, garantizando una complejidad temporal lineal `O(n)`.
 
 2. **Proyección Funcional con `MAP` y Expresiones `LAMBDA`:**
    * `fechas`: Asigna el vector unidimensional `REGISTRO_DIARIO!B2:B` que contiene los timestamps de despacho.
-   * `quincenas`: Aplica la función de orden superior `MAP(fechas; LAMBDA(f; ...))` que itera sobre cada elemento `f` del vector sin arrastrar fórmulas manualmente:
-     $$\text{Quincena}(f) = \begin{cases} \emptyset & \text{si } f = \text{vacío} \\ \text{"Q1"} & \text{si } \text{DIA}(f) \le 15 \\ \text{"Q2"} & \text{si } \text{DIA}(f) > 15 \end{cases}$$
-   * `meses`: Aplica `MAP(fechas; LAMBDA(f; ...))` para extraer la componente numérica entera del mes ($\text{MES}(f) \in [1, 12]$). Al ser un entero, elimina cualquier error tipográfico derivado de configuraciones regionales de idioma (ej. "Septiembre" vs "September").
+   * `quincenas`: Aplica la función de orden superior `MAP(fechas; LAMBDA(f; ...))` que itera sobre cada elemento `f` del vector sin arrastrar fórmulas manualmente, aplicando la siguiente regla de clasificación:
+     * Si `f` está vacío → retorna vacío (`""`).
+     * Si `DIA(f) <= 15` → retorna `"Q1"` (Primera Quincena).
+     * Si `DIA(f) > 15` → retorna `"Q2"` (Segunda Quincena).
+   * `meses`: Aplica `MAP(fechas; LAMBDA(f; ...))` para extraer el número entero del mes (`MES(f)` de `1` a `12`). Al ser un entero, elimina cualquier error tipográfico derivado de configuraciones regionales de idioma (ej. "Septiembre" vs "September").
 
 3. **Construcción del Arreglo Virtual Bidimensional (`{...}`):**
    * La expresión `{REGISTRO_DIARIO!A2:G\ quincenas\ meses}` crea una matriz virtual temporal en memoria combinando horizontalmente:
@@ -291,11 +266,11 @@ Una vez consolidada la matriz base en columnas `A:F`, las columnas `G` a `J` cal
 ))
 ```
 * **Lógica del Árbol de Decisión:**
-  * Si $\text{puntos} < \text{Meta Base}$ (`$B$3`, 300 pts) $\rightarrow$ Retorna **$0** (no hay bonificación).
-  * Si $300 \le \text{puntos} < 350$ (`Meta + 50`) $\rightarrow$ Retorna Tramo 1 (`$C$9` = **$50.000**).
-  * Si $350 \le \text{puntos} < 400$ (`Meta + 100`) $\rightarrow$ Retorna Tramo 2 (`$C$10` = **$90.000**).
-  * Si $400 \le \text{puntos} < 450$ (`Meta + 150`) $\rightarrow$ Retorna Tramo 3 (`$C$11` = **$130.000**).
-  * Si $\text{puntos} \ge 450$ $\rightarrow$ Retorna Tramo 4 (`$C$12` = **$180.000** - Tope Máximo).
+  * Si `puntos < Meta Base` (`$B$3`, 300 pts) → Retorna **$0** (no hay bonificación).
+  * Si `300 <= puntos < 350` (`Meta + 50`) → Retorna Tramo 1 (`$C$9` = **$50.000**).
+  * Si `350 <= puntos < 400` (`Meta + 100`) → Retorna Tramo 2 (`$C$10` = **$90.000**).
+  * Si `400 <= puntos < 450` (`Meta + 150`) → Retorna Tramo 3 (`$C$11` = **$130.000**).
+  * Si `puntos >= 450` → Retorna Tramo 4 (`$C$12` = **$180.000** - Tope Máximo).
 * **Propagación Dinámica:** Al estar anclada a la celda `CONFIGURACION!$B$3`, si la Gerencia modifica la meta de 300 a 250 puntos, todos los límites de los tramos se recalculan automáticamente en todo el histórico sin tocar el código.
 
 #### C. Columna I (`Bono Calidad`): Condición Habilitadora y Piso de Protección
@@ -310,11 +285,11 @@ Una vez consolidada la matriz base en columnas `A:F`, las columnas `G` a `J` cal
 ```
 * **Iteración Bivariada en `MAP`:** La función procesa dos vectores simultáneamente: el vector de puntos de esfuerzo (`pts` en columna E) y el vector de penalizaciones por error (`err` en columna F).
 * **Barrera de Calidad Condicionada:** `SI(pts < CONFIGURACION!$B$3; 0; ...)`: El bono de calidad **no es un derecho garantizado por el mero paso del tiempo**. Si el auxiliar no alcanza la meta de esfuerzo operativo de 300 puntos, el bono de calidad se liquida en **$0**, incentivando tanto el volumen como la presencia activa en bodega.
-* **Mecanismo de Descuento con Piso Financiero:**  
-  $$\text{Bono Calidad} = \max\Big(0,\; \text{Fondo Base} + (\text{errores} \times \text{Descuento})\Big)$$
-  Dado que `err` almacena valores negativos o cero (ej. `-2`), la operación `+ (err * $15.000)` ejecuta una sustracción aritmética directa:
-  $$\$70.000 + (-2 \times \$15.000) = \$70.000 - \$30.000 = \$40.000$$
-  La función `MAX(0; ...)` actúa como un **fusible financiero laboral**: si el auxiliar comete 6 errores ($-\$90.000$), el cálculo arroja $-\$20.000$, pero la función retorna **$0**, garantizando que las fallas nunca generen deuda para el colaborador ni toquen su salario base.
+* **Mecanismo de Descuento con Piso Financiero:**
+  * **Fórmula aplicada:** `Bono Calidad = MAX(0; Fondo Base + (errores × Descuento))`
+  * Dado que `err` almacena valores negativos o cero (ej. `-2`), la operación `+ (err × $15.000)` ejecuta una sustracción aritmética directa:
+    `$70.000 + (-2 × $15.000) = $70.000 - $30.000 = $40.000`
+  * La función `MAX(0; ...)` actúa como un **fusible financiero laboral**: si el auxiliar comete 6 errores (`-$90.000`), el cálculo arroja `-$20.000`, pero la función retorna **$0**, garantizando que las fallas nunca generen deuda para el colaborador ni toquen su salario base.
 
 #### D. Columna J (`Total BONO`): Consolidación Vectorial Neta
 ```excel
@@ -322,7 +297,7 @@ Una vez consolidada la matriz base en columnas `A:F`, las columnas `G` a `J` cal
   SI(prod=""; ""; prod + cal)
 ))
 ```
-* Suma linealmente los dos beneficios económicos causados en la quincena: $\text{Total BONO} = \text{Bono Productivo} + \text{Bono Calidad}$.
+* Suma linealmente los dos beneficios económicos causados en la quincena: `Total BONO = Bono Productivo + Bono Calidad`.
 
 ---
 
@@ -358,11 +333,12 @@ En la legislación laboral colombiana, los pagos por concepto de bonificaciones 
 > *"Los pagos laborales no constitutivos de salario de los trabajadores particulares no podrán exceder el cuarenta por ciento (40%) del total de la remuneración."*
 
 #### Riesgo Detectado en la Arquitectura V1.0:
-En la versión inicial se había configurado un bono máximo de **$600.000 por productividad** más **$200.000 por calidad**, para un total de **$800.000 quincenales ($1.600.000 mensuales)**.  
-Para un auxiliar de bodega con Salario Mínimo Legal Vigente (~$1.300.000 básicos):
-$$\text{Remuneración Total} = \$1.300.000 + \$1.600.000 = \$2.900.000$$
-$$\text{Tope Legal del 40\%} = \$2.900.000 \times 40\% = \$1.160.000$$
-$$\text{Excedente Gravable} = \$1.600.000 - \$1.160.000 = \mathbf{\$440.000}$$
+En la versión inicial se había configurado un bono máximo de **`$600.000` por productividad** más **`$200.000` por calidad**, para un total de **`$800.000` quincenales (`$1.600.000` mensuales)**.  
+Para un auxiliar de bodega con Salario Mínimo Legal Vigente (~`$1.300.000` básicos):
+* **Remuneración Total:** `$1.300.000 + $1.600.000 = $2.900.000`
+* **Tope Legal del 40%:** `$2.900.000 × 40% = $1.160.000`
+* **Excedente Gravable:** `$1.600.000 - $1.160.000 =` **`$440.000`**
+
 Ese excedente de $440.000 debía cotizar obligatoriamente a seguridad social (Salud, Pensión, ARL y Parafiscales), generando contingencias sancionatorias severas ante la **UGPP** (Unidad de Gestión Pensional y Parafiscales) y sobrecostos no presupuestados para la empresa.
 
 ---
@@ -441,9 +417,9 @@ BARRA DE NAVEGACIÓN (Position)
 
 #### Reglas de Formato Condicional (Format Rules):
 Configuradas en `App > Format Rules` sobre la tabla `BASE_HISTORICA`:
-1. **`Puntos`:** Condición `[Pts_Esfuerzo] >= 300` $\rightarrow$ Color Azul `#1A73E8` y negrilla (`Bold`).
-2. **`Errores`:** Condición `[Pts_Error] < 0` $\rightarrow$ Color Rojo `#D93025` y negrilla (`Bold`).
-3. **`Bonos`:** Condición `[Total BONO] > 0` $\rightarrow$ Ícono `usd-circle` con color de resalte Verde `#188038` y cifra en negrilla con color de texto base. Si el empleado no devengó bonificación (`$0`), la cifra permanece limpia sin ícono.
+1. **`Puntos`:** Condición `[Pts_Esfuerzo] >= 300` → Color Azul `#1A73E8` y negrilla (`Bold`).
+2. **`Errores`:** Condición `[Pts_Error] < 0` → Color Rojo `#D93025` y negrilla (`Bold`).
+3. **`Bonos`:** Condición `[Total BONO] > 0` → Ícono `usd-circle` con color de resalte Verde `#188038` y cifra en negrilla con color de texto base. Si el empleado no devengó bonificación (`$0`), la cifra permanece limpia sin ícono.
 
 ---
 
@@ -477,4 +453,29 @@ Para fines de control documental, auditoría técnica de sistemas y entregables 
 | **Navegación Móvil** | 4 accesos: Nuevo Registro, Historial Hoy, Resumen (Dashboard) y Seleccione Fecha. | 3 accesos: `NUEVO REGISTRO` (`first`), `HISTORIAL HOY` (`middle`) y `LIQUIDACION` (`last`). | Interfaz enfocada, limpia y ergonómica. Carga cognitiva mínima para el despachador. |
 | **Pantalla de Inicio** | Abría por defecto en la primera vista genérica. | `Starting view = NUEVO REGISTRO` configurado en `Settings > Views > General`. | Al abrir la app en bodega, entra directamente al formulario de captura listo para registrar. |
 | **Estilo de Formulario** | Formulario vertical tradicional. | `Form style = Side-by-side` con recarga continua (`Auto re-open = ON`). | Compactación visual en escritorio, adaptación vertical en móvil y captura masiva ininterrumpida. |
-| **Calibración Financiera** | Escala quincenal de $800.000 ($1.600.000 mensual) con riesgo severo ante la UGPP. | Escala calibrada con tope quincenal de $250.000 ($500.000 mensual) y tramos de 50 pts. | **100% blindado ante la regla del 40% de la Ley 1393 de 2010**. Estímulo quincenal sostenido sin sobrecostos fiscales. |
+| **Calibración Financiera** | Escala quincenal de `$800.000` (`$1.600.000` mensual) con riesgo severo ante la UGPP. | Escala calibrada con tope quincenal de `$250.000` (`$500.000` mensual) y tramos de 50 pts. | **100% blindado ante la regla del 40% de la Ley 1393 de 2010**. Estímulo quincenal sostenido sin sobrecostos fiscales. |
+| **Captura por WhatsApp (V2.1)** | Registro exclusivamente manual desde el formulario de la app. | Microservicio Serverless en Vercel (`/bot`) + Green API + Gemini Multimodal (`gemini-3.5-flash`). | Permite a la jefatura de bodega registrar despachos individuales o por bloques mediante notas de voz o texto en WhatsApp. |
+
+---
+
+## 8. Arquitectura del Canal Automatizado de WhatsApp con IA (`/bot` — Serverless en Vercel)
+
+En la actualización **Versión 2.1**, el sistema incorpora un segundo canal de captura de alta velocidad que coexiste con AppSheet y escribe directamente sobre la misma tabla transaccional `REGISTRO_DIARIO` en Google Sheets.
+
+### 8.1. Flujo de Procesamiento de Extremo a Extremo
+
+1. **Captura en WhatsApp (Green API Gateway):**
+   * El jefe de bodega envía un mensaje de texto o una nota de voz (`.ogg`) al número corporativo de Sistemas vinculado en **Green API**.
+   * Green API dispara en tiempo real una petición HTTP `POST` (Webhook) hacia el endpoint Serverless alojado en **Vercel** (`/api/webhook`).
+2. **Filtro de Privacidad *Fail-Closed* (`bot/api/webhook.py`):**
+   * Antes de procesar el contenido o invocar la IA, el webhook verifica que el remitente (`chatId`) coincida estrictamente con el número autorizado en la variable de entorno `CHAT_ID_PRUEBA`.
+   * Cualquier conversación de terceros en el teléfono corporativo es ignorada de inmediato (`ignored_other_chat`), garantizando privacidad total y cero consumo innecesario de cuota.
+3. **Extracción Multimodal Estructurada (`bot/src/parser_ai.py`):**
+   * El texto o los bytes del audio (`.ogg`) se envían en una sola llamada a **Gemini API (`gemini-3.5-flash`)** con `responseMimeType: "application/json"` y `temperature: 0.0`.
+   * El modelo extrae un arreglo JSON (`"despachos": [...]`) capaz de interpretar tanto **1 despacho individual** como **un lote de múltiples despachos** dictados en una misma nota de voz o texto.
+4. **Seguro de Integridad y Validación contra `EMPLEADOS` (`bot/src/sheets_service.py`):**
+   * Si falta el tipo de comprobante (`IC`, `DP`, `IR`), el número de factura o el nombre del auxiliar, o si los puntos están fuera de rango (`1..5` en esfuerzo y `0..-3` en error), el sistema aborta la operación antes de tocar Google Sheets y notifica por WhatsApp el motivo exacto.
+   * Si no se mencionan errores en el audio/texto, el sistema asigna `0` por defecto.
+   * El servicio consulta en vivo la pestaña `EMPLEADOS` (solo activos), cruza el nombre con su `ID_Empleado`, genera el identificador hexadecimal de 8 caracteres (`ID_Registro`) y la marca de tiempo de Colombia (`UTC-5`), e inserta todas las filas del bloque en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`.
+5. **Confirmación Instantánea (`bot/src/whatsapp_service.py`):**
+   * El bot responde al chat de WhatsApp con el resumen detallado del despacho (o listado numerado cuando se registra por bloque), reflejándose al instante en la vista `HISTORIAL HOY` y en la matriz `BASE_HISTORICA` de AppSheet.

@@ -1,6 +1,7 @@
 import os
 import re
-from PIL import Image
+import math
+from PIL import Image, ImageDraw, ImageFont
 import docx
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -13,6 +14,17 @@ from docx.oxml.ns import nsdecls, qn
 def hex_to_rgb(hex_str):
     hex_str = hex_str.lstrip('#')
     return RGBColor(*(int(hex_str[i:i+2], 16) for i in (0, 2, 4)))
+
+def add_image_border(run, color_hex="D9D9D9", width_emu=12700):
+    """Applies a 1pt (12700 EMUs) solid border around any picture inside the given run."""
+    color_clean = color_hex.lstrip('#')
+    for spPr in run._r.xpath('.//pic:spPr'):
+        ln = parse_xml(
+            f'<a:ln xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" w="{width_emu}">'
+            f'<a:solidFill><a:srgbClr val="{color_clean}"/></a:solidFill>'
+            f'</a:ln>'
+        )
+        spPr.append(ln)
 
 def set_cell_shading(cell, color_hex):
     tcPr = cell._tc.get_or_add_tcPr()
@@ -173,7 +185,7 @@ class MarkdownDocxBuilder:
             s_h1.font.size = Pt(15.0)
             s_h1.font.bold = True
             s_h1.font.color.rgb = hex_to_rgb('1E293B')
-            s_h1.paragraph_format.space_before = Pt(16)
+            s_h1.paragraph_format.space_before = Pt(0)
             s_h1.paragraph_format.space_after = Pt(6)
             s_h1.paragraph_format.keep_with_next = True
 
@@ -226,7 +238,7 @@ class MarkdownDocxBuilder:
             s_toch.font.size = Pt(15.0)
             s_toch.font.bold = True
             s_toch.font.color.rgb = hex_to_rgb('1E293B')
-            s_toch.paragraph_format.space_before = Pt(8)
+            s_toch.paragraph_format.space_before = Pt(0)
             s_toch.paragraph_format.space_after = Pt(14)
             s_toch.paragraph_format.keep_with_next = True
 
@@ -363,7 +375,7 @@ class MarkdownDocxBuilder:
 
     def add_table_of_contents(self):
         p_toc_title = self.doc.add_paragraph(style='TOC Heading')
-        p_toc_title.paragraph_format.space_before = Pt(8)
+        p_toc_title.paragraph_format.space_before = Pt(0)
         p_toc_title.paragraph_format.space_after = Pt(14)
         p_toc_title.paragraph_format.keep_with_next = True
         r = p_toc_title.add_run("TABLA DE CONTENIDO")
@@ -387,15 +399,11 @@ class MarkdownDocxBuilder:
         )
         p_fld._p.append(parse_xml(fld_xml))
 
-        # Page break after TOC so Section 1 begins cleanly on page 3
-        self.doc.add_page_break()
-
     def add_heading_1(self, text):
         p = self.doc.add_paragraph(style='Heading 1')
-        if self.h1_count > 0:
-            p.paragraph_format.page_break_before = True
+        p.paragraph_format.page_break_before = True
         self.h1_count += 1
-        p.paragraph_format.space_before = Pt(18)
+        p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(8)
         p.paragraph_format.keep_with_next = True
         r = p.add_run(text)
@@ -445,11 +453,41 @@ class MarkdownDocxBuilder:
         add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
 
     def add_bullet_item(self, text, indent_level=0):
-        p = self.doc.add_paragraph(style='List Bullet')
-        p.paragraph_format.left_indent = Inches(0.25 * (indent_level + 1))
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(2.5)
-        p.paragraph_format.line_spacing = 1.15
+        p = self.doc.add_paragraph(style='Normal')
+        if indent_level == 0:
+            p.paragraph_format.left_indent = Inches(0.28)
+            p.paragraph_format.first_line_indent = Inches(-0.18)
+            p.paragraph_format.space_before = Pt(4)
+            p.paragraph_format.space_after = Pt(4)
+            bullet_char = "•  "
+            bullet_color = "1E293B"
+        else:
+            p.paragraph_format.left_indent = Inches(0.54 if indent_level == 1 else 0.76)
+            p.paragraph_format.first_line_indent = Inches(-0.18)
+            p.paragraph_format.space_before = Pt(2)
+            p.paragraph_format.space_after = Pt(4)
+            bullet_char = "◦  " if indent_level == 1 else "▪  "
+            bullet_color = "475569"
+        p.paragraph_format.line_spacing = 1.2
+        r_bul = p.add_run(bullet_char)
+        r_bul.font.name = "Calibri"
+        r_bul.font.size = Pt(10.5)
+        r_bul.font.color.rgb = hex_to_rgb(bullet_color)
+        r_bul.bold = (indent_level == 0)
+        add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
+
+    def add_numbered_item(self, num_prefix, text, indent_level=0):
+        p = self.doc.add_paragraph(style='Normal')
+        p.paragraph_format.left_indent = Inches(0.28 if indent_level == 0 else 0.54)
+        p.paragraph_format.first_line_indent = Inches(-0.22)
+        p.paragraph_format.space_before = Pt(6) if indent_level == 0 else Pt(2.5)
+        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.line_spacing = 1.2
+        r_num = p.add_run(f"{num_prefix} ")
+        r_num.font.name = "Calibri"
+        r_num.font.size = Pt(10.5)
+        r_num.font.color.rgb = hex_to_rgb("1E293B")
+        r_num.bold = True
         add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
 
     def add_code_block(self, code_text):
@@ -482,7 +520,10 @@ class MarkdownDocxBuilder:
         p_sp.paragraph_format.space_before = Pt(0)
         p_sp.paragraph_format.space_after = Pt(4)
 
-    def add_callout(self, callout_text):
+    def add_callout(self, callout_lines):
+        if isinstance(callout_lines, str):
+            callout_lines = [callout_lines]
+
         table = self.doc.add_table(rows=1, cols=1)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         row = table.rows[0]
@@ -493,12 +534,82 @@ class MarkdownDocxBuilder:
         set_cell_shading(cell, "F0F9FF")
         set_callout_borders(cell, color="0284C7", sz="36")
         set_cell_margins(cell, top=120, bottom=120, left=180, right=180)
-        
-        p = cell.paragraphs[0]
-        p.paragraph_format.space_before = Pt(0)
-        p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing = 1.15
-        add_formatted_runs(p, callout_text, base_font="Calibri", base_size=10.0, base_color="1E293B")
+
+        first_p_used = False
+        in_callout_code = False
+
+        def get_next_p():
+            nonlocal first_p_used
+            if not first_p_used:
+                first_p_used = True
+                return cell.paragraphs[0]
+            return cell.add_paragraph()
+
+        for raw_line in callout_lines:
+            st = raw_line.strip()
+            if st.startswith('```'):
+                in_callout_code = not in_callout_code
+                continue
+
+            if in_callout_code:
+                p = get_next_p()
+                p.paragraph_format.left_indent = Inches(0.32)
+                p.paragraph_format.space_before = Pt(1)
+                p.paragraph_format.space_after = Pt(1)
+                p.paragraph_format.line_spacing = 1.1
+                r = p.add_run(raw_line)
+                r.font.name = "Consolas"
+                r.font.size = Pt(8.5)
+                r.font.color.rgb = hex_to_rgb("0F172A")
+                continue
+
+            if not st:
+                if first_p_used and cell.paragraphs:
+                    cell.paragraphs[-1].paragraph_format.space_after = Pt(5)
+                continue
+
+            bul_m = re.match(r'^(\s*)[*+-]\s+(.*)$', raw_line)
+            num_m = re.match(r'^(\s*)(\d+\.)\s+(.*)$', raw_line)
+
+            if bul_m:
+                spaces = len(bul_m.group(1))
+                lvl = 0 if spaces < 2 else 1
+                txt = bul_m.group(2).strip()
+                p = get_next_p()
+                p.paragraph_format.left_indent = Inches(0.20 if lvl == 0 else 0.40)
+                p.paragraph_format.first_line_indent = Inches(-0.15)
+                p.paragraph_format.space_before = Pt(3 if lvl == 0 else 1.5)
+                p.paragraph_format.space_after = Pt(2.5)
+                p.paragraph_format.line_spacing = 1.15
+                r_b = p.add_run("•  " if lvl == 0 else "◦  ")
+                r_b.font.name = "Calibri"
+                r_b.font.size = Pt(10.0)
+                r_b.font.color.rgb = hex_to_rgb("1E293B" if lvl == 0 else "475569")
+                r_b.bold = (lvl == 0)
+                add_formatted_runs(p, txt, base_font="Calibri", base_size=10.0, base_color="1E293B")
+            elif num_m:
+                spaces = len(num_m.group(1))
+                lvl = 0 if spaces < 2 else 1
+                num_str = num_m.group(2)
+                txt = num_m.group(3).strip()
+                p = get_next_p()
+                p.paragraph_format.left_indent = Inches(0.22 if lvl == 0 else 0.42)
+                p.paragraph_format.first_line_indent = Inches(-0.18)
+                p.paragraph_format.space_before = Pt(3)
+                p.paragraph_format.space_after = Pt(2.5)
+                p.paragraph_format.line_spacing = 1.15
+                r_n = p.add_run(f"{num_str} ")
+                r_n.font.name = "Calibri"
+                r_n.font.size = Pt(10.0)
+                r_n.font.color.rgb = hex_to_rgb("1E293B")
+                r_n.bold = True
+                add_formatted_runs(p, txt, base_font="Calibri", base_size=10.0, base_color="1E293B")
+            else:
+                p = get_next_p()
+                p.paragraph_format.space_before = Pt(2)
+                p.paragraph_format.space_after = Pt(3)
+                p.paragraph_format.line_spacing = 1.15
+                add_formatted_runs(p, st, base_font="Calibri", base_size=10.0, base_color="1E293B")
 
         p_sp = self.doc.add_paragraph()
         p_sp.paragraph_format.space_before = Pt(0)
@@ -588,6 +699,7 @@ class MarkdownDocxBuilder:
                             r_pic.add_picture(full_path, width=target_w, height=target_h)
                         except Exception:
                             r_pic.add_picture(full_path, width=min(base_width * 0.9, Inches(2.2)))
+                        add_image_border(r_pic, "D9D9D9")
                     if text_remaining:
                         p2 = cell.add_paragraph()
                         p2.paragraph_format.space_before = Pt(3)
@@ -649,6 +761,7 @@ class MarkdownDocxBuilder:
             run.add_picture(full_path, width=target_w, height=target_h)
         except Exception as e:
             run.add_picture(full_path, width=Pt(width_pts) if width_pts else Inches(4.5))
+        add_image_border(run, "D9D9D9")
 
         if caption:
             p_cap = self.doc.add_paragraph()
@@ -708,10 +821,33 @@ def parse_and_compile(md_filepath, docx_outpath, doc_title, doc_subtitle, metada
 
     in_callout = False
     callout_lines = []
+    in_manual_toc = False
 
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
+
+        # Skip manual markdown Table of Contents section when formal report already has native Word TOC
+        if is_formal_report and stripped.startswith('## '):
+            h1_title_lower = stripped[3:].strip().lower()
+            if h1_title_lower in ('tabla de contenidos', 'tabla de contenido', 'índice', 'indice'):
+                in_manual_toc = True
+                i += 1
+                continue
+            else:
+                in_manual_toc = False
+
+        if in_manual_toc:
+            i += 1
+            continue
+
+        # Skip duplicate header metadata lines before the first Heading 1 when formal cover page exists
+        if is_formal_report and builder.h1_count == 0 and re.match(
+            r'^\*\*(Proyecto|Empresa|Fecha|Autor|Entorno Tecnol[oó]gico|Destinatarios|Versi[oó]n|Estado):\*\*',
+            stripped
+        ):
+            i += 1
+            continue
 
         # 1. Code Block Handling
         if stripped.startswith('```'):
@@ -733,15 +869,15 @@ def parse_and_compile(md_filepath, docx_outpath, doc_title, doc_subtitle, metada
 
         # 2. Blockquote / Callout Handling
         if stripped.startswith('>'):
-            callout_text = stripped[1:].strip()
-            # If multiple callout lines, accumulate
-            callout_lines.append(callout_text)
+            callout_line = re.sub(r'^>\s?', '', stripped)
+            # Accumulate lines preserving structure inside the callout
+            callout_lines.append(callout_line)
             # Peek next line
             if i + 1 < len(lines) and lines[i+1].strip().startswith('>'):
                 i += 1
                 continue
             else:
-                builder.add_callout(' '.join(callout_lines))
+                builder.add_callout(callout_lines)
                 callout_lines = []
                 i += 1
                 continue
@@ -828,17 +964,20 @@ def parse_and_compile(md_filepath, docx_outpath, doc_title, doc_subtitle, metada
         # 7. Lists
         bullet_match = re.match(r'^(\s*)[*+-]\s+(.*)$', line)
         if bullet_match:
-            indent = len(bullet_match.group(1)) // 2
+            raw_spaces = len(bullet_match.group(1))
+            indent = 0 if raw_spaces < 2 else (1 if raw_spaces < 5 else 2)
             item_text = bullet_match.group(2).strip()
             builder.add_bullet_item(item_text, indent_level=indent)
             i += 1
             continue
 
-        num_match = re.match(r'^(\s*)\d+\.\s+(.*)$', line)
+        num_match = re.match(r'^(\s*)(\d+\.)\s+(.*)$', line)
         if num_match:
-            indent = len(num_match.group(1)) // 2
-            item_text = num_match.group(2).strip()
-            builder.add_bullet_item(item_text, indent_level=indent)
+            raw_spaces = len(num_match.group(1))
+            indent = 0 if raw_spaces < 2 else 1
+            num_prefix = num_match.group(2)
+            item_text = num_match.group(3).strip()
+            builder.add_numbered_item(num_prefix, item_text, indent_level=indent)
             i += 1
             continue
 
@@ -860,20 +999,141 @@ def parse_and_compile(md_filepath, docx_outpath, doc_title, doc_subtitle, metada
     builder.doc.save(docx_outpath)
     print(f"Successfully compiled: {docx_outpath}")
 
+def generate_architecture_diagram_png(out_path='docs/images/arquitectura_flujo_v2.png'):
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    W, H = 1800, 1260
+    img = Image.new("RGB", (W, H), "#FFFFFF")
+    draw = ImageDraw.Draw(img)
+
+    def get_font(bold=False, size=22):
+        path = "C:/Windows/Fonts/calibrib.ttf" if bold else "C:/Windows/Fonts/calibri.ttf"
+        try:
+            return ImageFont.truetype(path, size)
+        except Exception:
+            return ImageFont.load_default()
+
+    f_title = get_font(True, 29)
+    f_layer = get_font(True, 20)
+    f_box_title = get_font(True, 20)
+    f_box_sub = get_font(False, 17)
+    f_lbl = get_font(True, 15)
+
+    # Title banner
+    draw.rounded_rectangle([40, 20, W-40, 80], radius=12, fill="#1E293B")
+    draw.text((W//2, 50), "ARQUITECTURA GENERAL Y FLUJO DE INFORMACIÓN (VERSIÓN 2.1)", fill="#FFFFFF", font=f_title, anchor="mm")
+
+    # Layer backgrounds
+    draw.rounded_rectangle([40, 100, W-40, 360], radius=16, fill="#F8FAFC", outline="#CBD5E1", width=2)
+    draw.rounded_rectangle([40, 445, W-40, 675], radius=16, fill="#F0F9FF", outline="#BAE6FD", width=2)
+    draw.rounded_rectangle([40, 760, W-40, 1225], radius=16, fill="#F0FDF4", outline="#BBF7D0", width=2)
+
+    # Layer Top Bars (full width header strips inside each layer)
+    draw.rounded_rectangle([40, 100, W-40, 142], radius=16, fill="#0284C7")
+    draw.rectangle([40, 125, W-40, 142], fill="#0284C7")
+    draw.text((W//2, 121), "1. CAPA DE CAPTURA Y CONSULTA (APPSHEET MÓVIL / PWA + WHATSAPP BODEGA)", fill="#FFFFFF", font=f_layer, anchor="mm")
+
+    draw.rounded_rectangle([40, 445, W-40, 487], radius=16, fill="#0369A1")
+    draw.rectangle([40, 470, W-40, 487], fill="#0369A1")
+    draw.text((W//2, 466), "2. CAPA DE ORQUESTACIÓN Y PROCESAMIENTO EN LA NUBE (APPSHEET ENGINE + VERCEL IA)", fill="#FFFFFF", font=f_layer, anchor="mm")
+
+    draw.rounded_rectangle([40, 760, W-40, 802], radius=16, fill="#15803D")
+    draw.rectangle([40, 785, W-40, 802], fill="#15803D")
+    draw.text((W//2, 781), "3. CAPA DE ALMACENAMIENTO Y MOTOR MATRICIAL EN MEMORIA (GOOGLE SHEETS)", fill="#FFFFFF", font=f_layer, anchor="mm")
+
+    def draw_box(x1, y1, x2, y2, title, lines, bg="#FFFFFF", border="#334155", header_bg=None):
+        draw.rounded_rectangle([x1+3, y1+4, x2+3, y2+4], radius=12, fill="#E2E8F0")
+        draw.rounded_rectangle([x1, y1, x2, y2], radius=12, fill=bg, outline=border, width=3)
+        cx = (x1 + x2) // 2
+        if header_bg:
+            draw.rounded_rectangle([x1, y1, x2, y1+40], radius=12, fill=header_bg, outline=border, width=3)
+            draw.rectangle([x1+2, y1+26, x2-2, y1+40], fill=header_bg)
+            draw.text((cx, y1+21), title, fill="#FFFFFF", font=f_box_title, anchor="mm")
+            ty = y1 + 62
+        else:
+            draw.text((cx, y1+26), title, fill="#0F172A", font=f_box_title, anchor="mm")
+            ty = y1 + 56
+        for line in lines:
+            draw.text((cx, ty), line, fill="#334155", font=f_box_sub, anchor="mm")
+            ty += 24
+
+    def draw_arrow(x1, y1, x2, y2, color="#334155", label="", lx=None, ly=None, dashed=False):
+        if dashed:
+            dist = math.hypot(x2-x1, y2-y1)
+            steps = max(1, int(dist // 10))
+            for s in range(0, steps, 2):
+                px1 = x1 + (x2-x1)*s/steps
+                py1 = y1 + (y2-y1)*s/steps
+                px2 = x1 + (x2-x1)*min(s+1, steps)/steps
+                py2 = y1 + (y2-y1)*min(s+1, steps)/steps
+                draw.line([(px1, py1), (px2, py2)], fill=color, width=3)
+        else:
+            draw.line([(x1, y1), (x2, y2)], fill=color, width=4)
+        angle = math.atan2(y2-y1, x2-x1)
+        ah = 12
+        p1 = (x2 - ah*math.cos(angle - math.pi/6), y2 - ah*math.sin(angle - math.pi/6))
+        p2 = (x2 - ah*math.cos(angle + math.pi/6), y2 - ah*math.sin(angle + math.pi/6))
+        draw.polygon([(x2, y2), p1, p2], fill=color)
+        if label:
+            tx = lx if lx is not None else (x1+x2)//2
+            ty = ly if ly is not None else (y1+y2)//2
+            bbox = draw.textbbox((tx, ty), label, font=f_lbl, anchor="mm")
+            draw.rounded_rectangle([bbox[0]-8, bbox[1]-4, bbox[2]+8, bbox[3]+4], radius=5, fill="#FFFFFF", outline=color, width=2)
+            draw.text((tx, ty), label, fill=color, font=f_lbl, anchor="mm")
+
+    # Boxes Layer 1
+    draw_box(70, 162, 460, 338, "Vista NUEVO REGISTRO", ["Formulario táctil AppSheet", "Botonera Tipo (IC, DP, IR)", "Teclado numérico directo"], border="#0284C7", header_bg="#0284C7")
+    draw_box(495, 162, 885, 338, "Vista HISTORIAL HOY", ["Auditoría diaria en vivo", "Columna virtual Hora y Factura", "Edición bloqueada a los 15 min"], border="#0284C7", header_bg="#0284C7")
+    draw_box(920, 162, 1310, 338, "Vista LIQUIDACION", ["Drill-Down: Año > Mes > Quincena", "Ordenado por Pts_Esfuerzo", "Resaltado de bonos (> $0)"], border="#0284C7", header_bg="#0284C7")
+    draw_box(1345, 162, 1730, 338, "WhatsApp Bodega (Voz/Texto)", ["Notas de voz (.ogg) o texto", "Despacho individual o por bloque", "Confirmación instantánea"], border="#0D9488", header_bg="#0D9488")
+
+    # Boxes Layer 2
+    draw_box(120, 505, 1020, 655, "AppSheet Core Engine (Sincronización Bidireccional)", ["• Validación de campos obligatorios, reglas de negocio y seguridad (15 min)", "• Cálculo de columnas virtuales (Factura, Hora, ID_Liquidacion) y Format Rules"], border="#0369A1", header_bg="#0369A1")
+    draw_box(1090, 505, 1720, 655, "Bot Serverless Vercel + Green API + Gemini 3.5 Flash", ["• Filtro de privacidad Fail-Closed (CHAT_ID_PRUEBA)", "• Extracción multimodal JSON sin alucinación y cruce de EMPLEADOS"], border="#0F766E", header_bg="#0F766E")
+
+    # Boxes Layer 3
+    draw_box(80, 822, 560, 975, "Tabla REGISTRO_DIARIO", ["7 Columnas físicas atómicas", "(ID, Fecha_Hora, Empleado, Tipo, N°,", "Puntos_Esfuerzo, Puntos_Error)"], border="#15803D", header_bg="#15803D")
+    draw_box(640, 822, 1140, 975, "Tabla EMPLEADOS", ["Catálogo maestro de personal", "(ID_Empleado, Nombre_Completo, Activo)", "Validación de operarios activos"], border="#15803D", header_bg="#15803D")
+    draw_box(1200, 822, 1720, 975, "Tabla CONFIGURACION", ["Parámetros salariales y Ley 1393", "Meta Base (300 pts), Bono Calidad ($70.000)", "Matriz dinámica de tramos (A8:C12)"], border="#15803D", header_bg="#15803D")
+
+    draw_box(120, 1045, 1040, 1200, "Motor Matricial BASE_HISTORICA (En Memoria RAM)", ["Fórmula única en A1: LET + MAP + LAMBDA + QUERY", "Agrupa por Año, Mes, Quincena (Q1/Q2) e ID_Empleado y liquida Bonos (G1:J1)"], border="#1E293B", header_bg="#1E293B")
+    draw_box(1140, 1045, 1720, 1200, "Dashboard LIQUIDACION_MES", ["Tablero ejecutivo para Gerencia y Nómina", "Filtro dinámico por Año, Mes y Quincena"], border="#334155", header_bg="#334155")
+
+    # Arrows Layer 1 <-> Layer 2 (placed in the clean corridor y=360..445)
+    draw_arrow(265, 338, 300, 505, "#0284C7", "Inserta despacho", lx=280, ly=402)
+    draw_arrow(690, 505, 690, 338, "#0284C7", "Sincroniza hoy", lx=690, ly=402)
+    draw_arrow(920, 505, 1080, 338, "#0284C7", "Renderiza liquidación", lx=1010, ly=402)
+    draw_arrow(1535, 338, 1480, 505, "#0F766E", "Webhook audio/texto", lx=1510, ly=402)
+
+    # Arrows Layer 2 <-> Layer 3 (placed in the clean corridor y=675..760)
+    draw_arrow(260, 655, 260, 822, "#15803D", "Escribe fila", lx=260, ly=718)
+    draw_arrow(600, 1045, 600, 655, "#0369A1", "Alimenta vista jerárquica", lx=600, ly=718)
+    draw_arrow(1250, 655, 460, 822, "#0F766E", "Batch append (bloque/unidad)", lx=960, ly=718)
+    draw_arrow(1440, 655, 980, 822, "#0F766E", "Valida empleado activo", lx=1310, ly=718, dashed=True)
+
+    # Arrows inside Layer 3 (placed in the clean corridor y=975..1045)
+    draw_arrow(320, 975, 380, 1045, "#1E293B", "Lectura vectorial", lx=350, ly=1010, dashed=True)
+    draw_arrow(890, 975, 760, 1045, "#1E293B", "Cruza nombres", lx=825, ly=1010, dashed=True)
+    draw_arrow(1460, 975, 960, 1045, "#1E293B", "Meta y tramos", lx=1210, ly=1010, dashed=True)
+    draw_arrow(1040, 1122, 1140, 1122, "#334155", "QUERY")
+
+    img.save(out_path, "PNG", optimize=True)
+    print(f"Successfully generated architecture diagram: {out_path}")
+
 if __name__ == '__main__':
+    generate_architecture_diagram_png()
     # 1. Manual de Usuario Operativo
     parse_and_compile(
         md_filepath='docs/MANUAL_DE_USUARIO_OPERATIVO.md',
         docx_outpath='docs/MANUAL_DE_USUARIO_OPERATIVO.docx',
         doc_title='MANUAL DE USUARIO OPERATIVO',
-        doc_subtitle='Módulo Móvil (AppSheet) — Guía Integral para Despachadores y Bodega',
+        doc_subtitle='Módulo Móvil (AppSheet) y Bot de WhatsApp con IA — Guía Integral para Bodega',
         metadata={
             'Empresa': 'Intereléctricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Despachadores, Auxiliares de Bodega y Supervisión',
-            'Software': 'AppSheet PWA + Google Sheets Backend',
+            'Software': 'AppSheet PWA + Bot WhatsApp IA + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.0 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
         },
         short_title='Manual de Usuario Operativo',
         is_formal_report=True
@@ -884,14 +1144,14 @@ if __name__ == '__main__':
         md_filepath='docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md',
         docx_outpath='docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.docx',
         doc_title='INFORME TÉCNICO Y MANUAL DE CONFIGURACIÓN',
-        doc_subtitle='Arquitectura de Datos, Fórmulas de Liquidación e Interfaz Móvil (AppSheet + Google Sheets)',
+        doc_subtitle='Arquitectura de Datos, Fórmulas de Liquidación, AppSheet y Bot Serverless IA',
         metadata={
             'Empresa': 'Intereléctricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Dirección de Operaciones, TI y Auditoría',
-            'Software': 'AppSheet PWA + Google Sheets Backend',
+            'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.0 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
         },
         short_title='Informe Técnico y Manual de Configuración',
         is_formal_report=True
@@ -902,14 +1162,14 @@ if __name__ == '__main__':
         md_filepath='schemas/appsheet_config.md',
         docx_outpath='docs/CONFIGURACION_TECNICA_APPSHEET.docx',
         doc_title='CONFIGURACIÓN TÉCNICA DE APPSHEET',
-        doc_subtitle='Guía de Configuración Paso a Paso de Tablas, Columnas, Vistas y Reglas (V2.0)',
+        doc_subtitle='Guía de Configuración Paso a Paso de Tablas, Columnas, Vistas y Reglas (V2.1)',
         metadata={
             'Empresa': 'Intereléctricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Sistemas y Desarrolladores AppSheet',
             'Software': 'Motor AppSheet Core Engine',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.0 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
         },
         short_title='Configuración Técnica AppSheet',
         is_formal_report=True
@@ -920,14 +1180,14 @@ if __name__ == '__main__':
         md_filepath='docs/RUNBOOK_SOPORTE_TECNICO.md',
         docx_outpath='docs/RUNBOOK_SOPORTE_TECNICO.docx',
         doc_title='RUNBOOK DE SOPORTE TÉCNICO',
-        doc_subtitle='Diagnóstico de Incidencias, Mantenimiento Operativo y Contingencia (V2.0)',
+        doc_subtitle='Diagnóstico de Incidencias, Mantenimiento Operativo y Contingencia (V2.1)',
         metadata={
             'Empresa': 'Intereléctricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Soporte Técnico, TI y Operaciones',
-            'Software': 'AppSheet PWA + Google Sheets Backend',
+            'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.0 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
         },
         short_title='Runbook Soporte Técnico',
         is_formal_report=True

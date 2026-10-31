@@ -28,9 +28,9 @@
 
 ## 1. Permisos de Tablas (Data > Tables)
 
-*(Captura de referencia: [01_tables_permisos.png](../docs/images/appsheet_config_v2/01_tables_permisos.png))*
-
 Ir a **Data > Tables**. Para cada tabla configurar la propiedad **Are updates allowed?**:
+
+<img src="../docs/images/appsheet_config_v2/01_tables_permisos.png" alt="Configuración de Permisos en Data > Tables" width="420">
 
 | Tabla | Permiso | Razón Operativa y de Seguridad |
 | :--- | :--- | :--- |
@@ -53,7 +53,9 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 ### 2.1. Tabla: `EMPLEADOS`
 
-*(Capturas: [02_cols_empleados_01.png](../docs/images/appsheet_config_v2/02_cols_empleados_01.png), [02_cols_empleados_02.png](../docs/images/appsheet_config_v2/02_cols_empleados_02.png))*
+<img src="../docs/images/appsheet_config_v2/02_cols_empleados_01.png" alt="Columnas de la Tabla EMPLEADOS (Vista 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/02_cols_empleados_02.png" alt="Columnas de la Tabla EMPLEADOS (Vista 2)" width="420">
 
 #### A. Columnas base (provenientes de Google Sheets)
 
@@ -84,10 +86,11 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 ### 2.2. Tabla: `REGISTRO_DIARIO` (Formulario Optimizado)
 
-*(Capturas de columnas: [03_cols_registro_diario_01.png](../docs/images/appsheet_config_v2/03_cols_registro_diario_01.png), [03_cols_registro_diario_02.png](../docs/images/appsheet_config_v2/03_cols_registro_diario_02.png))*  
-*(Modales: [05_modal_tipo_documento_01.png](../docs/images/appsheet_config_v2/05_modal_tipo_documento_01.png), [06_modal_col_hora_01.png](../docs/images/appsheet_config_v2/06_modal_col_hora_01.png), [07_modal_col_factura_completa_01.png](../docs/images/appsheet_config_v2/07_modal_col_factura_completa_01.png))*
-
 Esta tabla transaccional implementa la separación ergonómica entre comprobante (`Tipo_Factura`) y número consecutivo (`Numero_Factura`), disparando el teclado numérico puro en el móvil, y agrega las columnas virtuales `Factura` (como `LABEL`) y `Hora`.
+
+<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_01.png" alt="Columnas de REGISTRO_DIARIO (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_02.png" alt="Columnas de REGISTRO_DIARIO (Parte 2)" width="420">
 
 #### A. Columnas físicas (Google Sheets: 7 columnas)
 
@@ -153,14 +156,23 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
 >   * **Auto Compute > Initial value:** `0` *(por defecto el despacho no tiene error)*
 >   * **Display Name:** `Puntos Error`
 
+#### C. Modales de Configuración de Columnas en `REGISTRO_DIARIO`
+
+<img src="../docs/images/appsheet_config_v2/05_modal_tipo_documento_01.png" alt="Modal de Configuración: Columna Tipo_Factura (Botones IC, DP, IR)" width="400">
+
+<img src="../docs/images/appsheet_config_v2/06_modal_col_hora_01.png" alt="Modal de Configuración: Columna Virtual Hora" width="400">
+
+<img src="../docs/images/appsheet_config_v2/07_modal_col_factura_completa_01.png" alt="Modal de Configuración: Columna Virtual Factura (LABEL)" width="400">
+
 ---
 
 ### 2.3. Tabla: `BASE_HISTORICA` (Motor de Liquidación)
 
-*(Capturas de columnas: [04_cols_base_historica_01.png](../docs/images/appsheet_config_v2/04_cols_base_historica_01.png), [04_cols_base_historica_02.png](../docs/images/appsheet_config_v2/04_cols_base_historica_02.png))*  
-*(Modal ID_Liquidacion: [08_modal_id_liquidacion_01.png](../docs/images/appsheet_config_v2/08_modal_id_liquidacion_01.png), [08_modal_id_liquidacion_02.png](../docs/images/appsheet_config_v2/08_modal_id_liquidacion_02.png))*
-
 Esta tabla se alimenta de la hoja `BASE_HISTORICA` en Google Sheets (generada por la fórmula matricial `LET` + `QUERY` en segundo plano).
+
+<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_01.png" alt="Columnas de BASE_HISTORICA (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_02.png" alt="Columnas de BASE_HISTORICA (Parte 2)" width="420">
 
 #### A. Columnas base (provenientes de Google Sheets: 10 columnas)
 
@@ -225,13 +237,19 @@ Esta tabla se alimenta de la hoja `BASE_HISTORICA` en Google Sheets (generada po
 >
 > * **Columnas `EDITABLE?`:** Todas en `FALSE` *(datos calculados por el motor de hoja de cálculo)*.
 
+#### C. Modal de Clave Primaria Virtual `ID_Liquidacion` en `BASE_HISTORICA`
+
+<img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_01.png" alt="Modal ID_Liquidacion: Fórmula CONCATENATE (Vista 1)" width="400">
+
+<img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_02.png" alt="Modal ID_Liquidacion: Propiedades y Tipo (Vista 2)" width="400">
+
 ---
 
 ## 3. Configuración de Slices (Data > Slices)
 
-*(Captura de referencia: [09_slice_registro_hoy.png](../docs/images/appsheet_config_v2/09_slice_registro_hoy.png))*
-
 Ir a **Data > Slices**. Se utiliza un único slice para filtrar en tiempo real los despachos de la jornada:
+
+<img src="../docs/images/appsheet_config_v2/09_slice_registro_hoy.png" alt="Configuración del Slice REGISTRO_HOY" width="420">
 
 ### Slice: `REGISTRO_HOY`
 
@@ -259,7 +277,11 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 ### 4.1. Vista: `NUEVO REGISTRO`
 
-*(Capturas: [10_view_nuevo_registro_01.png](../docs/images/appsheet_config_v2/10_view_nuevo_registro_01.png), [10_view_nuevo_registro_02.png](../docs/images/appsheet_config_v2/10_view_nuevo_registro_02.png), [10_view_nuevo_registro_03.png](../docs/images/appsheet_config_v2/10_view_nuevo_registro_03.png))*
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_01.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_02.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 2)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_03.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 3)" width="420">
 
 | Propiedad | Configuración | Justificación / Comportamiento |
 | :--- | :--- | :--- |
@@ -279,7 +301,9 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 ### 4.2. Vista: `HISTORIAL HOY`
 
-*(Capturas: [11_view_historial_hoy_01.png](../docs/images/appsheet_config_v2/11_view_historial_hoy_01.png), [11_view_historial_hoy_02.png](../docs/images/appsheet_config_v2/11_view_historial_hoy_02.png))*
+<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_01.png" alt="Configuración de Vista HISTORIAL HOY (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_02.png" alt="Configuración de Vista HISTORIAL HOY (Parte 2)" width="420">
 
 | Propiedad | Configuración |
 | :--- | :--- |
@@ -297,9 +321,11 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 ### 4.3. Vista: `LIQUIDACION` (Drill-Down Jerárquico)
 
-*(Capturas: [12_view_liquidacion_01.png](../docs/images/appsheet_config_v2/12_view_liquidacion_01.png), [12_view_liquidacion_02.png](../docs/images/appsheet_config_v2/12_view_liquidacion_02.png))*
-
 Esta vista reemplaza completamente los antiguos dashboards quincenales y mensuales, permitiendo consultar cualquier período de la historia con navegación táctil nativa.
+
+<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_01.png" alt="Configuración de Vista LIQUIDACION (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_02.png" alt="Configuración de Vista LIQUIDACION (Parte 2)" width="420">
 
 | Propiedad | Configuración |
 | :--- | :--- |
@@ -326,7 +352,10 @@ Esta vista reemplaza completamente los antiguos dashboards quincenales y mensual
 ### 4.4. Vistas de Detalle del Sistema
 
 #### A. Vista de detalle: `BASE_HISTORICA_Detail`
-*(Capturas: [13_view_base_historica_detail_01.png](../docs/images/appsheet_config_v2/13_view_base_historica_detail_01.png), [13_view_base_historica_detail_02.png](../docs/images/appsheet_config_v2/13_view_base_historica_detail_02.png))*
+
+<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_01.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 1)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_02.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 2)" width="420">
 
 Se abre al tocar cualquier colaborador dentro de la tabla de liquidación:
 * **View type:** `detail`
@@ -339,9 +368,9 @@ Se abre al tocar cualquier colaborador dentro de la tabla de liquidación:
 
 ## 5. Ajustes Globales y Pantalla de Inicio (Settings)
 
-*(Captura de referencia: [09b_settings_starting_view.png](../docs/images/appsheet_config_v2/09b_settings_starting_view.png))*
-
 Para garantizar la máxima agilidad operativa en los teléfonos de bodega:
+
+<img src="../docs/images/appsheet_config_v2/09b_settings_starting_view.png" alt="Configuración de Starting View en Settings > Views > General" width="420">
 
 1. Ir a **Settings > Views > General**:
    * **Starting view:** Seleccionar `NUEVO REGISTRO`.
@@ -354,9 +383,9 @@ Para garantizar la máxima agilidad operativa en los teléfonos de bodega:
 
 ## 6. Reglas de Comportamiento (App > Actions)
 
-*(Captura de referencia: [14_action_bloqueo_15min.png](../docs/images/appsheet_config_v2/14_action_bloqueo_15min.png))*
-
 ### Restricción de edición a 15 minutos: tabla `REGISTRO_DIARIO`
+
+<img src="../docs/images/appsheet_config_v2/14_action_bloqueo_15min.png" alt="Regla de Bloqueo de Edición a los 15 Minutos (App > Actions)" width="420">
 
 Ir a **App > Actions > REGISTRO_DIARIO > acción del sistema `Edit`**:
 
@@ -374,9 +403,11 @@ Ir a **App > Actions > REGISTRO_DIARIO > acción del sistema `Edit`**:
 
 ## 7. Reglas de Formato Condicional (App > Format Rules)
 
-*(Capturas: [15_format_rules_lista.png](../docs/images/appsheet_config_v2/15_format_rules_lista.png), [16_format_rule_bonos.png](../docs/images/appsheet_config_v2/16_format_rule_bonos.png))*
-
 Ir a **App > Format Rules**. Existen **3 reglas activas** configuradas para la tabla `BASE_HISTORICA`:
+
+<img src="../docs/images/appsheet_config_v2/15_format_rules_lista.png" alt="Listado de Reglas de Formato Condicional (Puntos, Errores, Bonos)" width="420">
+
+<img src="../docs/images/appsheet_config_v2/16_format_rule_bonos.png" alt="Detalle de Regla de Formato Condicional: Bonos ([Total BONO] > 0)" width="420">
 
 | Rule Name | For this data | Format these columns | Condition (Fórmula de Activación) | Formato Visual / Resalte |
 | :--- | :--- | :--- | :--- | :--- |
@@ -414,10 +445,13 @@ Para fines de trazabilidad y auditoría de desarrollo, la siguiente matriz sinte
 
 Las siguientes capturas corresponden al funcionamiento real de la aplicación en los dispositivos móviles de bodega:
 
-* **Formulario de Despacho:** [17_app_pantalla_formulario.jpg](../docs/images/appsheet_config_v2/17_app_pantalla_formulario.jpg) — Captura del formulario en Android con botonera de `Tipo Factura` (`IC`, `DP`, `IR`), consecutivo numérico y selectores de puntos y penalizaciones.
-* **Historial Diario en Vivo:** [18_app_pantalla_historial.jpg](../docs/images/appsheet_config_v2/18_app_pantalla_historial.jpg) — Tabla `HISTORIAL HOY` mostrando despachos ordenados por hora (`12:57 p. m.`), código de factura concatenado (`DP-36278`, `IR-48351`) y operario.
-* **Navegación Drill-Down:** [19_app_pantalla_liquidacion_mes.jpg](../docs/images/appsheet_config_v2/19_app_pantalla_liquidacion_mes.jpg) — Pantalla de selección de Mes (`Octubre >`).
-* **Tabla Quincenal Consolidada:** [20_app_pantalla_liquidacion_tabla_01.jpg](../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_01.jpg), [20_app_pantalla_liquidacion_tabla_02.jpg](../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_02.jpg) — Tabla final dividida por quincenas (`1ra Quincena · Octubre 2026` y `2da Quincena · Octubre 2026`), ordenando colaboradores por puntos de esfuerzo y resaltando en verde con ícono `usd-circle` a quienes superaron la meta (`Edward Sanchez: 455 pts -> $300.000`).
+| Formulario de Despacho (`NUEVO REGISTRO`) | Historial Diario en Vivo (`HISTORIAL HOY`) |
+| :---: | :---: |
+| <img src="../docs/images/appsheet_config_v2/17_app_pantalla_formulario.jpg" alt="Formulario de Despacho en Android" width="260"><br>Botonera de `Tipo Factura` (`IC`, `DP`, `IR`), consecutivo numérico y selectores de puntos y penalizaciones. | <img src="../docs/images/appsheet_config_v2/18_app_pantalla_historial.jpg" alt="Historial Diario en Vivo" width="260"><br>Tabla `HISTORIAL HOY` mostrando despachos ordenados por hora (`12:57 p. m.`), factura concatenada y operario. |
+
+| Navegación Drill-Down por Mes | Tabla Quincenal Consolidada (1ra Quincena) | Tabla Quincenal Consolidada (2da Quincena) |
+| :---: | :---: | :---: |
+| <img src="../docs/images/appsheet_config_v2/19_app_pantalla_liquidacion_mes.jpg" alt="Navegación Drill-Down por Mes" width="200"><br>Selección táctil de Mes (`Octubre >`). | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_01.jpg" alt="Tabla Quincenal 1ra Quincena" width="200"><br>`1ra Quincena · Octubre 2026` con bono resaltado en verde. | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_02.jpg" alt="Tabla Quincenal 2da Quincena" width="200"><br>`2da Quincena · Octubre 2026` ordenada por puntos de esfuerzo. |
 
 ---
 
@@ -442,7 +476,7 @@ Antes del despliegue masivo en bodega, cotejar cada punto contra la app real en 
 - [ ] **Vista `LIQUIDACION`:**
   - Configurada en `Position = last`, icono `file-invoice` y con `Column width = Wide`.
   - Ordenada por `Pts_Esfuerzo` descendente (de mayor a menor esfuerzo).
-  - En celular navega fluidamente por drill-down: `Año` $\rightarrow$ `Mes` $\rightarrow$ Tabla quincenal.
+  - En celular navega fluidamente por drill-down: `Año` → `Mes` → Tabla quincenal.
   - La tabla quincenal muestra únicamente `Nombre`, `Pts_Esfuerzo`, `Pts_Error` y `Total BONO`.
 - [ ] **Detalle de Colaborador:**
   - Al presionar una fila en `LIQUIDACION`, el encabezado grande desaparece (`Header columns = None`).
