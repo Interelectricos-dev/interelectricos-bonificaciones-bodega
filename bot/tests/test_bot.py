@@ -82,11 +82,15 @@ def escuchar_whatsapp_continuo() -> None:
                 print(json.dumps(lote_despachos, indent=2, ensure_ascii=False), flush=True)
 
                 print("\n2️⃣ GUARDANDO EN GOOGLE SHEETS (REGISTRO_DIARIO)...", flush=True)
-                registros = guardar_en_google_sheets(lote_despachos)
-                for r in registros:
+                resultado = guardar_en_google_sheets(lote_despachos)
+                nuevos = resultado["nuevos"]
+                duplicados = resultado["duplicados"]
+                for r in nuevos:
                     print("   ✅ Fila insertada:", r["fila_sheets"], flush=True)
+                for d in duplicados:
+                    print("   ⚠️ Omitido por duplicidad:", d["fila_sheets"], flush=True)
 
-                confirmacion = formatear_mensaje_confirmacion(registros)
+                confirmacion = formatear_mensaje_confirmacion(nuevos, duplicados)
                 print("\n3️⃣ ENVIANDO CONFIRMACIÓN A WHATSAPP...", flush=True)
                 wa.enviar_mensaje(chat_id, confirmacion)
                 print("   ✅ ¡Confirmación enviada! Esperando el siguiente mensaje...", flush=True)

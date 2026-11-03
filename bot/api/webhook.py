@@ -70,16 +70,19 @@ class handler(BaseHTTPRequestHandler):
                 else:
                     lote_despachos = parse_con_gemini(texto=texto)
 
-                registros = guardar_en_google_sheets(lote_despachos)
-                confirmacion = formatear_mensaje_confirmacion(registros)
+                resultado = guardar_en_google_sheets(lote_despachos)
+                nuevos = resultado["nuevos"]
+                duplicados = resultado["duplicados"]
+                confirmacion = formatear_mensaje_confirmacion(nuevos, duplicados)
                 wa.enviar_mensaje(chat_id, confirmacion)
 
                 self._responder_json(
                     200,
                     {
-                        "status": "registered",
-                        "count": len(registros),
-                        "rows": [r["fila_sheets"] for r in registros],
+                        "status": "registered" if nuevos else "all_duplicates",
+                        "count_nuevos": len(nuevos),
+                        "count_duplicados": len(duplicados),
+                        "rows": [r["fila_sheets"] for r in nuevos],
                     },
                 )
             except Exception as err_negocio:

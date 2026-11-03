@@ -434,6 +434,22 @@ Para evitar alteraciones fraudulentas o accidentales en registros consolidados, 
     TOTALMINUTES(NOW() - [Fecha_Hora]) <= 15
     ```
   * **Efecto Operativo:** Durante los primeros 15 minutos posteriores a la creación del despacho, el botón de edición (ícono de lápiz) permanece visible y accesible para subsanar errores tipográficos inmediatos. Cumplido este lapso, el sistema oculta automáticamente la acción, congelando la fila de manera perpetua en modo de solo lectura.
+* **Regla Antiduplicados por Colaborador (`Valid_If` en `Numero_Factura`):**
+  * Para erradicar dobles digitaciones y dobles clics accidentales en el botón *Save*, la columna `Numero_Factura` implementa la restricción:
+    ```excel
+    ISBLANK(
+      FILTER(
+        "REGISTRO_DIARIO",
+        AND(
+          [ID_Registro] <> [_THISROW].[ID_Registro],
+          [Tipo_Factura] = [_THISROW].[Tipo_Factura],
+          [Numero_Factura] = [_THISROW].[Numero_Factura],
+          [Empleado] = [_THISROW].[Empleado]
+        )
+      )
+    )
+    ```
+  * **Comportamiento:** Bloquea el guardado si la misma combinación de comprobante, número y auxiliar ya existe. Si la orden fue alistada entre dos colaboradores distintos (pedido compartido), el sistema permite válidamente registrarla para ambos.
 * **Inhabilitación de Eliminaciones:** La propiedad `Deletes` se mantiene desmarcada en todas las tablas de AppSheet. Ningún usuario en bodega puede borrar transacciones.
 
 ---
@@ -474,9 +490,13 @@ En la actualización **Versión 2.1**, el sistema incorpora un segundo canal de 
 3. **Extracción Multimodal Estructurada (`bot/src/parser_ai.py`):**
    * El texto o los bytes del audio (`.ogg`) se envían en una sola llamada a **Gemini API (`gemini-3.5-flash`)** con `responseMimeType: "application/json"` y `temperature: 0.0`.
    * El modelo extrae un arreglo JSON (`"despachos": [...]`) capaz de interpretar tanto **1 despacho individual** como **un lote de múltiples despachos** dictados en una misma nota de voz o texto.
-4. **Seguro de Integridad y Validación contra `EMPLEADOS` (`bot/src/sheets_service.py`):**
+4. **Seguro de Integridad, Validación contra `EMPLEADOS` y Antiduplicados `batchGet` (`bot/src/sheets_service.py`):**
    * Si falta el tipo de comprobante (`IC`, `DP`, `IR`), el número de factura o el nombre del auxiliar, o si los puntos están fuera de rango (`1..5` en esfuerzo y `0..-3` en error), el sistema aborta la operación antes de tocar Google Sheets y notifica por WhatsApp el motivo exacto.
    * Si no se mencionan errores en el audio/texto, el sistema asigna `0` por defecto.
-   * El servicio consulta en vivo la pestaña `EMPLEADOS` (solo activos), cruza el nombre con su `ID_Empleado`, genera el identificador hexadecimal de 8 caracteres (`ID_Registro`) y la marca de tiempo de Colombia (`UTC-5`), e inserta todas las filas del bloque en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`.
-5. **Confirmación Instantánea (`bot/src/whatsapp_service.py`):**
-   * El bot responde al chat de WhatsApp con el resumen detallado del despacho (o listado numerado cuando se registra por bloque), reflejándose al instante en la vista `HISTORIAL HOY` y en la matriz `BASE_HISTORICA` de AppSheet.
+   * **Lectura optimizada `batchGet` de ultra-baja latencia:** En una sola petición HTTP de red, el microservicio consulta tanto el catálogo de personal activo (`EMPLEADOS!A2:C100`) como las facturas existentes (`REGISTRO_DIARIO!C2:E`).
+   * **Filtro antiduplicados en memoria:** Cruza cada elemento del lote contra `(ID_Empleado, Tipo_Factura, Numero_Factura)`. Si la factura ya fue registrada para ese colaborador (o se dictó repetida en el mismo audio), se aparta como duplicado sin insertarse en la hoja. Si pertenece a colaboradores distintos (pedido compartido), se valida y se permite.
+   * Los registros válidos se insertan de forma atómica en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`. Si todos los despachos eran duplicados, el microservicio ahorra la llamada de escritura.
+5. **Confirmación Instantánea con Alertas de Duplicidad (`bot/src/whatsapp_service.py`):**
+   * El bot responde al chat de WhatsApp con el resumen detallado del despacho (o listado numerado cuando se registra por bloque).
+   * Si se omitieron comprobantes por duplicidad, el mensaje advierte con claridad: *"⚠️ Omitidos por duplicidad: • [Auxiliar]: [Documento]"*, o avisa de forma cortés si todo el audio ya se encontraba previamente registrado.
+   * Los registros válidos aparecen reflejados al instante en la vista `HISTORIAL HOY` y en la matriz `BASE_HISTORICA` de AppSheet.

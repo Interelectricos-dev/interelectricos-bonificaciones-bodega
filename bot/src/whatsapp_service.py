@@ -92,14 +92,31 @@ class GreenAPIService:
         return chat_id, None, None
 
 
-def formatear_mensaje_confirmacion(registros: List[Dict[str, Any]]) -> str:
+def formatear_mensaje_confirmacion(
+    nuevos: List[Dict[str, Any]],
+    duplicados: Optional[List[Dict[str, Any]]] = None,
+) -> str:
     """
     Genera el mensaje de respuesta para Luis en WhatsApp.
-    Si es 1 despacho muestra tarjeta detallada; si son varios muestra resumen por bloque.
+    Maneja despachos nuevos registrados y avisa con claridad si hubo omitidos por duplicidad.
     """
-    if len(registros) == 1:
-        r = registros[0]
-        return (
+    duplicados = duplicados or []
+    partes: List[str] = []
+
+    # Caso A: Todos fueron duplicados (ninguno nuevo insertado)
+    if not nuevos and duplicados:
+        partes.append("⚠️ *Aviso de duplicidad:*")
+        partes.append(
+            "Los siguientes despachos ya estaban registrados previamente para sus auxiliares (no se sumaron duplicados):"
+        )
+        for d in duplicados:
+            partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
+        return "\n".join(partes)
+
+    # Caso B: 1 despacho nuevo
+    if len(nuevos) == 1:
+        r = nuevos[0]
+        partes.append(
             "✅ *¡Despacho registrado con éxito!*\n"
             f"📄 *Documento:* {r['factura_label']}\n"
             f"👷 *Auxiliar:* {r['nombre_oficial']} (ID: {r['id_empleado']})\n"
@@ -107,12 +124,22 @@ def formatear_mensaje_confirmacion(registros: List[Dict[str, Any]]) -> str:
             f"⚠️ *Errores:* {r['puntos_error']}\n"
             f"🕒 *Hora:* {r['fecha_hora']} (ID: `{r['id_registro']}`)"
         )
+    # Caso C: Múltiples despachos nuevos
+    elif len(nuevos) > 1:
+        partes.append(f"✅ *¡{len(nuevos)} despachos registrados en bloque!*")
+        for idx, r in enumerate(nuevos, start=1):
+            partes.append(
+                f"{idx}. *{r['factura_label']}* — {r['nombre_oficial']} "
+                f"({r['puntos_esfuerzo']} pts | {r['puntos_error']} err)"
+            )
+        partes.append(f"🕒 *Hora:* {nuevos[0]['fecha_hora']}")
 
-    lineas = [f"✅ *¡{len(registros)} despachos registrados en bloque!*"]
-    for idx, r in enumerate(registros, start=1):
-        lineas.append(
-            f"{idx}. *{r['factura_label']}* — {r['nombre_oficial']} "
-            f"({r['puntos_esfuerzo']} pts | {r['puntos_error']} err)"
+    # Si hubo duplicados en un lote mixto, agregamos la advertencia al final
+    if duplicados:
+        partes.append(
+            "\n⚠️ *Omitidos por duplicidad (ya registrados previamente):*"
         )
-    lineas.append(f"🕒 *Hora:* {registros[0]['fecha_hora']}")
-    return "\n".join(lineas)
+        for d in duplicados:
+            partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
+
+    return "\n".join(partes)

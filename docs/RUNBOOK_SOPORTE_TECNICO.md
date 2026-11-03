@@ -175,6 +175,18 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 
 ---
 
+### Incidente 8: El sistema rechaza un número de factura ("Esta factura ya fue registrada previamente para este colaborador")
+* **Síntoma:** En AppSheet, al ingresar el número de factura, la casilla se resalta en rojo y muestra el mensaje `⚠️ Esta factura ya fue registrada previamente para este colaborador`. En WhatsApp, el bot responde que la factura fue omitida por duplicidad.
+* **Causa:** La regla de negocio antiduplicados `(Empleado + Tipo_Factura + Numero_Factura)` detectó que dicho documento ya fue cargado previamente para ese mismo operario en la hoja `REGISTRO_DIARIO`.
+* **Procedimiento de Diagnóstico y Soporte:**
+  1. **Verificar en `HISTORIAL HOY`:** En la app móvil, ir a `HISTORIAL HOY` y filtrar por el número de factura. Validar la hora y el auxiliar al que le fue acreditada originalmente.
+  2. **Caso de Doble Registro Accidental:** Si el despachador o Luis intentó guardarla dos veces (por ejemplo, doble clic al guardar en AppSheet o reenvío de nota de voz de días anteriores), la validación operó correctamente protegiendo el puntaje. Indicar al operario que la factura ya está contabilizada y no requiere reenvío.
+  3. **Caso de Error Tipográfico en el Número:** Si el auxiliar digitó un número por equivocación y ahora coincide con una factura vieja, confrontar el documento físico impreso y digitar el número consecutivo real.
+  4. **Caso de Pedido Compartido Legítimo:** Si la factura fue alistada entre dos colaboradores distintos (ej. cables por Edward y aparamenta por Sneider), recordar al usuario que **el sistema sí permite registrar la misma factura seleccionando al otro colaborador**. El bloqueo aplica única y exclusivamente cuando se intenta repetir para el *mismo* auxiliar.
+  5. **Corrección Administrativa de Excepción:** Si un registro antiguo tenía el número equivocado y bloquea una factura legítima del día, el Administrador de Sistemas puede corregir el consecutivo erróneo en la celda correspondiente de `REGISTRO_DIARIO` en Google Sheets. Al sincronizar la app, el bloqueo quedará liberado de inmediato.
+
+---
+
 ## 4. Procedimientos de Mantenimiento Preventivo y Rutinario
 
 ### 4.1. Alta o Baja de Personal Operativo

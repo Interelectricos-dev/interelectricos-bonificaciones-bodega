@@ -132,6 +132,22 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
 > * **`Numero_Factura`:**
 >   * **Type:** `Number` *(dispara automáticamente el teclado numérico directo en Android/iOS)*
 >   * **Display Name:** `N° Factura`
+>   * **Data Validity > Valid_If:**
+>     ```excel
+>     ISBLANK(
+>       FILTER(
+>         "REGISTRO_DIARIO",
+>         AND(
+>           [ID_Registro] <> [_THISROW].[ID_Registro],
+>           [Tipo_Factura] = [_THISROW].[Tipo_Factura],
+>           [Numero_Factura] = [_THISROW].[Numero_Factura],
+>           [Empleado] = [_THISROW].[Empleado]
+>         )
+>       )
+>     )
+>     ```
+>   * **Data Validity > Invalid value error:** `"⚠️ Esta factura ya fue registrada previamente para este colaborador."`
+>   * *Garantiza que una misma factura no sea cargada dos veces al mismo colaborador, previniendo dobles digitaciones accidentales pero permitiendo el trabajo compartido legítimo si dos colaboradores alistaron la misma factura.*
 >
 > * **`Factura` (Columna Virtual):**
 >   * **App formula:** `[Tipo_Factura] & "-" & [Numero_Factura]`
