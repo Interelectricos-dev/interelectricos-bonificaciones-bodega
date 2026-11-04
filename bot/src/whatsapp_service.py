@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 class GreenAPIService:
-    """Cliente ligero para Green API reutilizando la configuración de Intereléctricos."""
+    """Cliente ligero para Green API reutilizando la configuración de Interelectricos."""
 
     def __init__(self) -> None:
         self.host = os.getenv("GREEN_HOST", "https://7107.api.greenapi.com").rstrip("/")
@@ -107,7 +107,7 @@ def formatear_mensaje_confirmacion(
     if not nuevos and duplicados:
         partes.append("⚠️ *Aviso de duplicidad:*")
         partes.append(
-            "Los siguientes despachos ya estaban registrados previamente para sus auxiliares (no se sumaron duplicados):"
+            "Los siguientes despachos ya estaban registrados previamente para sus auxiliares:"
         )
         for d in duplicados:
             partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")

@@ -53,9 +53,9 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 ### 2.1. Tabla: `EMPLEADOS`
 
-<img src="../docs/images/appsheet_config_v2/02_cols_empleados_01.png" alt="Columnas de la Tabla EMPLEADOS (Vista 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/02_cols_empleados_01.png" alt="Columnas de la Tabla EMPLEADOS (Vista 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/02_cols_empleados_02.png" alt="Columnas de la Tabla EMPLEADOS (Vista 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/02_cols_empleados_02.png" alt="Columnas de la Tabla EMPLEADOS (Vista 2)" width="440">
 
 #### A. Columnas base (provenientes de Google Sheets)
 
@@ -88,9 +88,9 @@ El apartado **Ajustes internos** contiene las propiedades avanzadas accesibles a
 
 Esta tabla transaccional implementa la separación ergonómica entre comprobante (`Tipo_Factura`) y número consecutivo (`Numero_Factura`), disparando el teclado numérico puro en el móvil, y agrega las columnas virtuales `Factura` (como `LABEL`) y `Hora`.
 
-<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_01.png" alt="Columnas de REGISTRO_DIARIO (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_01.png" alt="Columnas de REGISTRO_DIARIO (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_02.png" alt="Columnas de REGISTRO_DIARIO (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/03_cols_registro_diario_02.png" alt="Columnas de REGISTRO_DIARIO (Parte 2)" width="440">
 
 #### A. Columnas físicas (Google Sheets: 7 columnas)
 
@@ -112,73 +112,79 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
 | `Factura` | `Text` | - | Sí | Sí | - | - | Sí | `[Tipo_Factura] & "-" & [Numero_Factura]` | `Factura` |
 | `Hora` | `Text` | - | - | Sí | - | - | Sí | `TEXT([Fecha_Hora], "H:MM AM/PM")` | `Hora` |
 
-> **Ajustes internos de `REGISTRO_DIARIO`:**
-> * **`ID_Registro`:**
->   * **Auto Compute > Initial value:** `UNIQUEID()`
->
-> * **`Fecha_Hora`:**
->   * **Auto Compute > Initial value:** `NOW()` *(se autocalcula al guardar sin distraer al operario)*
->
-> * **`Empleado`:**
->   * **Type Details > Source table:** `EMPLEADOS`
->   * **Data Validity > Valid_If:** `SELECT(EMPLEADOS[ID_Empleado], [Activo] = TRUE)` *(muestra únicamente personal activo en el desplegable)*
->
-> * **`Tipo_Factura`:**
->   * **Type Details > Base type:** `Text`
->   * **Type Details > Input mode:** `Buttons`
->   * **Type Details > Values:** `IC, DP, IR`
->   * **Display Name:** `Tipo Factura`
->
-> * **`Numero_Factura`:**
->   * **Type:** `Number` *(dispara automáticamente el teclado numérico directo en Android/iOS)*
->   * **Display Name:** `N° Factura`
->   * **Data Validity > Valid_If:**
->     ```excel
->     ISBLANK(
->       FILTER(
->         "REGISTRO_DIARIO",
->         AND(
->           [ID_Registro] <> [_THISROW].[ID_Registro],
->           [Tipo_Factura] = [_THISROW].[Tipo_Factura],
->           [Numero_Factura] = [_THISROW].[Numero_Factura],
->           [Empleado] = [_THISROW].[Empleado]
->         )
->       )
->     )
->     ```
->   * **Data Validity > Invalid value error:** `"⚠️ Esta factura ya fue registrada previamente para este colaborador."`
->   * *Garantiza que una misma factura no sea cargada dos veces al mismo colaborador, previniendo dobles digitaciones accidentales pero permitiendo el trabajo compartido legítimo si dos colaboradores alistaron la misma factura.*
->
-> * **`Factura` (Columna Virtual):**
->   * **App formula:** `[Tipo_Factura] & "-" & [Numero_Factura]`
->   * **LABEL?**: `TRUE` *(identificador humano unificado en listados y detalles: ej. `DP-36278` o `IR-48351`)*
->   * **SEARCH?**: `TRUE`
->
-> * **`Hora` (Columna Virtual):**
->   * **App formula:** `TEXT([Fecha_Hora], "H:MM AM/PM")`
->   * **SEARCH?**: `TRUE`
->   * *Se ubica en primer lugar en la tabla `HISTORIAL HOY` para agilizar la auditoría cronológica diaria.*
->
-> * **Botonera de Puntaje de Despacho (`Puntos_Esfuerzo`):**
->   * **Type Details > Base type:** `Number`
->   * **Type Details > Input mode:** `Buttons`
->   * **Type Details > Values:** `1, 2, 3, 4, 5`
->   * **Display Name:** `Puntos Esfuerzo`
->
-> * **Botonera de Penalizaciones (`Puntos_Error`):**
->   * **Type Details > Base type:** `Number`
->   * **Type Details > Input mode:** `Buttons`
->   * **Type Details > Values:** `0, -1, -2, -3`
->   * **Auto Compute > Initial value:** `0` *(por defecto el despacho no tiene error)*
->   * **Display Name:** `Puntos Error`
+#### Detalle de Configuración de Columnas en `REGISTRO_DIARIO`
+
+* **`ID_Registro`:**
+  * **Auto Compute > Initial value:** `UNIQUEID()`
+
+* **`Fecha_Hora`:**
+  * **Auto Compute > Initial value:** `NOW()` *(se autocalcula al guardar sin distraer al operario)*
+
+* **`Empleado`:**
+  * **Type Details > Source table:** `EMPLEADOS`
+  * **Data Validity > Valid_If:** `SELECT(EMPLEADOS[ID_Empleado], [Activo] = TRUE)` *(muestra únicamente personal activo en el desplegable)*
+
+* **`Tipo_Factura`:**
+  * **Type Details > Base type:** `Text`
+  * **Type Details > Input mode:** `Buttons`
+  * **Type Details > Values:** `IC, DP, IR`
+  * **Display Name:** `Tipo Factura`
+
+* **`Numero_Factura`:**
+  * **Type:** `Number` *(dispara automáticamente el teclado numérico directo en Android/iOS)*
+  * **Display Name:** `N° Factura`
+  * **Data Validity > Valid_If:**
+    ```excel
+    ISBLANK(
+      FILTER(
+        "REGISTRO_DIARIO",
+        AND(
+          [ID_Registro] <> [_THISROW].[ID_Registro],
+          [Tipo_Factura] = [_THISROW].[Tipo_Factura],
+          [Numero_Factura] = [_THISROW].[Numero_Factura],
+          [Empleado] = [_THISROW].[Empleado]
+        )
+      )
+    )
+    ```
+  * **Data Validity > Invalid value error:** `"⚠️ Esta factura ya fue registrada previamente para este colaborador."`
+  * *Garantiza que una misma factura no sea cargada dos veces al mismo colaborador, previniendo dobles digitaciones accidentales pero permitiendo el trabajo compartido legítimo si dos colaboradores alistaron la misma factura.*
+
+* **`Factura` (Columna Virtual):**
+  * **App formula:** `[Tipo_Factura] & "-" & [Numero_Factura]`
+  * **LABEL?**: `TRUE` *(identificador humano unificado en listados y detalles: ej. `DP-36278` o `IR-48351`)*
+  * **SEARCH?**: `TRUE`
+
+* **`Hora` (Columna Virtual):**
+  * **App formula:** `TEXT([Fecha_Hora], "H:MM AM/PM")`
+  * **SEARCH?**: `TRUE`
+  * *Se ubica en primer lugar en la tabla `HISTORIAL HOY` para agilizar la auditoría cronológica diaria.*
+
+* **Botonera de Puntaje de Despacho (`Puntos_Esfuerzo`):**
+  * **Type Details > Base type:** `Number`
+  * **Type Details > Input mode:** `Buttons`
+  * **Type Details > Values:** `1, 2, 3, 4, 5`
+  * **Display Name:** `Puntos Esfuerzo`
+
+* **Botonera de Penalizaciones (`Puntos_Error`):**
+  * **Type Details > Base type:** `Number`
+  * **Type Details > Input mode:** `Buttons`
+  * **Type Details > Values:** `0, -1, -2, -3`
+  * **Auto Compute > Initial value:** `0` *(por defecto el despacho no tiene error)*
+  * **Display Name:** `Puntos Error`
 
 #### C. Modales de Configuración de Columnas en `REGISTRO_DIARIO`
 
-<img src="../docs/images/appsheet_config_v2/05_modal_tipo_documento_01.png" alt="Modal de Configuración: Columna Tipo_Factura (Botones IC, DP, IR)" width="400">
+A continuación se presentan las configuraciones internas avanzadas aplicadas a las columnas clave de `REGISTRO_DIARIO`, diseñadas para optimizar la ergonomía de digitación táctil en bodega y blindar la integridad de los datos:
 
-<img src="../docs/images/appsheet_config_v2/06_modal_col_hora_01.png" alt="Modal de Configuración: Columna Virtual Hora" width="400">
+* **`Tipo_Factura` (Superior izquierda):** Configuración de tipo `Enum` con modo de entrada táctil `Buttons` (`IC`, `DP`, `IR`). Permite al despachador seleccionar el tipo de documento con un solo toque y sin desplegar menús.
+* **`Factura` (Superior derecha):** Definición de la columna virtual `[Tipo_Factura] & "-" & [Numero_Factura]` con la propiedad `LABEL? = TRUE`, unificando el identificador visible del despacho en todo el sistema.
+* **`Hora` (Inferior izquierda):** Extracción dinámica de la hora mediante `TEXT([Fecha_Hora], "H:MM AM/PM")`, posicionada en primer orden para facilitar la auditoría cronológica del día.
+* **`Numero_Factura` (Inferior derecha):** Regla de validación `Valid_If` antiduplicados `ISBLANK(FILTER(...))`, que valida en tiempo real y bloquea el registro si la factura ya existe para el mismo colaborador.
 
-<img src="../docs/images/appsheet_config_v2/07_modal_col_factura_completa_01.png" alt="Modal de Configuración: Columna Virtual Factura (LABEL)" width="400">
+| <img src="../docs/images/appsheet_config_v2/05_modal_tipo_documento_01.png" alt="Modal de Configuración: Columna Tipo_Factura (Botones IC, DP, IR)"> | <img src="../docs/images/appsheet_config_v2/07_modal_col_factura_completa_01.png" alt="Modal de Configuración: Columna Virtual Factura (LABEL)"> |
+| :---: | :---: |
+| <img src="../docs/images/appsheet_config_v2/06_modal_col_hora_01.png" alt="Modal de Configuración: Columna Virtual Hora"> | <img src="../docs/images/appsheet_config_v2/05b_modal_numero_factura_valid_if.png" alt="Modal de Configuración: Columna Numero_Factura (Regla Valid_If)"> |
 
 ---
 
@@ -186,9 +192,9 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
 
 Esta tabla se alimenta de la hoja `BASE_HISTORICA` en Google Sheets (generada por la fórmula matricial `LET` + `QUERY` en segundo plano).
 
-<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_01.png" alt="Columnas de BASE_HISTORICA (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_01.png" alt="Columnas de BASE_HISTORICA (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_02.png" alt="Columnas de BASE_HISTORICA (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/04_cols_base_historica_02.png" alt="Columnas de BASE_HISTORICA (Parte 2)" width="440">
 
 #### A. Columnas base (provenientes de Google Sheets: 10 columnas)
 
@@ -214,50 +220,55 @@ Esta tabla se alimenta de la hoja `BASE_HISTORICA` en Google Sheets (generada po
 | `Mes_Nombre` | `Text` | - | - | Sí | - | - | Sí | `SWITCH([Mes], 1, "Enero", 2, "Febrero", ..., 12, "Diciembre", "")` | `"Mes"` |
 | `Quincena_Nombre` | `Text` | - | - | Sí | - | - | Sí | `IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]` | `Quincena` |
 
-> **Ajustes internos de `BASE_HISTORICA`:**
-> * **`ID_Liquidacion` (Clave Primaria Virtual):**
->   * **App formula:** `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])`
->   * **KEY?**: `TRUE` *(garantiza un identificador único por colaborador y quincena)*
->   * **SHOW?**: `TRUE`
->
-> * **`Año`:**
->   * **Type Details > Show thousands separator:** `FALSE` *(evita mostrar `2,026` con coma)*
->   * **SEARCH?**: `TRUE`
->
-> * **`Mes_Nombre` (Columna Virtual):**
->   * **Display Name:** `"Mes"`
->   * **SEARCH?**: `TRUE`
->   * **App formula:**
->     ```appsheet
->     SWITCH(
->       [Mes],
->       1, "Enero", 2, "Febrero", 3, "Marzo", 4, "Abril",
->       5, "Mayo", 6, "Junio", 7, "Julio", 8, "Agosto",
->       9, "Septiembre", 10, "Octubre", 11, "Noviembre", 12, "Diciembre",
->       ""
->     )
->     ```
->
-> * **`Quincena_Nombre` (Columna Virtual):**
->   * **Display Name:** `Quincena`
->   * **SEARCH?**: `TRUE`
->   * **App formula:**
->     ```appsheet
->     IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]
->     ```
->   * *Produce encabezados legibles: `1ra Quincena · Octubre 2026` o `2da Quincena · Octubre 2026`.*
->
-> * **Columnas Monetarias (`Bono Productivo`, `Bono Calidad`, `Total BONO`):**
->   * **Type Details > Currency symbol:** `$`
->   * **Type Details > Decimal digits:** `0` *(ej. `$300.000`)*
->
-> * **Columnas `EDITABLE?`:** Todas en `FALSE` *(datos calculados por el motor de hoja de cálculo)*.
+#### Detalle de Configuración de Columnas en `BASE_HISTORICA`
+
+* **`ID_Liquidacion` (Clave Primaria Virtual):**
+  * **App formula:** `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])`
+  * **KEY?**: `TRUE` *(garantiza un identificador único por colaborador y quincena)*
+  * **SHOW?**: `TRUE`
+
+* **`Año`:**
+  * **Type Details > Show thousands separator:** `FALSE` *(evita mostrar `2,026` con coma)*
+  * **SEARCH?**: `TRUE`
+
+* **`Mes_Nombre` (Columna Virtual):**
+  * **Display Name:** `"Mes"`
+  * **SEARCH?**: `TRUE`
+  * **App formula:**
+    ```appsheet
+    SWITCH(
+      [Mes],
+      1, "Enero", 2, "Febrero", 3, "Marzo", 4, "Abril",
+      5, "Mayo", 6, "Junio", 7, "Julio", 8, "Agosto",
+      9, "Septiembre", 10, "Octubre", 11, "Noviembre", 12, "Diciembre",
+      ""
+    )
+    ```
+
+* **`Quincena_Nombre` (Columna Virtual):**
+  * **Display Name:** `Quincena`
+  * **SEARCH?**: `TRUE`
+  * **App formula:**
+    ```appsheet
+    IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]
+    ```
+  * *Produce encabezados legibles: `1ra Quincena · Octubre 2026` o `2da Quincena · Octubre 2026`.*
+
+* **Columnas Monetarias (`Bono Productivo`, `Bono Calidad`, `Total BONO`):**
+  * **Type Details > Currency symbol:** `$`
+  * **Type Details > Decimal digits:** `0` *(ej. `$300.000`)*
+
+* **Columnas `EDITABLE?`:** Todas en `FALSE` *(datos calculados por el motor de hoja de cálculo)*.
 
 #### C. Modal de Clave Primaria Virtual `ID_Liquidacion` en `BASE_HISTORICA`
 
-<img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_01.png" alt="Modal ID_Liquidacion: Fórmula CONCATENATE (Vista 1)" width="400">
+Dado que la tabla `BASE_HISTORICA` proviene de una fórmula matricial en Google Sheets que no posee un identificador único por fila, se crea la columna virtual `ID_Liquidacion`:
 
-<img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_02.png" alt="Modal ID_Liquidacion: Propiedades y Tipo (Vista 2)" width="400">
+* **Vista 1 (Fórmula CONCATENATE):** Integra `Año`, `Mes`, `Quincena` e `ID_Empleado` (`ej. 2026-10-Q1-1001`), garantizando una clave única e irrepetible para cada liquidación quincenal.
+* **Vista 2 (Propiedades de Clave Primaria):** Configuración de tipo `Text` con la casilla `KEY? = TRUE` y `SHOW? = TRUE`. Permite que AppSheet gestione de manera estable el drill-down, navegación y visualización de detalles sin duplicidad ni conflictos en la base de datos.
+
+| <img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_01.png" alt="Modal ID_Liquidacion: Fórmula CONCATENATE (Vista 1)"> | <img src="../docs/images/appsheet_config_v2/08_modal_id_liquidacion_02.png" alt="Modal ID_Liquidacion: Propiedades y Tipo (Vista 2)"> |
+| :---: | :---: |
 
 ---
 
@@ -293,11 +304,11 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 ### 4.1. Vista: `NUEVO REGISTRO`
 
-<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_01.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_01.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_02.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_02.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 2)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_03.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 3)" width="420">
+<img src="../docs/images/appsheet_config_v2/10_view_nuevo_registro_03.png" alt="Configuración de Vista NUEVO REGISTRO (Parte 3)" width="440">
 
 | Propiedad | Configuración | Justificación / Comportamiento |
 | :--- | :--- | :--- |
@@ -317,9 +328,9 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 ### 4.2. Vista: `HISTORIAL HOY`
 
-<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_01.png" alt="Configuración de Vista HISTORIAL HOY (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_01.png" alt="Configuración de Vista HISTORIAL HOY (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_02.png" alt="Configuración de Vista HISTORIAL HOY (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/11_view_historial_hoy_02.png" alt="Configuración de Vista HISTORIAL HOY (Parte 2)" width="440">
 
 | Propiedad | Configuración |
 | :--- | :--- |
@@ -339,9 +350,9 @@ La barra de navegación principal móvil consta de **3 vistas limpias y directas
 
 Esta vista reemplaza completamente los antiguos dashboards quincenales y mensuales, permitiendo consultar cualquier período de la historia con navegación táctil nativa.
 
-<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_01.png" alt="Configuración de Vista LIQUIDACION (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_01.png" alt="Configuración de Vista LIQUIDACION (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_02.png" alt="Configuración de Vista LIQUIDACION (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/12_view_liquidacion_02.png" alt="Configuración de Vista LIQUIDACION (Parte 2)" width="440">
 
 | Propiedad | Configuración |
 | :--- | :--- |
@@ -369,9 +380,9 @@ Esta vista reemplaza completamente los antiguos dashboards quincenales y mensual
 
 #### A. Vista de detalle: `BASE_HISTORICA_Detail`
 
-<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_01.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 1)" width="420">
+<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_01.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 1)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_02.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 2)" width="420">
+<img src="../docs/images/appsheet_config_v2/13_view_base_historica_detail_02.png" alt="Configuración de Vista BASE_HISTORICA_Detail (Parte 2)" width="440">
 
 Se abre al tocar cualquier colaborador dentro de la tabla de liquidación:
 * **View type:** `detail`
@@ -421,9 +432,9 @@ Ir a **App > Actions > REGISTRO_DIARIO > acción del sistema `Edit`**:
 
 Ir a **App > Format Rules**. Existen **3 reglas activas** configuradas para la tabla `BASE_HISTORICA`:
 
-<img src="../docs/images/appsheet_config_v2/15_format_rules_lista.png" alt="Listado de Reglas de Formato Condicional (Puntos, Errores, Bonos)" width="420">
+<img src="../docs/images/appsheet_config_v2/15_format_rules_lista.png" alt="Listado de Reglas de Formato Condicional (Puntos, Errores, Bonos)" width="440">
 
-<img src="../docs/images/appsheet_config_v2/16_format_rule_bonos.png" alt="Detalle de Regla de Formato Condicional: Bonos ([Total BONO] > 0)" width="420">
+<img src="../docs/images/appsheet_config_v2/16_format_rule_bonos.png" alt="Detalle de Regla de Formato Condicional: Bonos ([Total BONO] > 0)" width="440">
 
 | Rule Name | For this data | Format these columns | Condition (Fórmula de Activación) | Formato Visual / Resalte |
 | :--- | :--- | :--- | :--- | :--- |
@@ -461,13 +472,9 @@ Para fines de trazabilidad y auditoría de desarrollo, la siguiente matriz sinte
 
 Las siguientes capturas corresponden al funcionamiento real de la aplicación en los dispositivos móviles de bodega:
 
-| Formulario de Despacho (`NUEVO REGISTRO`) | Historial Diario en Vivo (`HISTORIAL HOY`) |
-| :---: | :---: |
-| <img src="../docs/images/appsheet_config_v2/17_app_pantalla_formulario.jpg" alt="Formulario de Despacho en Android" width="260"><br>Botonera de `Tipo Factura` (`IC`, `DP`, `IR`), consecutivo numérico y selectores de puntos y penalizaciones. | <img src="../docs/images/appsheet_config_v2/18_app_pantalla_historial.jpg" alt="Historial Diario en Vivo" width="260"><br>Tabla `HISTORIAL HOY` mostrando despachos ordenados por hora (`12:57 p. m.`), factura concatenada y operario. |
-
-| Navegación Drill-Down por Mes | Tabla Quincenal Consolidada (1ra Quincena) | Tabla Quincenal Consolidada (2da Quincena) |
+| <img src="../docs/images/appsheet_config_v2/17_app_pantalla_formulario.png" alt="1. Formulario de Despacho (NUEVO REGISTRO)"> | <img src="../docs/images/appsheet_config_v2/17b_app_alerta_factura_duplicada.png" alt="2. Alerta de Factura Duplicada en Pantalla"> | <img src="../docs/images/appsheet_config_v2/18_app_pantalla_historial.png" alt="3. Historial Diario en Vivo (HISTORIAL HOY)"> |
 | :---: | :---: | :---: |
-| <img src="../docs/images/appsheet_config_v2/19_app_pantalla_liquidacion_mes.jpg" alt="Navegación Drill-Down por Mes" width="200"><br>Selección táctil de Mes (`Octubre >`). | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_01.jpg" alt="Tabla Quincenal 1ra Quincena" width="200"><br>`1ra Quincena · Octubre 2026` con bono resaltado en verde. | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_02.jpg" alt="Tabla Quincenal 2da Quincena" width="200"><br>`2da Quincena · Octubre 2026` ordenada por puntos de esfuerzo. |
+| <img src="../docs/images/appsheet_config_v2/19_app_pantalla_liquidacion_mes.png" alt="4. Navegación Drill-Down por Mes"> | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_01.png" alt="5. Tabla Quincenal (1ra Quincena con Bono)"> | <img src="../docs/images/appsheet_config_v2/20_app_pantalla_liquidacion_tabla_02.png" alt="6. Tabla Quincenal (2da Quincena por Esfuerzo)"> |
 
 ---
 

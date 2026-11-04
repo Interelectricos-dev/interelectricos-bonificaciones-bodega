@@ -1,7 +1,7 @@
 # Guía Rápida: Instalación de la App Bonificaciones
 
 **Proyecto:** Sistema Control de Bonificaciones en Bodega  
-**Empresa:** Intereléctricos Group SAS  
+**Empresa:** Interelectricos Group SAS  
 **Destinatarios:** Personal Operativo de Bodega, Supervisores y Despachadores  
 
 ---

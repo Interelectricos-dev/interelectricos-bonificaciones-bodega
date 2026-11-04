@@ -1,6 +1,6 @@
 # Runbook de Soporte Técnico: Sistema de Bonificaciones en Bodega
 
-**Empresa:** Intereléctricos Group SAS  
+**Empresa:** Interelectricos Group SAS  
 **Proyecto:** Sistema Control de Bonificaciones Operativas en Bodega  
 **Destinatarios:** Equipo de Soporte Técnico, Administrador de Sistemas y Jefatura de Operaciones  
 **Versión:** 2.0 (Arquitectura Centralizada con Base Histórica Dinámica y Drill-Down)  
@@ -10,7 +10,7 @@
 
 ## 1. Información General del Servicio
 
-Este documento provee los lineamientos técnicos para el mantenimiento, soporte operativo de nivel 2 y 3, diagnóstico de fallas y protocolos de contingencia del aplicativo de control de despachos y bonificaciones de Intereléctricos Group SAS.
+Este documento provee los lineamientos técnicos para el mantenimiento, soporte operativo de nivel 2 y 3, diagnóstico de fallas y protocolos de contingencia del aplicativo de control de despachos y bonificaciones de Interelectricos Group SAS.
 
 * **Arquitectura del Sistema:** Frontend en AppSheet (PWA instalada en navegador y app nativa móvil) / Backend en Google Sheets.
 * **Alojamiento de Base de Datos:** Google Drive (Carpeta corporativa: `01_SISTEMA_BONIFICACIONES`).
@@ -232,6 +232,6 @@ Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los me
 3. Guardar los cambios (**Save**), ir a la pestaña **Deployments** y seleccionar **Redeploy** sobre el último despliegue activo.
 
 ### 6.2. Diagnóstico cuando el Bot de WhatsApp no responde
-1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Bot WhatsApp Bonificaciones Bodega - Intereléctricos"}`.
+1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Bot WhatsApp Bonificaciones Bodega - Interelectricos"}`.
 2. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
 3. **Pruebas desde consola local:** Para depurar el flujo en tiempo real desde un computador de soporte, ejecutar `python -X utf8 bot/tests/test_bot.py`.

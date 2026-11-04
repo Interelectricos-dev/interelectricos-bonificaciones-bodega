@@ -14,6 +14,7 @@
 * **Comportamiento:** El despachador debe teclear manualmente letras, guiones y números (ejemplo: `IR-12345`).
 * **Limitación:** El teclado del celular se abre en modo alfanumérico completo, aumentando el tiempo de digitación y el riesgo de errores tipográficos en bodega.
 
+
 ### Propuesta en Evaluación (Entorno de Pruebas)
 * **Paso 1 (Botonera):** Selección táctil en un toque del tipo de comprobante (`IR`, `IC`, `NCR`, etc.) mediante botones `Enum`.
 * **Paso 2 (Teclado Numérico Puro):** Campo `Numero_Factura` configurado como `Number`, levantando automáticamente el teclado numérico de dígitos grandes en el teléfono móvil.

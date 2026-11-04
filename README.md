@@ -1,6 +1,6 @@
 # Sistema de Liquidación y Auditoría de Bonificaciones en Bodega
 
-**Empresa:** Intereléctricos Group SAS  
+**Empresa:** Interelectricos Group SAS  
 **Proyecto:** Control de Bonificaciones Operativas en Bodega  
 **Autor:** Mauricio Sierra – Aprendiz ADSO SENA  
 **Versión:** 2.1 (Arquitectura Híbrida AppSheet + Bot de WhatsApp con IA + Google Sheets)  

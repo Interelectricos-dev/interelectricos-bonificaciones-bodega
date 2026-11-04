@@ -4,7 +4,7 @@
 
 ## 1. Introducción, Alcance y Propósito del Sistema
 
-El aplicativo móvil **BONIFICACIONES** es la herramienta digital oficial de **Intereléctricos Group SAS** diseñada para estandarizar, registrar y auditar en tiempo real el desempeño operativo en la zona de despachos y alistamiento de bodega. Sustituye integralmente el antiguo conteo por rayas en tableros físicos, garantizando que a cada colaborador se le reconozca equitativamente tanto el **volumen documental procesado** (complejidad y densidad de líneas por comprobante) como el **desgaste físico real** (cortes de cable conductor, cargue de tubería pesada, manipulación de bobinas y uso de estibadores o maquinaria), blindando la exactitud del despacho y garantizando total transparencia financiera.
+El aplicativo móvil **BONIFICACIONES** es la herramienta digital oficial de **Interelectricos Group SAS** diseñada para estandarizar, registrar y auditar en tiempo real el desempeño operativo en la zona de despachos y alistamiento de bodega. Sustituye integralmente el antiguo conteo por rayas en tableros físicos, garantizando que a cada colaborador se le reconozca equitativamente tanto el **volumen documental procesado** (complejidad y densidad de líneas por comprobante) como el **desgaste físico real** (cortes de cable conductor, cargue de tubería pesada, manipulación de bobinas y uso de estibadores o maquinaria), blindando la exactitud del despacho y garantizando total transparencia financiera.
 
 En su **Versión 2.0**, el aplicativo incorpora una arquitectura orientada a la ergonomía táctil en bodega y la agilidad de digitación:
 * **Botonera de tipos y teclado numérico puro:** Separación física del tipo de comprobante (**IC**, **DP**, **IR**) y el número consecutivo, forzando la apertura inmediata del teclado numérico grande de Android para digitar sin alternar entre modos de letras y números.
@@ -140,6 +140,9 @@ Si el despachador olvida ingresar el número consecutivo y deja el valor en `0`,
 
 #### Validación Antiduplicados por Colaborador
 Para proteger la exactitud de los puntos y evitar dobles digitaciones por error o dobles clics al presionar *Save*, el sistema incorpora una regla estricta de unicidad:
+
+<img src="images/appsheet_config_v2/17b_app_alerta_factura_duplicada.png" alt="Alerta en Pantalla de Factura Duplicada" width="260">
+
 * **Bloqueo de duplicados para un mismo colaborador:** Si se intenta registrar una factura (`Tipo_Factura` + `Numero_Factura`) que ya fue guardada previamente para el mismo operario, la casilla del número se resalta en rojo impidiendo el guardado con la advertencia:
   > `⚠️ Esta factura ya fue registrada previamente para este colaborador.`
 * **Compatibilidad con pedidos compartidos:** Si una orden grande fue alistada entre dos o más auxiliares (por ejemplo, alistamiento compartido de cables y luminarias en la factura `IC-104524`), el sistema **sí permite** registrarla para colaboradores diferentes (un registro para Edward y otro para Sneider), acreditando a cada uno los puntos que le corresponden.
@@ -338,7 +341,7 @@ Por estrictas políticas de auditoría, el sistema bloquea la edición local pas
 * **En WhatsApp:** Si envía una nota de voz o texto con una factura repetida para el mismo colaborador, el bot la omitirá automáticamente para no sumar puntajes dobles y le responderá advirtiendo qué factura ya existía en el sistema.
 
 ### ¿Dónde solicitar soporte técnico?
-Para soporte de conectividad, cambio de terminales móviles, restablecimiento de accesos o dudas sobre la liquidación de puntos, comuníquese con el Departamento de Sistemas de Intereléctricos Group SAS a través del canal corporativo oficial.
+Para soporte de conectividad, cambio de terminales móviles, restablecimiento de accesos o dudas sobre la liquidación de puntos, comuníquese con el Departamento de Sistemas de Interelectricos Group SAS a través del canal corporativo oficial.
 
 ---
 

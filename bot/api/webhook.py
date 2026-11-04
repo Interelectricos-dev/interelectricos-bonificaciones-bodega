@@ -28,7 +28,7 @@ class handler(BaseHTTPRequestHandler):
             json.dumps(
                 {
                     "status": "ok",
-                    "service": "Bot WhatsApp Bonificaciones Bodega - Intereléctricos",
+                    "service": "Bot WhatsApp Bonificaciones Bodega - Interelectricos",
                 },
                 ensure_ascii=False,
             ).encode("utf-8")

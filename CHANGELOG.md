@@ -1,6 +1,6 @@
 # Historial de Cambios y Auditoría del Proyecto (CHANGELOG)
 
-**Empresa:** Intereléctricos Group SAS  
+**Empresa:** Interelectricos Group SAS  
 **Proyecto:** Sistema de Liquidación y Auditoría de Bonificaciones en Bodega  
 **Responsable:** Mauricio Sierra – Aprendiz ADSO SENA  
 

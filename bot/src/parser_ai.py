@@ -7,7 +7,7 @@ import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Optional
 
-SYSTEM_PROMPT = """Eres el motor de extracción de datos de la bodega de Intereléctricos Group SAS.
+SYSTEM_PROMPT = """Eres el motor de extracción de datos de la bodega de Interelectricos Group SAS.
 Tu tarea es analizar el mensaje de texto o nota de voz enviado por el jefe de bodega (Luis) y extraer UNO o MÚLTIPLES despachos en formato JSON estricto.
 
 REGLAS DE SEGURIDAD CRÍTICAS (CERO INVENCIÓN DE DATOS):

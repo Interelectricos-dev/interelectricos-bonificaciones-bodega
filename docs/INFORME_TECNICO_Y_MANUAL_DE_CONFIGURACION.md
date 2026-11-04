@@ -1,7 +1,7 @@
 # Informe Técnico y Manual de Configuración de Arquitectura
 
 **Proyecto:** SISTEMA DE LIQUIDACIÓN Y AUDITORÍA DE BONIFICACIONES EN BODEGA  
-**Empresa:** INTERELÉCTRICOS GROUP SAS  
+**Empresa:** INTERELECTRICOS GROUP SAS  
 **Fecha:** Octubre de 2026 | Versión 2.0 (Arquitectura Matricial en Memoria y Centralización Histórica)  
 **Autor:** Mauricio Sierra – Aprendiz ADSO SENA  
 **Entorno Tecnológico:** Arquitectura Híbrida en la Nube (AppSheet Engine + Google Sheets Advanced Matrix Engine)
@@ -37,7 +37,7 @@
 
 ## 1. Alcance, Objetivos y Justificación de la Evolución
 
-El sistema **BONIFICACIONES** fue concebido para resolver un problema operativo crítico en la bodega principal de Intereléctricos Group SAS: la medición y compensación del rendimiento del personal auxiliar de alistamiento y despacho. Históricamente, el control se realizaba de manera rudimentaria mediante conteo por rayas sobre un tablero acrílico en bodega. Este método presentaba severas falencias:
+El sistema **BONIFICACIONES** fue concebido para resolver un problema operativo crítico en la bodega principal de Interelectricos Group SAS: la medición y compensación del rendimiento del personal auxiliar de alistamiento y despacho. Históricamente, el control se realizaba de manera rudimentaria mediante conteo por rayas sobre un tablero acrílico en bodega. Este método presentaba severas falencias:
 * Imposibilidad de auditar la complejidad real de los pedidos (un pedido de 1 fusible contaba igual que un pedido con corte de 300 metros de cable pesado).
 * Pérdida de trazabilidad ante reclamos por inconsistencias o errores en mostrador.
 * Alta fricción administrativa al liquidar manualmente planillas al cierre de quincena.

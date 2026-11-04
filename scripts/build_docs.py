@@ -90,37 +90,80 @@ def add_page_number_field(paragraph):
     )
     paragraph._p.append(fldSimple)
 
+def set_run_shading(run, color_hex="F1F5F9"):
+    """Applies a subtle background highlight/shading behind a text run (code tags)."""
+    rPr = run._r.get_or_add_rPr()
+    shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{color_hex.lstrip("#")}" w:val="clear"/>')
+    rPr.append(shd)
+
 def add_formatted_runs(paragraph, text, base_font="Calibri", base_size=10.5, base_color="1F2937", is_bold=False, is_italic=False):
     # Clean markdown links [label](url) -> label
     text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
     # Clean non-breaking spaces or double spaces
     text = text.replace('&nbsp;', ' ')
     
-    # Parses inline markdown: **bold**, *italic*, `code`, and plain text
-    tokens = re.split(r'(\*\*.*?\*\*|\*.*?\*|`.*?`)', text)
-    for token in tokens:
-        if not token:
+    # Parses inline markdown: **bold**, *italic*, `code`, and plain text with nested code support
+    tokens = re.split(r'(`[^`]+`|\*\*[^*]+?\*\*|\*[^*]+?\*)', text)
+    for tok in tokens:
+        if not tok:
             continue
-        run = paragraph.add_run()
-        run.font.name = base_font
-        run.font.size = Pt(base_size)
-        run.font.color.rgb = hex_to_rgb(base_color)
-        run.bold = is_bold
-        run.italic = is_italic
-
-        if token.startswith('**') and token.endswith('**') and len(token) >= 4:
-            run.text = token[2:-2]
-            run.bold = True
-        elif token.startswith('*') and token.endswith('*') and len(token) >= 2:
-            run.text = token[1:-1]
-            run.italic = True
-        elif token.startswith('`') and token.endswith('`') and len(token) >= 2:
-            run.text = token[1:-1]
-            run.font.name = 'Consolas'
-            run.font.size = Pt(base_size * 0.9)
-            run.font.color.rgb = hex_to_rgb("0F172A")
+        if tok.startswith('**') and tok.endswith('**') and len(tok) >= 4:
+            inner = tok[2:-2]
+            sub_toks = re.split(r'(`[^`]+`)', inner)
+            for st in sub_toks:
+                if not st:
+                    continue
+                if st.startswith('`') and st.endswith('`') and len(st) >= 2:
+                    r = paragraph.add_run(st[1:-1])
+                    r.font.name = 'Consolas'
+                    r.font.size = Pt(base_size * 0.9)
+                    r.font.color.rgb = hex_to_rgb("0F172A")
+                    r.bold = True
+                    r.italic = is_italic
+                    set_run_shading(r, "F1F5F9")
+                else:
+                    r = paragraph.add_run(st.replace('`', ''))
+                    r.font.name = base_font
+                    r.font.size = Pt(base_size)
+                    r.font.color.rgb = hex_to_rgb(base_color)
+                    r.bold = True
+                    r.italic = is_italic
+        elif tok.startswith('*') and tok.endswith('*') and len(tok) >= 2:
+            inner = tok[1:-1]
+            sub_toks = re.split(r'(`[^`]+`)', inner)
+            for st in sub_toks:
+                if not st:
+                    continue
+                if st.startswith('`') and st.endswith('`') and len(st) >= 2:
+                    r = paragraph.add_run(st[1:-1])
+                    r.font.name = 'Consolas'
+                    r.font.size = Pt(base_size * 0.9)
+                    r.font.color.rgb = hex_to_rgb("0F172A")
+                    r.bold = is_bold
+                    r.italic = True
+                    set_run_shading(r, "F1F5F9")
+                else:
+                    r = paragraph.add_run(st.replace('`', ''))
+                    r.font.name = base_font
+                    r.font.size = Pt(base_size)
+                    r.font.color.rgb = hex_to_rgb(base_color)
+                    r.bold = is_bold
+                    r.italic = True
+        elif tok.startswith('`') and tok.endswith('`') and len(tok) >= 2:
+            r = paragraph.add_run(tok[1:-1])
+            r.font.name = 'Consolas'
+            r.font.size = Pt(base_size * 0.9)
+            r.font.color.rgb = hex_to_rgb("0F172A")
+            r.bold = is_bold
+            r.italic = is_italic
+            set_run_shading(r, "F1F5F9")
         else:
-            run.text = token
+            r = paragraph.add_run(tok.replace('`', ''))
+            r.font.name = base_font
+            r.font.size = Pt(base_size)
+            r.font.color.rgb = hex_to_rgb(base_color)
+            r.bold = is_bold
+            r.italic = is_italic
 
 # --- Document Builder Class ---
 
@@ -222,14 +265,89 @@ class MarkdownDocxBuilder:
             s_h4.paragraph_format.space_after = Pt(2)
             s_h4.paragraph_format.keep_with_next = True
 
-        # List Bullet
-        if 'List Bullet' in styles:
-            s_bul = styles['List Bullet']
+        # Remover numPr de cualquier estilo de párrafo para evitar doble viñeta o numeraciones no deseadas en Word
+        from docx.enum.style import WD_STYLE_TYPE
+        for s in styles:
+            if s.type == WD_STYLE_TYPE.PARAGRAPH and s._element.pPr is not None:
+                np = s._element.pPr.find(qn('w:numPr'))
+                if np is not None:
+                    s._element.pPr.remove(np)
+
+        # Custom Styles semánticos para Viñetas y Listas sin numPr nativo
+        if 'Viñeta' not in styles:
+            s_bul = styles.add_style('Viñeta', WD_STYLE_TYPE.PARAGRAPH)
+            s_bul.base_style = styles['Normal']
             s_bul.font.name = 'Calibri'
             s_bul.font.size = Pt(10.5)
             s_bul.font.color.rgb = hex_to_rgb('1F2937')
-            s_bul.paragraph_format.space_after = Pt(2.5)
             s_bul.paragraph_format.line_spacing = 1.15
+
+        if 'Subviñeta' not in styles:
+            s_bul2 = styles.add_style('Subviñeta', WD_STYLE_TYPE.PARAGRAPH)
+            s_bul2.base_style = styles['Normal']
+            s_bul2.font.name = 'Calibri'
+            s_bul2.font.size = Pt(10.5)
+            s_bul2.font.color.rgb = hex_to_rgb('1F2937')
+            s_bul2.paragraph_format.line_spacing = 1.15
+
+        if 'Subviñeta 2' not in styles:
+            s_bul3 = styles.add_style('Subviñeta 2', WD_STYLE_TYPE.PARAGRAPH)
+            s_bul3.base_style = styles['Normal']
+            s_bul3.font.name = 'Calibri'
+            s_bul3.font.size = Pt(10.5)
+            s_bul3.font.color.rgb = hex_to_rgb('1F2937')
+            s_bul3.paragraph_format.line_spacing = 1.15
+
+        if 'Lista Numerada' not in styles:
+            s_num = styles.add_style('Lista Numerada', WD_STYLE_TYPE.PARAGRAPH)
+            s_num.base_style = styles['Normal']
+            s_num.font.name = 'Calibri'
+            s_num.font.size = Pt(10.5)
+            s_num.font.color.rgb = hex_to_rgb('1F2937')
+            s_num.paragraph_format.line_spacing = 1.2
+
+        if 'Lista Numerada 2' not in styles:
+            s_num2 = styles.add_style('Lista Numerada 2', WD_STYLE_TYPE.PARAGRAPH)
+            s_num2.base_style = styles['Normal']
+            s_num2.font.name = 'Calibri'
+            s_num2.font.size = Pt(10.5)
+            s_num2.font.color.rgb = hex_to_rgb('1F2937')
+            s_num2.paragraph_format.line_spacing = 1.2
+
+        # Caption
+        if 'Caption' in styles:
+            s_cap = styles['Caption']
+            s_cap.font.name = 'Calibri'
+            s_cap.font.size = Pt(8.5)
+            s_cap.font.italic = True
+            s_cap.font.color.rgb = hex_to_rgb('64748B')
+            s_cap.paragraph_format.space_before = Pt(1)
+            s_cap.paragraph_format.space_after = Pt(6)
+
+        # Custom Styles semánticos para Código, Checklist y Callout
+        if 'Code Block' not in styles:
+            s_code = styles.add_style('Code Block', WD_STYLE_TYPE.PARAGRAPH)
+            s_code.base_style = styles['Normal']
+            s_code.font.name = 'Consolas'
+            s_code.font.size = Pt(9.0)
+            s_code.font.color.rgb = hex_to_rgb('0F172A')
+            s_code.paragraph_format.line_spacing = 1.15
+            s_code.paragraph_format.space_before = Pt(0)
+            s_code.paragraph_format.space_after = Pt(0)
+
+        if 'Checklist' not in styles:
+            s_chk = styles.add_style('Checklist', WD_STYLE_TYPE.PARAGRAPH)
+            s_chk.base_style = styles['Normal']
+            s_chk.font.name = 'Calibri'
+            s_chk.font.size = Pt(10.5)
+            s_chk.font.color.rgb = hex_to_rgb('1F2937')
+
+        if 'Callout Text' not in styles:
+            s_call = styles.add_style('Callout Text', WD_STYLE_TYPE.PARAGRAPH)
+            s_call.base_style = styles['Normal']
+            s_call.font.name = 'Calibri'
+            s_call.font.size = Pt(10.0)
+            s_call.font.color.rgb = hex_to_rgb('1E293B')
 
         # TOC Heading (excluded from TOC hierarchy by Word and WPS Office)
         if 'TOC Heading' in styles:
@@ -250,7 +368,7 @@ class MarkdownDocxBuilder:
         p_comp = self.doc.add_paragraph()
         p_comp.paragraph_format.space_before = Pt(8)
         p_comp.paragraph_format.space_after = Pt(2)
-        r_comp = p_comp.add_run("INTERELÉCTRICOS GROUP SAS")
+        r_comp = p_comp.add_run("INTERELECTRICOS GROUP SAS")
         r_comp.font.name = "Calibri"
         r_comp.font.size = Pt(11.0)
         r_comp.font.color.rgb = hex_to_rgb("334155")
@@ -350,7 +468,7 @@ class MarkdownDocxBuilder:
         p_hdr = header.paragraphs[0]
         p_hdr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         p_hdr.paragraph_format.space_after = Pt(4)
-        r_hdr = p_hdr.add_run(f"Intereléctricos — Sistema de Bonificaciones Bodega | {short_title}")
+        r_hdr = p_hdr.add_run(f"Interelectricos — Sistema de Bonificaciones Bodega | {short_title}")
         r_hdr.font.name = "Calibri"
         r_hdr.font.size = Pt(8.5)
         r_hdr.font.color.rgb = hex_to_rgb("64748B")
@@ -364,7 +482,7 @@ class MarkdownDocxBuilder:
         p_ftr = footer.paragraphs[0]
         p_ftr.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         p_ftr.paragraph_format.space_before = Pt(4)
-        r_ftr_title = p_ftr.add_run(f"{short_title}  •  Página ")
+        r_ftr_title = p_ftr.add_run("Página ")
         r_ftr_title.font.name = "Calibri"
         r_ftr_title.font.size = Pt(8.5)
         r_ftr_title.font.color.rgb = hex_to_rgb("64748B")
@@ -398,52 +516,38 @@ class MarkdownDocxBuilder:
             f'</w:fldSimple>'
         )
         p_fld._p.append(parse_xml(fld_xml))
+        self.doc.add_page_break()
 
     def add_heading_1(self, text):
         p = self.doc.add_paragraph(style='Heading 1')
-        p.paragraph_format.page_break_before = True
+        if self.h1_count > 0:
+            p.paragraph_format.page_break_before = True
         self.h1_count += 1
         p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(8)
         p.paragraph_format.keep_with_next = True
-        r = p.add_run(text)
-        r.font.name = "Calibri"
-        r.font.size = Pt(15.0)
-        r.font.color.rgb = hex_to_rgb("1E293B")
-        r.bold = True
+        add_formatted_runs(p, text, base_font="Calibri", base_size=15.0, base_color="1E293B", is_bold=True)
 
     def add_heading_2(self, text):
         p = self.doc.add_paragraph(style='Heading 2')
         p.paragraph_format.space_before = Pt(12)
         p.paragraph_format.space_after = Pt(4)
         p.paragraph_format.keep_with_next = True
-        r = p.add_run(text)
-        r.font.name = "Calibri"
-        r.font.size = Pt(12.5)
-        r.font.color.rgb = hex_to_rgb("334155")
-        r.bold = True
+        add_formatted_runs(p, text, base_font="Calibri", base_size=12.5, base_color="334155", is_bold=True)
 
     def add_heading_3(self, text):
         p = self.doc.add_paragraph(style='Heading 3')
         p.paragraph_format.space_before = Pt(10)
         p.paragraph_format.space_after = Pt(3)
         p.paragraph_format.keep_with_next = True
-        r = p.add_run(text)
-        r.font.name = "Calibri"
-        r.font.size = Pt(11.5)
-        r.font.color.rgb = hex_to_rgb("374151")
-        r.bold = True
+        add_formatted_runs(p, text, base_font="Calibri", base_size=11.5, base_color="374151", is_bold=True)
 
     def add_heading_4(self, text):
         p = self.doc.add_paragraph(style='Heading 4')
         p.paragraph_format.space_before = Pt(8)
         p.paragraph_format.space_after = Pt(2)
         p.paragraph_format.keep_with_next = True
-        r = p.add_run(text)
-        r.font.name = "Calibri"
-        r.font.size = Pt(10.5)
-        r.font.color.rgb = hex_to_rgb("475569")
-        r.bold = True
+        add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="475569", is_bold=True)
 
     def add_body_paragraph(self, text):
         p = self.doc.add_paragraph(style='Normal')
@@ -452,23 +556,26 @@ class MarkdownDocxBuilder:
         p.paragraph_format.line_spacing = 1.15
         add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
 
-    def add_bullet_item(self, text, indent_level=0):
-        p = self.doc.add_paragraph(style='Normal')
+    def add_bullet_item(self, text, indent_level=0, has_sub_bullets=False):
+        style_name = 'Viñeta' if indent_level == 0 else ('Subviñeta' if indent_level == 1 else 'Subviñeta 2')
+        p = self.doc.add_paragraph(style=style_name)
         if indent_level == 0:
             p.paragraph_format.left_indent = Inches(0.28)
             p.paragraph_format.first_line_indent = Inches(-0.18)
-            p.paragraph_format.space_before = Pt(4)
-            p.paragraph_format.space_after = Pt(4)
+            p.paragraph_format.space_before = Pt(5)
+            p.paragraph_format.space_after = Pt(1)
+            p.paragraph_format.keep_with_next = has_sub_bullets
             bullet_char = "•  "
             bullet_color = "1E293B"
         else:
             p.paragraph_format.left_indent = Inches(0.54 if indent_level == 1 else 0.76)
             p.paragraph_format.first_line_indent = Inches(-0.18)
-            p.paragraph_format.space_before = Pt(2)
-            p.paragraph_format.space_after = Pt(4)
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(1.5)
+            p.paragraph_format.keep_with_next = has_sub_bullets
             bullet_char = "◦  " if indent_level == 1 else "▪  "
             bullet_color = "475569"
-        p.paragraph_format.line_spacing = 1.2
+        p.paragraph_format.line_spacing = 1.15
         r_bul = p.add_run(bullet_char)
         r_bul.font.name = "Calibri"
         r_bul.font.size = Pt(10.5)
@@ -476,12 +583,30 @@ class MarkdownDocxBuilder:
         r_bul.bold = (indent_level == 0)
         add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
 
+    def add_checklist_item(self, text, is_checked=False, indent_level=0):
+        p = self.doc.add_paragraph(style='Checklist')
+        p.paragraph_format.left_indent = Inches(0.28 if indent_level == 0 else 0.54)
+        p.paragraph_format.first_line_indent = Inches(-0.18)
+        p.paragraph_format.space_before = Pt(4 if indent_level == 0 else 0)
+        p.paragraph_format.space_after = Pt(1 if indent_level == 0 else 1.5)
+        if indent_level == 0:
+            p.paragraph_format.keep_with_next = True
+        p.paragraph_format.line_spacing = 1.15
+        box_char = "☑  " if is_checked else "☐  "
+        r_box = p.add_run(box_char)
+        r_box.font.name = "Segoe UI Symbol"
+        r_box.font.size = Pt(11.0)
+        r_box.font.color.rgb = hex_to_rgb("0284C7" if is_checked else "64748B")
+        r_box.bold = True
+        add_formatted_runs(p, text, base_font="Calibri", base_size=10.5, base_color="1F2937")
+
     def add_numbered_item(self, num_prefix, text, indent_level=0):
-        p = self.doc.add_paragraph(style='Normal')
+        style_name = 'Lista Numerada' if indent_level == 0 else 'Lista Numerada 2'
+        p = self.doc.add_paragraph(style=style_name)
         p.paragraph_format.left_indent = Inches(0.28 if indent_level == 0 else 0.54)
         p.paragraph_format.first_line_indent = Inches(-0.22)
-        p.paragraph_format.space_before = Pt(6) if indent_level == 0 else Pt(2.5)
-        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.space_before = Pt(6) if indent_level == 0 else Pt(0)
+        p.paragraph_format.space_after = Pt(3) if indent_level == 0 else Pt(1.5)
         p.paragraph_format.line_spacing = 1.2
         r_num = p.add_run(f"{num_prefix} ")
         r_num.font.name = "Calibri"
@@ -494,8 +619,7 @@ class MarkdownDocxBuilder:
         table = self.doc.add_table(rows=1, cols=1)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         row = table.rows[0]
-        trPr = row._tr.get_or_add_trPr()
-        trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
+        # No se aplica cantSplit para permitir que callouts extensos fluyan naturalmente entre paginas
         cell = row.cells[0]
         cell.width = Inches(6.5)
         set_cell_shading(cell, "F8FAFC")
@@ -503,9 +627,10 @@ class MarkdownDocxBuilder:
         set_cell_margins(cell, top=120, bottom=120, left=180, right=180)
         
         p = cell.paragraphs[0]
+        p.style = 'Code Block'
         p.paragraph_format.space_before = Pt(0)
         p.paragraph_format.space_after = Pt(0)
-        p.paragraph_format.line_spacing = 1.1
+        p.paragraph_format.line_spacing = 1.15
         lines = code_text.strip().split('\n')
         for i, line in enumerate(lines):
             r = p.add_run(line)
@@ -515,11 +640,6 @@ class MarkdownDocxBuilder:
             if i < len(lines) - 1:
                 p.add_run('\n')
 
-        # Small spacing after table
-        p_sp = self.doc.add_paragraph()
-        p_sp.paragraph_format.space_before = Pt(0)
-        p_sp.paragraph_format.space_after = Pt(4)
-
     def add_callout(self, callout_lines):
         if isinstance(callout_lines, str):
             callout_lines = [callout_lines]
@@ -527,8 +647,7 @@ class MarkdownDocxBuilder:
         table = self.doc.add_table(rows=1, cols=1)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         row = table.rows[0]
-        trPr = row._tr.get_or_add_trPr()
-        trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
+        # No se aplica cantSplit para permitir que callouts extensos fluyan naturalmente entre paginas
         cell = row.cells[0]
         cell.width = Inches(6.5)
         set_cell_shading(cell, "F0F9FF")
@@ -553,10 +672,11 @@ class MarkdownDocxBuilder:
 
             if in_callout_code:
                 p = get_next_p()
+                p.style = 'Code Block'
                 p.paragraph_format.left_indent = Inches(0.32)
-                p.paragraph_format.space_before = Pt(1)
-                p.paragraph_format.space_after = Pt(1)
-                p.paragraph_format.line_spacing = 1.1
+                p.paragraph_format.space_before = Pt(0)
+                p.paragraph_format.space_after = Pt(0)
+                p.paragraph_format.line_spacing = 1.15
                 r = p.add_run(raw_line)
                 r.font.name = "Consolas"
                 r.font.size = Pt(8.5)
@@ -576,10 +696,13 @@ class MarkdownDocxBuilder:
                 lvl = 0 if spaces < 2 else 1
                 txt = bul_m.group(2).strip()
                 p = get_next_p()
+                p.style = 'Viñeta' if lvl == 0 else 'Subviñeta'
                 p.paragraph_format.left_indent = Inches(0.20 if lvl == 0 else 0.40)
                 p.paragraph_format.first_line_indent = Inches(-0.15)
-                p.paragraph_format.space_before = Pt(3 if lvl == 0 else 1.5)
-                p.paragraph_format.space_after = Pt(2.5)
+                p.paragraph_format.space_before = Pt(3.5 if lvl == 0 else 0)
+                p.paragraph_format.space_after = Pt(1 if lvl == 0 else 1.5)
+                if lvl == 0:
+                    p.paragraph_format.keep_with_next = True
                 p.paragraph_format.line_spacing = 1.15
                 r_b = p.add_run("•  " if lvl == 0 else "◦  ")
                 r_b.font.name = "Calibri"
@@ -593,10 +716,13 @@ class MarkdownDocxBuilder:
                 num_str = num_m.group(2)
                 txt = num_m.group(3).strip()
                 p = get_next_p()
+                p.style = 'Lista Numerada' if lvl == 0 else 'Lista Numerada 2'
                 p.paragraph_format.left_indent = Inches(0.22 if lvl == 0 else 0.42)
                 p.paragraph_format.first_line_indent = Inches(-0.18)
-                p.paragraph_format.space_before = Pt(3)
-                p.paragraph_format.space_after = Pt(2.5)
+                p.paragraph_format.space_before = Pt(3.5 if lvl == 0 else 0)
+                p.paragraph_format.space_after = Pt(1 if lvl == 0 else 1.5)
+                if lvl == 0:
+                    p.paragraph_format.keep_with_next = True
                 p.paragraph_format.line_spacing = 1.15
                 r_n = p.add_run(f"{num_str} ")
                 r_n.font.name = "Calibri"
@@ -606,6 +732,7 @@ class MarkdownDocxBuilder:
                 add_formatted_runs(p, txt, base_font="Calibri", base_size=10.0, base_color="1E293B")
             else:
                 p = get_next_p()
+                p.style = 'Callout Text'
                 p.paragraph_format.space_before = Pt(2)
                 p.paragraph_format.space_after = Pt(3)
                 p.paragraph_format.line_spacing = 1.15
@@ -628,9 +755,103 @@ class MarkdownDocxBuilder:
                 return c
         return None
 
+    def _populate_gallery_cell(self, cell, val, base_width):
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(0)
+        p.paragraph_format.space_after = Pt(0)
+        p.paragraph_format.line_spacing = 1.0
+
+        img_match = re.search(r'<img\s+[^>]*src=["\']([^"\']+)["\'][^>]*>', val)
+        if img_match:
+            img_src = img_match.group(1)
+            full_path = self.resolve_image_path(img_src)
+            alt_match = re.search(r'alt=["\']([^"\']+)["\']', img_match.group(0))
+            caption_from_alt = alt_match.group(1) if alt_match else ""
+
+            text_remaining = val[:img_match.start()] + val[img_match.end():]
+            text_remaining = text_remaining.replace('<br>', '\n').replace('<br/>', '\n').strip()
+
+            caption = text_remaining or caption_from_alt
+
+            if full_path:
+                r_pic = p.add_run()
+                try:
+                    with Image.open(full_path) as img:
+                        w_px, h_px = img.size
+                    aspect = w_px / h_px
+                    target_w = min(base_width * 0.96, Inches(3.12))
+                    target_h = target_w / aspect
+                    max_h = Inches(3.50) if base_width < Inches(2.5) else Inches(4.2)
+                    if target_h > max_h:
+                        target_h = max_h
+                        target_w = target_h * aspect
+                    r_pic.add_picture(full_path, width=target_w, height=target_h)
+                except Exception as e:
+                    print(f"Error cargando imagen de galeria {full_path}: {e}")
+                    r_pic.add_picture(full_path, width=min(base_width * 0.95, Inches(2.8)))
+                add_image_border(r_pic, "D9D9D9")
+
+            if caption:
+                p_cap = cell.add_paragraph(style='Caption')
+                p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p_cap.paragraph_format.space_before = Pt(2)
+                p_cap.paragraph_format.space_after = Pt(2)
+                p_cap.paragraph_format.line_spacing = 1.05
+                clean_cap = caption.strip('*_ ')
+                add_formatted_runs(p_cap, clean_cap, base_font="Calibri", base_size=8.5, base_color="64748B", is_italic=True)
+        else:
+            add_formatted_runs(p, val, base_font="Calibri", base_size=9.5, base_color="1E293B", is_bold=True)
+
     def add_table(self, headers, rows_data):
-        num_rows = len(rows_data) + 1
         num_cols = len(headers)
+
+        # Detectar si es una tabla de galeria de imagenes (modales o celular en 2 o 3 columnas)
+        all_cells = headers + [c for r in rows_data for c in r]
+        has_imgs = any('<img' in c for c in all_cells)
+        is_gallery = has_imgs and (any('<img' in h for h in headers) or all(('<img' in c or not c) for r in rows_data for c in r))
+
+        if is_gallery:
+            all_table_rows = [headers] if any('<img' in h for h in headers) else []
+            all_table_rows.extend(rows_data)
+            header_is_text = not any('<img' in h for h in headers)
+
+            table = self.doc.add_table(rows=len(all_table_rows) + (1 if header_is_text else 0), cols=num_cols)
+            table.alignment = WD_TABLE_ALIGNMENT.CENTER
+            set_table_borders(table, val="none")
+
+            base_width = Inches(6.5 / num_cols)
+            cur_r_idx = 0
+
+            if header_is_text:
+                hdr_row = table.rows[0]
+                cur_r_idx = 1
+                for col_idx, h_text in enumerate(headers):
+                    cell = hdr_row.cells[col_idx]
+                    cell.width = base_width
+                    set_cell_shading(cell, "FFFFFF")
+                    set_cell_margins(cell, top=40, bottom=40, left=40, right=40)
+                    p = cell.paragraphs[0]
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    p.paragraph_format.space_before = Pt(0)
+                    p.paragraph_format.space_after = Pt(2)
+                    add_formatted_runs(p, h_text.strip(), base_font="Calibri", base_size=9.5, base_color="1E293B", is_bold=True)
+
+            for r_idx, r_data in enumerate(all_table_rows):
+                row = table.rows[cur_r_idx + r_idx]
+                trPr = row._tr.get_or_add_trPr()
+                trPr.append(parse_xml(f'<w:cantSplit {nsdecls("w")}/>'))
+                for c_idx in range(num_cols):
+                    cell = row.cells[c_idx]
+                    cell.width = base_width
+                    set_cell_shading(cell, "FFFFFF")
+                    set_cell_margins(cell, top=40, bottom=60, left=40, right=40)
+                    val = r_data[c_idx].strip() if c_idx < len(r_data) else ""
+                    self._populate_gallery_cell(cell, val, base_width)
+
+            return
+
+        num_rows = len(rows_data) + 1
         table = self.doc.add_table(rows=num_rows, cols=num_cols)
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         set_table_borders(table, color="CBD5E1", sz="4", val="single")
@@ -652,11 +873,7 @@ class MarkdownDocxBuilder:
             p = cell.paragraphs[0]
             p.paragraph_format.space_before = Pt(0)
             p.paragraph_format.space_after = Pt(0)
-            r = p.add_run(h_text.strip())
-            r.font.name = "Calibri"
-            r.font.size = Pt(9.5)
-            r.font.color.rgb = hex_to_rgb("FFFFFF")
-            r.bold = True
+            add_formatted_runs(p, h_text.strip(), base_font="Calibri", base_size=9.5, base_color="FFFFFF", is_bold=True)
 
         # Data Rows
         for r_idx, r_data in enumerate(rows_data):
@@ -764,7 +981,7 @@ class MarkdownDocxBuilder:
         add_image_border(run, "D9D9D9")
 
         if caption:
-            p_cap = self.doc.add_paragraph()
+            p_cap = self.doc.add_paragraph(style='Caption')
             p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_cap.paragraph_format.space_before = Pt(1)
             p_cap.paragraph_format.space_after = Pt(6)
@@ -962,12 +1179,42 @@ def parse_and_compile(md_filepath, docx_outpath, doc_title, doc_subtitle, metada
             continue
 
         # 7. Lists
+        checklist_match = re.match(r'^(\s*)[*+-]\s+\[([ xX])\]\s+(.*)$', line)
+        if checklist_match:
+            raw_spaces = len(checklist_match.group(1))
+            indent = 0 if raw_spaces < 2 else (1 if raw_spaces < 5 else 2)
+            is_checked = checklist_match.group(2).lower() == 'x'
+            item_text = checklist_match.group(3).strip()
+            builder.add_checklist_item(item_text, is_checked=is_checked, indent_level=indent)
+            i += 1
+            continue
+
         bullet_match = re.match(r'^(\s*)[*+-]\s+(.*)$', line)
         if bullet_match:
             raw_spaces = len(bullet_match.group(1))
             indent = 0 if raw_spaces < 2 else (1 if raw_spaces < 5 else 2)
             item_text = bullet_match.group(2).strip()
-            builder.add_bullet_item(item_text, indent_level=indent)
+
+            # Detectar si esta viñeta tiene sub-viñetas o bloque de fórmula directamente subordinado
+            has_sub = False
+            for next_idx in range(i + 1, min(i + 6, len(lines))):
+                next_st = lines[next_idx].strip()
+                if not next_st:
+                    continue
+                next_bul = re.match(r'^(\s*)[*+-]\s+(.*)$', lines[next_idx])
+                if next_bul:
+                    next_spaces = len(next_bul.group(1))
+                    next_indent = 0 if next_spaces < 2 else (1 if next_spaces < 5 else 2)
+                    if next_indent > indent:
+                        has_sub = True
+                    break
+                elif next_st.startswith('```'):
+                    has_sub = True
+                    break
+                else:
+                    break
+
+            builder.add_bullet_item(item_text, indent_level=indent, has_sub_bullets=has_sub)
             i += 1
             continue
 
@@ -1128,7 +1375,7 @@ if __name__ == '__main__':
         doc_title='MANUAL DE USUARIO OPERATIVO',
         doc_subtitle='Módulo Móvil (AppSheet) y Bot de WhatsApp con IA — Guía Integral para Bodega',
         metadata={
-            'Empresa': 'Intereléctricos Group SAS',
+            'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Despachadores, Auxiliares de Bodega y Supervisión',
             'Software': 'AppSheet PWA + Bot WhatsApp IA + Google Sheets',
@@ -1146,7 +1393,7 @@ if __name__ == '__main__':
         doc_title='INFORME TÉCNICO Y MANUAL DE CONFIGURACIÓN',
         doc_subtitle='Arquitectura de Datos, Fórmulas de Liquidación, AppSheet y Bot Serverless IA',
         metadata={
-            'Empresa': 'Intereléctricos Group SAS',
+            'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Dirección de Operaciones, TI y Auditoría',
             'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
@@ -1164,7 +1411,7 @@ if __name__ == '__main__':
         doc_title='CONFIGURACIÓN TÉCNICA DE APPSHEET',
         doc_subtitle='Guía de Configuración Paso a Paso de Tablas, Columnas, Vistas y Reglas (V2.1)',
         metadata={
-            'Empresa': 'Intereléctricos Group SAS',
+            'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Sistemas y Desarrolladores AppSheet',
             'Software': 'Motor AppSheet Core Engine',
@@ -1182,7 +1429,7 @@ if __name__ == '__main__':
         doc_title='RUNBOOK DE SOPORTE TÉCNICO',
         doc_subtitle='Diagnóstico de Incidencias, Mantenimiento Operativo y Contingencia (V2.1)',
         metadata={
-            'Empresa': 'Intereléctricos Group SAS',
+            'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Soporte Técnico, TI y Operaciones',
             'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
