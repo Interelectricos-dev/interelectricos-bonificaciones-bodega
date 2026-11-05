@@ -75,24 +75,42 @@ def normalizar_numero_factura(val: Any) -> str:
 def construir_filas_registros(
     lote_datos: Union[Dict[str, Any], List[Dict[str, Any]]],
     catalogo_empleados: Optional[List[Dict[str, Any]]] = None,
-) -> List[Dict[str, Any]]:
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
     Construye una lista de registros validados (1 o N despachos) con las 7 columnas físicas
     exactas de REGISTRO_DIARIO V2.0:
     [ID_Registro, Fecha_Hora, Empleado, Tipo_Factura, Numero_Factura, Puntos_Esfuerzo, Puntos_Error]
+    Retorna (registros_validos, registros_incompletos_o_invalidos).
     """
     items = [lote_datos] if isinstance(lote_datos, dict) else lote_datos
     ahora_col = datetime.now(TZ_COLOMBIA).strftime("%Y-%m-%d %H:%M:%S")
 
     registros: List[Dict[str, Any]] = []
-    for datos_json in items:
-        id_empleado, nombre_oficial = resolver_empleado(
-            datos_json["nombre_empleado"], catalogo_empleados
-        )
-        id_registro = uuid.uuid4().hex[:8]
-        tipo_factura = str(datos_json["tipo_factura"]).strip().upper()
-        numero_factura = normalizar_numero_factura(datos_json["numero_factura"])
+    incompletos: List[Dict[str, Any]] = []
 
+    for idx, datos_json in enumerate(items, 1):
+        emp_raw = datos_json.get("nombre_empleado")
+        tipo_factura = str(datos_json.get("tipo_factura", "")).strip().upper()
+        num_raw = datos_json.get("numero_factura")
+        numero_factura = normalizar_numero_factura(num_raw) if num_raw is not None else ""
+
+        try:
+            id_empleado, nombre_oficial = resolver_empleado(
+                emp_raw, catalogo_empleados
+            )
+        except ValueError as err_emp:
+            incompletos.append(
+                {
+                    "indice": idx,
+                    "tipo_factura": tipo_factura or None,
+                    "numero_factura": numero_factura or None,
+                    "nombre_empleado": emp_raw,
+                    "motivo": str(err_emp).split("\n")[0],
+                }
+            )
+            continue
+
+        id_registro = uuid.uuid4().hex[:8]
         fila = [
             id_registro,
             ahora_col,
@@ -115,7 +133,7 @@ def construir_filas_registros(
             }
         )
 
-    return registros
+    return registros, incompletos
 
 
 def guardar_en_google_sheets(
@@ -191,7 +209,7 @@ def guardar_en_google_sheets(
             existentes_set.add((emp_id, tipo, num))
 
     # 3. Construir filas y separar nuevos vs duplicados
-    registros = construir_filas_registros(
+    registros, incompletos_db = construir_filas_registros(
         lote_datos, empleados_records if empleados_records else None
     )
 
@@ -222,4 +240,4 @@ def guardar_en_google_sheets(
             body={"values": filas_a_insertar},
         ).execute()
 
-    return {"nuevos": nuevos, "duplicados": duplicados}
+    return {"nuevos": nuevos, "duplicados": duplicados, "incompletos": incompletos_db}

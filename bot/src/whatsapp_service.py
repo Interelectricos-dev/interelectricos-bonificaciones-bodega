@@ -92,26 +92,66 @@ class GreenAPIService:
         return chat_id, None, None
 
 
+def describir_incompleto(inc: Dict[str, Any]) -> str:
+    """Construye una descripción amigable del despacho omitido por datos faltantes."""
+    tipo = inc.get("tipo_factura")
+    num = inc.get("numero_factura")
+    emp = inc.get("nombre_empleado")
+    motivo = inc.get("motivo", "Datos incompletos")
+
+    if tipo and num and not emp:
+        return f"Factura *{tipo}-{num}*: falta el nombre del colaborador"
+    if emp and (not num or not tipo):
+        return f"Colaborador *{emp}*: falta el número o serie de factura"
+    if tipo and num and emp:
+        return f"Factura *{tipo}-{num}* ({emp}): {motivo}"
+    return f"Despacho #{inc.get('indice', '?')}: {motivo}"
+
+
 def formatear_mensaje_confirmacion(
     nuevos: List[Dict[str, Any]],
     duplicados: Optional[List[Dict[str, Any]]] = None,
+    incompletos: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """
     Genera el mensaje de respuesta para Luis en WhatsApp.
-    Maneja despachos nuevos registrados y avisa con claridad si hubo omitidos por duplicidad.
+    Maneja despachos nuevos registrados, omitidos por duplicidad y omitidos por datos incompletos.
     """
     duplicados = duplicados or []
+    incompletos = incompletos or []
     partes: List[str] = []
 
-    # Caso A: Todos fueron duplicados (ninguno nuevo insertado)
-    if not nuevos and duplicados:
-        partes.append("⚠️ *Aviso de duplicidad:*")
-        partes.append(
-            "Los siguientes despachos ya estaban registrados previamente para sus auxiliares:"
-        )
-        for d in duplicados:
-            partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
-        return "\n".join(partes)
+    # Caso A: No hay despachos nuevos insertados
+    if not nuevos:
+        if duplicados and not incompletos:
+            partes.append("⚠️ *Aviso de duplicidad:*")
+            partes.append(
+                "Los siguientes despachos ya estaban registrados previamente para sus auxiliares:"
+            )
+            for d in duplicados:
+                partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
+            return "\n".join(partes)
+
+        if incompletos and not duplicados:
+            partes.append("⚠️ *No se pudo registrar ningún despacho por datos incompletos:*")
+            for inc in incompletos:
+                partes.append(f"• {describir_incompleto(inc)}")
+            partes.append("\n💡 *Por favor reenvía el audio indicando los datos faltantes.*")
+            partes.append("👉 *Ejemplo:* `IC104958 Edward 3 puntos`")
+            return "\n".join(partes)
+
+        if incompletos and duplicados:
+            partes.append("⚠️ *Ningún despacho nuevo registrado:*")
+            partes.append("\n*Omitidos por duplicidad:*")
+            for d in duplicados:
+                partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
+            partes.append("\n*Omitidos por datos incompletos:*")
+            for inc in incompletos:
+                partes.append(f"• {describir_incompleto(inc)}")
+            partes.append("\n💡 *Por favor reenvía únicamente los despachos con datos incompletos.*")
+            return "\n".join(partes)
+
+        return "ℹ️ *No se procesaron despachos.*"
 
     # Caso B: 1 despacho nuevo
     if len(nuevos) == 1:
@@ -134,12 +174,22 @@ def formatear_mensaje_confirmacion(
             )
         partes.append(f"🕒 *Hora:* {nuevos[0]['fecha_hora']}")
 
-    # Si hubo duplicados en un lote mixto, agregamos la advertencia al final
+    # Avisos adicionales en lotes mixtos:
     if duplicados:
         partes.append(
             "\n⚠️ *Omitidos por duplicidad (ya registrados previamente):*"
         )
         for d in duplicados:
             partes.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
+
+    if incompletos:
+        partes.append(
+            "\n⚠️ *Omitidos por datos incompletos (requieren reenvío):*"
+        )
+        for inc in incompletos:
+            partes.append(f"• {describir_incompleto(inc)}")
+        partes.append(
+            f"\n💡 *Los {len(nuevos)} despachos válidos ya quedaron guardados.* Por favor reenvía únicamente los omitidos."
+        )
 
     return "\n".join(partes)

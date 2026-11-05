@@ -358,15 +358,19 @@ Para registrar uno o varios despachos, envíe un audio o texto al contacto ofici
 
 ### 8.2. Modalidades de Envío Permitidas
 1. **Registro Individual (1 despacho por audio o texto):**
-   * *"IC 2021 Edward 2 puntos"* *(asigna 0 errores automáticamente)*.
-   * *"DP 3040 Sneider 3 puntos 1 error"*.
+   * *"IC 104958 Edward 3 puntos"* *(asigna 0 errores automáticamente)*.
+   * *"DP 36540 Sneider 3 puntos 1 error"*.
 2. **Registro por Bloque (Varios despachos en un solo audio o texto):**
-   * *"IC 2021 Edward 2 puntos, DP 3040 Sneider 3 puntos y el IR 47960 para Fabián con 1 punto y 1 error"*.
-   * *"Para Edward: IC 2021 2 puntos, IC 2022 3 puntos y DP 1050 1 punto"*.
+   * *"IC 104958 Edward 2 puntos, DP 36540 Sneider 3 puntos y el IR 48494 para Fabián con 1 punto y 1 error"*.
+   * **Agrupación por auxiliar (no requiere repetir el nombre):**
+     * *"Para Edward: IC 104958 3 puntos, IC 104959 2 puntos y DP 36560 1 punto"*.
+     * *(El sistema asigna automáticamente a Edward todos los comprobantes que le sigan hasta que se mencione a otro colaborador).*
 
 ### 8.3. Confirmación y Control de Errores en WhatsApp
 * **Confirmación inmediata (`✅`):** En pocos segundos, el bot responde confirmando el documento, auxiliar, puntos registrados y hora exacta. Los registros aparecen reflejados de inmediato en la pestaña **HISTORIAL HOY** de la aplicación móvil.
 * **Control antiduplicados (`⚠️`):** El bot verifica en tiempo real contra Google Sheets que la factura no haya sido registrada previamente para ese mismo colaborador.
   * Si un audio trae varios despachos y uno ya existía, guarda los nuevos y notifica al final: *"⚠️ Omitidos por duplicidad: • Edward Sanchez: IC-104561"*.
   * Si todo el audio fue reenviado por equivocación, no inserta nada y avisa: *"⚠️ Aviso de duplicidad: Todos los despachos enviados ya estaban registrados previamente"*.
-* **Aviso de datos faltantes (`⚠️`):** Si en el audio no se escuchó con claridad el número de factura, el tipo de documento o el nombre del auxiliar, el sistema **no guardará el registro incompleto** y responderá indicando exactamente qué dato faltó para que pueda enviarse nuevamente.
+* **Tolerancia a fallos parciales y guardado de lotes (`✅` / `⚠️`):** Si un audio contiene múltiples despachos y a uno de ellos le faltó algún dato crítico (por ejemplo, faltó el nombre del auxiliar o el número de factura), el sistema **guarda inmediatamente todos los despachos válidos en Google Sheets** y notifica al final del mensaje qué factura quedó pendiente:
+  * *"⚠️ Omitidos por datos incompletos (requieren reenvío): • Factura DP-36628: falta el nombre del colaborador"*.
+  * Esto garantiza que el despachador **nunca pierda una tanda completa de trabajo** y solo tenga que reenviar el despacho que quedó pendiente.

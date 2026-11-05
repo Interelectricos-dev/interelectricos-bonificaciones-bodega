@@ -64,24 +64,36 @@ class handler(BaseHTTPRequestHandler):
             try:
                 if audio_url:
                     audio_bytes, mime_type = wa.descargar_archivo(audio_url)
-                    lote_despachos = parse_con_gemini(
+                    resultado_parse = parse_con_gemini(
                         audio_bytes=audio_bytes, mime_type=mime_type
                     )
                 else:
-                    lote_despachos = parse_con_gemini(texto=texto)
+                    resultado_parse = parse_con_gemini(texto=texto)
 
-                resultado = guardar_en_google_sheets(lote_despachos)
-                nuevos = resultado["nuevos"]
-                duplicados = resultado["duplicados"]
-                confirmacion = formatear_mensaje_confirmacion(nuevos, duplicados)
+                despachos_validos = resultado_parse.get("validos", [])
+                despachos_incompletos = resultado_parse.get("incompletos", [])
+
+                nuevos = []
+                duplicados = []
+                if despachos_validos:
+                    resultado_sheets = guardar_en_google_sheets(despachos_validos)
+                    nuevos = resultado_sheets.get("nuevos", [])
+                    duplicados = resultado_sheets.get("duplicados", [])
+                    # Si hubo auxiliares inválidos al guardar en Sheets, agregarlos a incompletos
+                    despachos_incompletos.extend(resultado_sheets.get("incompletos", []))
+
+                confirmacion = formatear_mensaje_confirmacion(
+                    nuevos, duplicados, incompletos=despachos_incompletos
+                )
                 wa.enviar_mensaje(chat_id, confirmacion)
 
                 self._responder_json(
                     200,
                     {
-                        "status": "registered" if nuevos else "all_duplicates",
+                        "status": "registered" if nuevos else ("all_duplicates" if duplicados else "all_incomplete"),
                         "count_nuevos": len(nuevos),
                         "count_duplicados": len(duplicados),
+                        "count_incompletos": len(despachos_incompletos),
                         "rows": [r["fila_sheets"] for r in nuevos],
                     },
                 )
@@ -92,12 +104,12 @@ class handler(BaseHTTPRequestHandler):
                     self._responder_json(200, {"status": "ignored_non_dispatch"})
                     return
 
-                # Si sí intentaba registrar despachos pero faltó un dato, avisar por WhatsApp
+                # Si ocurrió un error inesperado, avisar por WhatsApp
                 wa.enviar_mensaje(
                     chat_id,
                     f"⚠️ *No se pudo registrar en Google Sheets:*\n{msg_err}\n\n"
-                    "💡 *Ejemplo individual:* `IC2021 Edward 2 puntos 1 error`\n"
-                    "💡 *Ejemplo por bloque:* `IC2021 Edward 2 puntos, DP3040 Sneider 3 puntos`",
+                    "💡 *Ejemplo individual:* `IC104958 Edward 3 puntos`\n"
+                    "💡 *Ejemplo por bloque:* `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`",
                 )
                 self._responder_json(200, {"status": "validation_error", "detail": msg_err})
 

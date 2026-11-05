@@ -487,16 +487,20 @@ En la actualización **Versión 2.1**, el sistema incorpora un segundo canal de 
 2. **Filtro de Privacidad *Fail-Closed* (`bot/api/webhook.py`):**
    * Antes de procesar el contenido o invocar la IA, el webhook verifica que el remitente (`chatId`) coincida estrictamente con el número autorizado en la variable de entorno `CHAT_ID_PRUEBA`.
    * Cualquier conversación de terceros en el teléfono corporativo es ignorada de inmediato (`ignored_other_chat`), garantizando privacidad total y cero consumo innecesario de cuota.
-3. **Extracción Multimodal Estructurada (`bot/src/parser_ai.py`):**
+3. **Extracción Multimodal Estructurada con Contexto de Nomenclatura (`bot/src/parser_ai.py`):**
    * El texto o los bytes del audio (`.ogg`) se envían en una sola llamada a **Gemini API (`gemini-3.5-flash`)** con `responseMimeType: "application/json"` y `temperature: 0.0`.
-   * El modelo extrae un arreglo JSON (`"despachos": [...]`) capaz de interpretar tanto **1 despacho individual** como **un lote de múltiples despachos** dictados en una misma nota de voz o texto.
-4. **Seguro de Integridad, Validación contra `EMPLEADOS` y Antiduplicados `batchGet` (`bot/src/sheets_service.py`):**
-   * Si falta el tipo de comprobante (`IC`, `DP`, `IR`), el número de factura o el nombre del auxiliar, o si los puntos están fuera de rango (`1..5` en esfuerzo y `0..-3` en error), el sistema aborta la operación antes de tocar Google Sheets y notifica por WhatsApp el motivo exacto.
+   * El modelo cuenta con instrucciones operativas de la bodega:
+     * Series oficiales: `IC` (6 dígitos, serie `104xxx`/`105xxx`), `DP` (5 dígitos, serie `35xxx`/`36xxx`) e `IR` (5 dígitos, serie `47xxx`/`48xxx`).
+     * Normalización fonética: interpreta modismos como *"ICE"* o *"EC"* como `IC`, *"ER"* o *"YR"* como `IR`, y concatena números dichos por parejas (*"diez cuarenta y nueve cincuenta y ocho"* $\rightarrow$ `104958`).
+     * Agrupación por auxiliar: soporta sintaxis de lote (*"Para Edward: IC 104958 3 puntos, DP 36600 2 puntos..."*) heredando el colaborador en cascada sin obligar a repetir su nombre.
+4. **Seguro de Integridad, Validación contra `EMPLEADOS`, Tolerancia a Fallos Parciales y Antiduplicados `batchGet` (`bot/src/sheets_service.py`):**
+   * **Tolerancia a fallos parciales:** El sistema segrega los despachos en `validos` e `incompletos`. Si en un audio de 18 despachos uno solo carece de nombre o número, el sistema **no cancela la tanda completa**: inserta los 17 válidos y aparta el incompleto para que Luis solo reenvíe ese comprobante puntual.
    * Si no se mencionan errores en el audio/texto, el sistema asigna `0` por defecto.
    * **Lectura optimizada `batchGet` de ultra-baja latencia:** En una sola petición HTTP de red, el microservicio consulta tanto el catálogo de personal activo (`EMPLEADOS!A2:C100`) como las facturas existentes (`REGISTRO_DIARIO!C2:E`).
    * **Filtro antiduplicados en memoria:** Cruza cada elemento del lote contra `(ID_Empleado, Tipo_Factura, Numero_Factura)`. Si la factura ya fue registrada para ese colaborador (o se dictó repetida en el mismo audio), se aparta como duplicado sin insertarse en la hoja. Si pertenece a colaboradores distintos (pedido compartido), se valida y se permite.
-   * Los registros válidos se insertan de forma atómica en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`. Si todos los despachos eran duplicados, el microservicio ahorra la llamada de escritura.
-5. **Confirmación Instantánea con Alertas de Duplicidad (`bot/src/whatsapp_service.py`):**
+   * Los registros válidos se insertan de forma atómica en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`. Si todos los despachos eran duplicados o incompletos, el microservicio ahorra la llamada de escritura.
+5. **Confirmación Instantánea con Alertas de Duplicidad e Incompletos (`bot/src/whatsapp_service.py`):**
    * El bot responde al chat de WhatsApp con el resumen detallado del despacho (o listado numerado cuando se registra por bloque).
-   * Si se omitieron comprobantes por duplicidad, el mensaje advierte con claridad: *"⚠️ Omitidos por duplicidad: • [Auxiliar]: [Documento]"*, o avisa de forma cortés si todo el audio ya se encontraba previamente registrado.
+   * Si se omitieron comprobantes por duplicidad, advierte: *"⚠️ Omitidos por duplicidad: • [Auxiliar]: [Documento]"*.
+   * Si se omitieron comprobantes por datos incompletos, detalla el motivo exacto: *"⚠️ Omitidos por datos incompletos (requieren reenvío): • Factura [Documento]: falta el nombre del colaborador"*, confirmando que los válidos ya quedaron a salvo en la base de datos.
    * Los registros válidos aparecen reflejados al instante en la vista `HISTORIAL HOY` y en la matriz `BASE_HISTORICA` de AppSheet.
