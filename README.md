@@ -3,7 +3,7 @@
 **Empresa:** Interelectricos Group SAS  
 **Proyecto:** Control de Bonificaciones Operativas en Bodega  
 **Autor:** Mauricio Sierra – Aprendiz ADSO SENA  
-**Versión:** 2.1 (Arquitectura Híbrida AppSheet + Bot de WhatsApp con IA + Google Sheets)  
+**Versión:** 2.2 (Arquitectura Híbrida AppSheet + Bot de WhatsApp con IA Multimodal + Google Sheets)  
 **Estado:** En Producción  
 
 ---
@@ -14,7 +14,7 @@ El sistema **BONIFICACIONES** es una solución operativa diseñada para digitali
 ## Arquitectura del Sistema
 La solución opera bajo un esquema en la nube con dos canales de entrada sincronizados sobre una única fuente de verdad:
 * **Canal 1 — Frontend Táctil (AppSheet Mobile & PWA):** Aplicación ejecutada en terminales móviles Android/iOS y computadores de mostrador para captura táctil, consulta del historial diario (`HISTORIAL HOY`) y auditoría jerárquica de liquidaciones (`LIQUIDACION`).
-* **Canal 2 — Bot de WhatsApp con IA Multimodal (`/bot` en Vercel Serverless):** Microservicio en Python desplegado en Vercel que recibe notas de voz (`.ogg`) o mensajes de texto a través de **Green API**, extrae y valida los despachos (individuales o por lotes) mediante **Gemini API (`gemini-3.5-flash`)**, inserta las filas en Google Sheets y responde confirmación inmediata por WhatsApp.
+* **Canal 2 — Bot de WhatsApp con IA Multimodal (`/bot` en Vercel Serverless):** Microservicio en Python desplegado en Vercel que recibe notas de voz (`.ogg`) o mensajes de texto a través de **Green API**, extrae y valida los despachos (individuales o por lotes) mediante **Gemini API (`gemini-3.5-flash`)**, inserta las filas en Google Sheets y responde confirmación inmediata por WhatsApp. Cuenta con **tolerancia a fallos parciales**, **filtro antiduplicados por colaborador** y **ensamblado numérico estructural sin rangos fijos**.
 * **Backend y Motor de Liquidación (Google Sheets):** Libro relacional centralizado compuesto por 5 hojas maestras que actúan como base de datos transaccional y motor de cálculo matricial en tiempo real.
 
 ## Estructura de la Base de Datos (Versión 2.0+)
@@ -27,10 +27,10 @@ La solución opera bajo un esquema en la nube con dos canales de entrada sincron
 ## Organización del Repositorio
 * `/bot`: Microservicio Serverless del Bot de WhatsApp con IA:
   * [`bot/api/webhook.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/api/webhook.py): Endpoint Serverless en Vercel (`/api/webhook`) para recepción de eventos de Green API.
-  * [`bot/src/parser_ai.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/parser_ai.py): Motor de extracción a JSON estricto (1 o múltiples despachos) con Gemini API.
-  * [`bot/src/sheets_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/sheets_service.py): Validación contra `EMPLEADOS` e inserción atómica por lotes en `REGISTRO_DIARIO`.
-  * [`bot/src/whatsapp_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/whatsapp_service.py): Cliente de comunicación con Green API y formateo de confirmaciones.
-  * [`bot/tests/test_bot.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/tests/test_bot.py): Consola de pruebas locales en vivo.
+  * [`bot/src/parser_ai.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/parser_ai.py): Motor de extracción a JSON estricto con Gemini API, ensamblado numérico universal sin rangos fijos y mapeo fonético de facturas (`IC`, `DP`, `IR`).
+  * [`bot/src/sheets_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/sheets_service.py): Validación contra `EMPLEADOS`, filtro antiduplicados por colaborador, tolerancia a fallos parciales e inserción atómica por lotes en `REGISTRO_DIARIO`.
+  * [`bot/src/whatsapp_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/whatsapp_service.py): Cliente de comunicación con Green API y formateo de confirmaciones con alertas descriptivas.
+  * [`bot/tests/test_bot.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/tests/test_bot.py): Consola de pruebas locales con modo de escucha dual (cola y sondeo saliente/entrante).
 * `/docs`: Documentación técnica del sistema, manuales de usuario y reglas de negocio:
   * [`GUIA_INSTALACION_APP.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/GUIA_INSTALACION_APP.md)
   * [`INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md)
