@@ -25,8 +25,8 @@ def cargar_env(env_path: Path) -> None:
 
 def escuchar_whatsapp_continuo() -> None:
     """
-    Escucha de forma continua la cola de Green API.
-    Soporta tanto 1 despacho individual como múltiples despachos en un mismo audio/texto.
+    Escucha de forma continua mensajes entrantes y notas de voz de WhatsApp.
+    Soporta recepción por cola de Green API y sondeo directo para pruebas personales ("Mensajes a ti mismo").
     Para detenerlo: presiona Ctrl + C en la terminal.
     """
     wa = GreenAPIService()
@@ -38,88 +38,125 @@ def escuchar_whatsapp_continuo() -> None:
     print("   • En bloque:  'IC 2021 Edward 2 puntos, DP 3040 Sneider 3 puntos'", flush=True)
     print("=" * 70, flush=True)
 
+    # Inicializar registro de mensajes ya procesados para no duplicar historial
+    procesados = set()
+    try:
+        historial_inicial = wa.obtener_ultimos_mensajes(minutos=15)
+        for m in historial_inicial:
+            mid = m.get("idMessage")
+            if mid:
+                procesados.add(mid)
+    except Exception:
+        pass
+
+    chat_autorizado = os.getenv("CHAT_ID_PRUEBA", "").strip()
+    lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
+
     try:
         while True:
+            mensajes_a_procesar = []
+
+            # 1. Intentar por cola normal de Green API
             try:
                 body = wa.recibir_notificacion_cola(borrar_al_leer=True)
-            except Exception as e:
-                print(f"⚠️ Error consultando cola: {e}", flush=True)
-                time.sleep(2)
-                continue
+                if body:
+                    cid, txt, aurl = wa.extraer_contenido_webhook(body)
+                    if cid:
+                        mensajes_a_procesar.append(("queue", cid, txt, aurl))
+            except Exception:
+                pass
 
-            if not body:
-                time.sleep(2)
-                continue
-
-            chat_id, texto, audio_url = wa.extraer_contenido_webhook(body)
-            if not chat_id or (not texto and not audio_url):
-                continue
-
-            # SEGURO DE PRIVACIDAD ESTRICTO (Fail-Closed): Solo escuchar a CHAT_ID_PRUEBA
-            chat_autorizado = os.getenv("CHAT_ID_PRUEBA", "").strip()
-            lista_chats = [c.strip() for c in chat_autorizado.split(",") if c.strip()]
-            if not lista_chats or chat_id not in lista_chats:
-                continue
-
-            # Ignorar los mensajes de respuesta que envía el propio bot
-            if texto and texto.startswith(("✅", "⚠️")):
-                continue
-
-            print("\n" + "-" * 65, flush=True)
-            print(f"📥 ¡Nuevo mensaje recibido del chat {chat_id}!", flush=True)
+            # 2. Sondeo directo de historial reciente (cubre chats propios "Mensaje a ti mismo")
             try:
-                if audio_url:
-                    print("🎙️ Tipo: NOTA DE VOZ -> Descargando audio desde Green API...", flush=True)
-                    audio_bytes, mime_type = wa.descargar_archivo(audio_url)
-                    print(f"🤖 Analizando audio ({len(audio_bytes)} bytes) con Gemini API...", flush=True)
-                    resultado_parse = parse_con_gemini(audio_bytes=audio_bytes, mime_type=mime_type)
-                else:
-                    print(f"💬 Tipo: TEXTO -> '{texto}'", flush=True)
-                    print("🤖 Analizando texto con Gemini API...", flush=True)
-                    resultado_parse = parse_con_gemini(texto=texto)
+                recientes = wa.obtener_ultimos_mensajes(minutos=2)
+                for item in recientes:
+                    mid = item.get("idMessage")
+                    if not mid or mid in procesados:
+                        continue
+                    if item.get("sendByApi", False):
+                        procesados.add(mid)
+                        continue
 
-                despachos_validos = resultado_parse.get("validos", [])
-                despachos_incompletos = resultado_parse.get("incompletos", [])
+                    cid = item.get("chatId")
+                    txt = item.get("textMessage")
+                    aurl = item.get("downloadUrl") if item.get("typeMessage") in ("audioMessage", "voiceMessage") else None
 
-                print(f"\n1️⃣ DESPACHOS VÁLIDOS ({len(despachos_validos)}):", flush=True)
-                print(json.dumps(despachos_validos, indent=2, ensure_ascii=False), flush=True)
-                if despachos_incompletos:
-                    print(f"⚠️ DESPACHOS INCOMPLETOS ({len(despachos_incompletos)}):", flush=True)
-                    print(json.dumps(despachos_incompletos, indent=2, ensure_ascii=False), flush=True)
+                    if cid and (txt or aurl):
+                        procesados.add(mid)
+                        mensajes_a_procesar.append((mid, cid, txt, aurl))
+            except Exception:
+                pass
 
-                nuevos = []
-                duplicados = []
-                if despachos_validos:
-                    print("\n2️⃣ GUARDANDO EN GOOGLE SHEETS (REGISTRO_DIARIO)...", flush=True)
-                    resultado = guardar_en_google_sheets(despachos_validos)
-                    nuevos = resultado["nuevos"]
-                    duplicados = resultado["duplicados"]
-                    despachos_incompletos.extend(resultado.get("incompletos", []))
-                    for r in nuevos:
-                        print("   ✅ Fila insertada:", r["fila_sheets"], flush=True)
-                    for d in duplicados:
-                        print("   ⚠️ Omitido por duplicidad:", d["fila_sheets"], flush=True)
+            if not mensajes_a_procesar:
+                time.sleep(1.5)
+                continue
 
-                confirmacion = formatear_mensaje_confirmacion(nuevos, duplicados, incompletos=despachos_incompletos)
-                print("\n3️⃣ ENVIANDO CONFIRMACIÓN A WHATSAPP...", flush=True)
-                wa.enviar_mensaje(chat_id, confirmacion)
-                print("   ✅ ¡Confirmación enviada! Esperando el siguiente mensaje...", flush=True)
+            for item_msg in mensajes_a_procesar:
+                _, chat_id, texto, audio_url = item_msg
 
-            except Exception as err:
-                msg_err = str(err)
-                if "NO_ES_DESPACHO" in msg_err:
-                    print("ℹ️ Mensaje conversacional ignorado (no es un despacho).", flush=True)
+                # SEGURO DE PRIVACIDAD ESTRICTO: Solo escuchar chats autorizados
+                if not lista_chats or chat_id not in lista_chats:
                     continue
-                print(f"❌ Error validando despacho: {msg_err}", flush=True)
+
+                # Ignorar mensajes de confirmación generados por el bot
+                if texto and texto.startswith(("✅", "⚠️", "🤖")):
+                    continue
+
+                print("\n" + "-" * 65, flush=True)
+                print(f"📥 ¡Nuevo mensaje recibido del chat {chat_id}!", flush=True)
                 try:
-                    wa.enviar_mensaje(
-                        chat_id,
-                        f"⚠️ *No se pudo registrar en Google Sheets:*\n{msg_err}\n\n"
-                        "💡 *Ejemplo individual:* `IC104958 Edward 3 puntos`\n"
-                        "💡 *Ejemplo por bloque:* `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`",
-                    )
-                except Exception:
-                    pass
+                    if audio_url:
+                        print("🎙️ Tipo: NOTA DE VOZ -> Descargando audio desde Green API...", flush=True)
+                        audio_bytes, mime_type = wa.descargar_archivo(audio_url)
+                        print(f"🤖 Analizando audio ({len(audio_bytes)} bytes) con Gemini API...", flush=True)
+                        resultado_parse = parse_con_gemini(audio_bytes=audio_bytes, mime_type=mime_type)
+                    else:
+                        print(f"💬 Tipo: TEXTO -> '{texto}'", flush=True)
+                        print("🤖 Analizando texto con Gemini API...", flush=True)
+                        resultado_parse = parse_con_gemini(texto=texto)
+
+                    despachos_validos = resultado_parse.get("validos", [])
+                    despachos_incompletos = resultado_parse.get("incompletos", [])
+
+                    print(f"\n1️⃣ DESPACHOS VÁLIDOS ({len(despachos_validos)}):", flush=True)
+                    print(json.dumps(despachos_validos, indent=2, ensure_ascii=False), flush=True)
+                    if despachos_incompletos:
+                        print(f"⚠️ DESPACHOS INCOMPLETOS ({len(despachos_incompletos)}):", flush=True)
+                        print(json.dumps(despachos_incompletos, indent=2, ensure_ascii=False), flush=True)
+
+                    nuevos = []
+                    duplicados = []
+                    if despachos_validos:
+                        print("\n2️⃣ GUARDANDO EN GOOGLE SHEETS (REGISTRO_DIARIO)...", flush=True)
+                        resultado = guardar_en_google_sheets(despachos_validos)
+                        nuevos = resultado["nuevos"]
+                        duplicados = resultado["duplicados"]
+                        despachos_incompletos.extend(resultado.get("incompletos", []))
+                        for r in nuevos:
+                            print("   ✅ Fila insertada:", r["fila_sheets"], flush=True)
+                        for d in duplicados:
+                            print("   ⚠️ Omitido por duplicidad:", d["fila_sheets"], flush=True)
+
+                    confirmacion = formatear_mensaje_confirmacion(nuevos, duplicados, incompletos=despachos_incompletos)
+                    print("\n3️⃣ ENVIANDO CONFIRMACIÓN A WHATSAPP...", flush=True)
+                    wa.enviar_mensaje(chat_id, confirmacion)
+                    print("   ✅ ¡Confirmación enviada! Esperando el siguiente mensaje...", flush=True)
+
+                except Exception as err:
+                    msg_err = str(err)
+                    if "NO_ES_DESPACHO" in msg_err:
+                        print("ℹ️ Mensaje conversacional ignorado (no es un despacho).", flush=True)
+                        continue
+                    print(f"❌ Error validando despacho: {msg_err}", flush=True)
+                    try:
+                        wa.enviar_mensaje(
+                            chat_id,
+                            f"⚠️ *No se pudo registrar en Google Sheets:*\n{msg_err}\n\n"
+                            "💡 *Ejemplo individual:* `IC104958 Edward 3 puntos`\n"
+                            "💡 *Ejemplo por bloque:* `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`",
+                        )
+                    except Exception:
+                        pass
     except KeyboardInterrupt:
         print("\n👋 Bot detenido manualmente por el usuario.", flush=True)
 

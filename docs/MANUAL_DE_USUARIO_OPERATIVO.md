@@ -351,7 +351,7 @@ Además del formulario táctil en la aplicación móvil, la Jefatura de Bodega c
 
 ### 8.1. Estructura del Mensaje o Nota de Voz
 Para registrar uno o varios despachos, envíe un audio o texto al contacto oficial del Bot indicando los siguientes datos:
-* **Tipo y Número de Comprobante:** `IC`, `DP` o `IR` seguido del consecutivo numérico (ej. `IC 2021`).
+* **Tipo y Número de Factura:** En Intereléctricos todas las entregas corresponden a facturas. Indique la sigla `IC` (factura de contado), `DP` (factura de tirilla blanca) o `IR` (factura de remisión crédito), seguida del consecutivo numérico (ej. `IC 104958`, `DP 36600`, `IR 48494`).
 * **Nombre del Auxiliar:** Nombre del colaborador activo (ej. `Edward`, `Sneider`, `Fabian`, `Sergio`, `Estebi`).
 * **Puntos de Esfuerzo:** Calificación de `1` a `5` puntos (si no se menciona, asigna `1` por defecto).
 * **Puntos de Error (Opcional):** Si el despacho no tuvo errores, **no es necesario mencionarlos** (el sistema asigna `0` automáticamente). Si tuvo errores, mencione `1 error`, `2 errores` o `3 errores`.

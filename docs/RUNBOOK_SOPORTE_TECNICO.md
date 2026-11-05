@@ -235,3 +235,38 @@ Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los me
 1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Bot WhatsApp Bonificaciones Bodega - Interelectricos"}`.
 2. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
 3. **Pruebas desde consola local:** Para depurar el flujo en tiempo real desde un computador de soporte, ejecutar `python -X utf8 bot/tests/test_bot.py`.
+
+---
+
+### 6.3. Mantenimiento del Prompt de IA: Alta/Baja de Auxiliares y Nuevos Tipos de Factura
+
+Dado que el motor de inteligencia artificial (`bot/src/parser_ai.py`) analiza el lenguaje natural y las notas de voz mediante instrucciones estructuradas en `SYSTEM_PROMPT`, el área técnica debe aplicar el siguiente procedimiento ante cambios en la operación:
+
+#### A. Si ingresa un nuevo auxiliar o se retira uno existente
+1. **Actualizar el catálogo maestro en Google Sheets:**
+   * Abrir la hoja de cálculo del sistema y seleccionar la pestaña `EMPLEADOS`.
+   * Si es un ingreso: agregar una nueva fila con `ID_Empleado` (ej. `E06`), el `Nombre` completo (ej. `Carlos Pérez`) y `Activo` en `TRUE`.
+   * Si es un retiro: ubicar al colaborador y cambiar su estado en la columna `Activo` a `FALSE` (nunca borrar la fila para preservar la integridad histórica de liquidaciones pasadas).
+2. **Actualizar la lista de auxiliares en el Prompt (`bot/src/parser_ai.py`):**
+   * Abrir `bot/src/parser_ai.py`.
+   * En la variable `SYSTEM_PROMPT`, ubicar la sección `AUXILIARES ACTIVOS DE BODEGA:` y ajustar los nombres de pila reconocidos:
+     ```text
+     AUXILIARES ACTIVOS DE BODEGA:
+     - "Edward", "Sneider", "Fabian", "Sergio", "Estebi", "NuevoNombre".
+     ```
+   * En la función `normalizar_un_despacho()`, actualizar el texto informativo del error si se desea reflejar el catálogo vigente.
+3. **Desplegar a producción:**
+   * Hacer commit y push hacia el repositorio de GitHub, o forzar un Redeploy desde la consola web de **Vercel**. El bot adoptará la lista de inmediato.
+
+#### B. Si cambia o se añade un nuevo tipo o prefijo de factura
+1. **Actualizar el Prompt de IA (`bot/src/parser_ai.py`):**
+   * En `SYSTEM_PROMPT`, ubicar la sección `NOMENCLATURA Y TIPOS DE FACTURA (MAPEO FONÉTICO OBLIGATORIO)`.
+   * Registrar la nueva sigla, su naturaleza comercial (ej. contado, crédito, traslado) y sus posibles variaciones o confusiones fonéticas en el audio.
+2. **Actualizar la validación estricta de tipos (`bot/src/parser_ai.py`):**
+   * En la función `normalizar_un_despacho()`, incorporar la nueva sigla a la tupla permitida:
+     ```python
+     elif tipo not in ("IC", "DP", "IR", "NUEVA_SIGLA"):
+     ```
+3. **Actualizar Google Sheets y AppSheet:**
+   * En AppSheet, ir a Data → Columns → tabla `REGISTRO_DIARIO` → columna `Tipo_Factura` y agregar el nuevo valor a la lista de opciones permitidas (`Enum Values`).
+4. **Desplegar a producción en Vercel.**

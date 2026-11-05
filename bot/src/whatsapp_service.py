@@ -61,6 +61,24 @@ class GreenAPIService:
 
         return data.get("body") if data else None
 
+    def obtener_ultimos_mensajes(self, minutos: int = 2) -> List[Dict[str, Any]]:
+        """
+        Consulta los mensajes recientes (tanto entrantes como salientes de auto-chat)
+        directamente desde el historial de Green API.
+        """
+        mensajes: List[Dict[str, Any]] = []
+        for endpoint in ("lastIncomingMessages", "lastOutgoingMessages"):
+            url = f"{self.host}/waInstance{self.id_instance}/{endpoint}/{self.api_token}?minutes={minutos}"
+            req = urllib.request.Request(url)
+            try:
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    if isinstance(data, list):
+                        mensajes.extend(data)
+            except Exception:
+                pass
+        return mensajes
+
     @staticmethod
     def extraer_contenido_webhook(body: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """

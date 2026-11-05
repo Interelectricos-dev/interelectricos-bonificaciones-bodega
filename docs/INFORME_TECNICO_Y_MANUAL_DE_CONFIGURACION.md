@@ -490,9 +490,11 @@ En la actualización **Versión 2.1**, el sistema incorpora un segundo canal de 
 3. **Extracción Multimodal Estructurada con Contexto de Nomenclatura (`bot/src/parser_ai.py`):**
    * El texto o los bytes del audio (`.ogg`) se envían en una sola llamada a **Gemini API (`gemini-3.5-flash`)** con `responseMimeType: "application/json"` y `temperature: 0.0`.
    * El modelo cuenta con instrucciones operativas de la bodega:
-     * Series oficiales: `IC` (6 dígitos, serie `104xxx`/`105xxx`), `DP` (5 dígitos, serie `35xxx`/`36xxx`) e `IR` (5 dígitos, serie `47xxx`/`48xxx`).
-     * Normalización fonética: interpreta modismos como *"ICE"* o *"EC"* como `IC`, *"ER"* o *"YR"* como `IR`, y concatena números dichos por parejas (*"diez cuarenta y nueve cincuenta y ocho"* $\rightarrow$ `104958`).
-     * Agrupación por auxiliar: soporta sintaxis de lote (*"Para Edward: IC 104958 3 puntos, DP 36600 2 puntos..."*) heredando el colaborador en cascada sin obligar a repetir su nombre.
+     * **Tipos de factura oficiales:** `IC` (Factura de contado), `DP` (Factura de tirilla blanca - contado) e `IR` (Factura de remisión crédito). Todos los comprobantes son facturas.
+     * **Blindaje del término "Factura":** La palabra genérica *"factura"* aplica a los 3 tipos de documento; el modelo jamás la asocia exclusivamente a `IC`. Si no se distingue la sigla o naturaleza, se cataloga como incompleto (`null`) para solicitar la corrección a Luis.
+     * **Mapeo fonético de homófonos:** Interpreta siglas distorsionadas por el transcriptor o el acento: *"ICE"*, *"EC"* $\rightarrow$ `IC`; *"DePe"*, *"Pepe"*, *"BP"* $\rightarrow$ `DP`; *"ER"*, *"YR"*, *"Ye-erre"* $\rightarrow$ `IR`.
+     * **Reglas de ensamblado numérico (sin rangos fijos):** Ensambla números pronunciados por parejas (*"diez cuarenta y nueve cincuenta y ocho"* $\rightarrow$ `104958`), números con dígitos repetidos (*"treinta y seis seis cero cero"* $\rightarrow$ `36600`) o cantidades estándar, garantizando compatibilidad permanente ante cualquier evolución de los consecutivos en el tiempo.
+     * **Agrupación por auxiliar:** Soporta sintaxis de lote (*"Para Edward: IC 104958 3 puntos, DP 36600 2 puntos..."*) heredando el colaborador en cascada sin obligar a repetir su nombre.
 4. **Seguro de Integridad, Validación contra `EMPLEADOS`, Tolerancia a Fallos Parciales y Antiduplicados `batchGet` (`bot/src/sheets_service.py`):**
    * **Tolerancia a fallos parciales:** El sistema segrega los despachos en `validos` e `incompletos`. Si en un audio de 18 despachos uno solo carece de nombre o número, el sistema **no cancela la tanda completa**: inserta los 17 válidos y aparta el incompleto para que Luis solo reenvíe ese comprobante puntual.
    * Si no se mencionan errores en el audio/texto, el sistema asigna `0` por defecto.
