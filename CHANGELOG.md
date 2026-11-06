@@ -11,7 +11,8 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 ## [Versión 2.2] — 2026-11-04 a 2026-11-05
 ### Robustez Operativa: Antiduplicados por Colaborador, Tolerancia a Fallos Parciales, Ensamblado Numérico Universal y Mapeo Fonético de Facturas
 
-* **Nuevas Funcionalidades (`feat`):**
+* **Nuevas Funcionalidades (`feat`) y Resiliencia (`fix`):**
+  * **Reintentos Exponenciales ante Fallos de Google Sheets (`503/500/429`):** Política de reintentos (*exponential backoff*) en `bot/src/sheets_service.py` tanto para lectura (`batchGet`) como inserción (`append`). Si los servidores de Google Sheets experimentan un micro-corte temporal (`503 Service Unavailable`), el microservicio reintenta automáticamente con esperas progresivas (1.5s, 3s, 6s) hasta 4 veces antes de arrojar error, garantizando cero interrupciones para el despachador.
   * **Ensamblado Numérico Estructural Universal (Sin Rangos Fijos - Opción B):** Reemplazo de los rangos cerrados (ej. `104xxx`, `36xxx`) en el prompt del modelo multimodal (`bot/src/parser_ai.py`) por reglas universales de ensamblado en español: concatenación exacta por bloques/parejas (*"diez cuarenta y nueve cincuenta y ocho"* $\rightarrow$ `104958`), preservación de dígitos repetidos (*"treinta y seis seis cero cero"* $\rightarrow$ `36600`) y cantidades continuas. Garantiza escalabilidad indefinida ante cualquier consecutivo futuro (`108xxx`, `125xxx`, `2xxxxx`).
   * **Mapeo Fonético y Homófonos de Facturación:** Reconocimiento auditivo tolerante a ruido de bodega y modismos en audios de WhatsApp:
     * `IC` (Factura de contado): *"IC"*, *"ICE"*, *"EC"*, *"Ais"*, *"I ce"*, *"I-C"*, *"contado"*.

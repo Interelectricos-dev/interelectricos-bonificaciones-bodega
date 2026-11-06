@@ -93,6 +93,7 @@ def construir_filas_registros(
         tipo_factura = str(datos_json.get("tipo_factura", "")).strip().upper()
         num_raw = datos_json.get("numero_factura")
         numero_factura = normalizar_numero_factura(num_raw) if num_raw is not None else ""
+        fecha_registro = datos_json.get("fecha_hora") or ahora_col
 
         try:
             id_empleado, nombre_oficial = resolver_empleado(
@@ -113,7 +114,7 @@ def construir_filas_registros(
         id_registro = uuid.uuid4().hex[:8]
         fila = [
             id_registro,
-            ahora_col,
+            fecha_registro,
             id_empleado,
             tipo_factura,
             numero_factura,
@@ -123,7 +124,7 @@ def construir_filas_registros(
         registros.append(
             {
                 "id_registro": id_registro,
-                "fecha_hora": ahora_col,
+                "fecha_hora": fecha_registro,
                 "id_empleado": id_empleado,
                 "nombre_oficial": nombre_oficial,
                 "factura_label": f"{tipo_factura}-{numero_factura}",
@@ -136,6 +137,39 @@ def construir_filas_registros(
     return registros, incompletos
 
 
+def _ejecutar_api_sheets_con_reintentos(
+    peticion_api: Any, max_intentos: int = 4, delay_inicial: float = 1.5
+) -> Any:
+    """
+    Ejecuta una petición a la API de Google Sheets con política de reintentos exponenciales
+    ante errores transitorios de red o servidor (503 Service Unavailable, 500, 502, 504, 429).
+    """
+    import time
+    from googleapiclient.errors import HttpError
+
+    delay = delay_inicial
+    ultimo_error = None
+    for intento in range(1, max_intentos + 1):
+        try:
+            return peticion_api.execute()
+        except HttpError as err:
+            status = getattr(err.resp, "status", None)
+            ultimo_error = err
+            if status in (429, 500, 502, 503, 504) and intento < max_intentos:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            raise
+        except (TimeoutError, OSError) as err:
+            ultimo_error = err
+            if intento < max_intentos:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            raise
+    raise ultimo_error
+
+
 def guardar_en_google_sheets(
     lote_datos: Union[Dict[str, Any], List[Dict[str, Any]]]
 ) -> Dict[str, List[Dict[str, Any]]]:
@@ -144,7 +178,7 @@ def guardar_en_google_sheets(
     Ejecuta un batchGet de EMPLEADOS y REGISTRO_DIARIO (columnas Empleado, Tipo_Factura, Numero_Factura)
     para validar duplicados en una sola petición HTTP de ultra-baja latencia.
     Inserta únicamente los registros nuevos (si los hay) y retorna:
-    {"nuevos": [...], "duplicados": [...]}
+    {"nuevos": [...], "duplicados": [...], "incompletos": [...]}
     """
     from google.oauth2 import service_account
     from googleapiclient.discovery import build
@@ -172,17 +206,17 @@ def guardar_en_google_sheets(
 
     service = build("sheets", "v4", credentials=creds)
 
-    # 1. Leer catálogo EMPLEADOS y facturas existentes en 1 sola llamada de red (batchGet)
+    # 1. Leer catálogo EMPLEADOS y facturas existentes con reintentos automáticos ante 503/500/429
     # Columnas en REGISTRO_DIARIO: Col C (Empleado), Col D (Tipo_Factura), Col E (Numero_Factura)
-    res_batch = (
+    req_batch = (
         service.spreadsheets()
         .values()
         .batchGet(
             spreadsheetId=sheet_id,
             ranges=["EMPLEADOS!A2:C100", "REGISTRO_DIARIO!C2:E"],
         )
-        .execute()
     )
+    res_batch = _ejecutar_api_sheets_con_reintentos(req_batch)
     val_ranges = res_batch.get("valueRanges", [])
     rows_emp = val_ranges[0].get("values", []) if len(val_ranges) > 0 else []
     rows_reg = val_ranges[1].get("values", []) if len(val_ranges) > 1 else []
@@ -229,15 +263,16 @@ def guardar_en_google_sheets(
             vistos_en_lote.add(clave)
             nuevos.append(reg)
 
-    # 4. Insertar en Google Sheets solo los registros nuevos (si los hay)
+    # 4. Insertar en Google Sheets solo los registros nuevos con reintentos automáticos
     if nuevos:
         filas_a_insertar = [r["fila_sheets"] for r in nuevos]
-        service.spreadsheets().values().append(
+        req_append = service.spreadsheets().values().append(
             spreadsheetId=sheet_id,
             range="REGISTRO_DIARIO!A:G",
             valueInputOption="USER_ENTERED",
             insertDataOption="INSERT_ROWS",
             body={"values": filas_a_insertar},
-        ).execute()
+        )
+        _ejecutar_api_sheets_con_reintentos(req_append)
 
     return {"nuevos": nuevos, "duplicados": duplicados, "incompletos": incompletos_db}
