@@ -71,6 +71,8 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 | Fecha | Commit | Tipo | Descripción del Cambio |
 | :---: | :---: | :---: | :--- |
+| `2026-11-06` | `9237ddb` | `fix(sheets)` | Reintentos exponenciales ante fallos transitorios 503/500/429 de Google Sheets API |
+| `2026-11-05` | `99e3f68` | `docs` | Actualizar README y CHANGELOG a v2.2 con trazabilidad de commits y nuevas capacidades del bot |
 | `2026-11-05` | `6dc72e9` | `feat(bot)` | Ensamblado numérico universal sin rangos, mapeo fonético de facturas y escucha dual en test |
 | `2026-11-04` | `6baf820` | `feat(bot)` | Tolerancia a fallos parciales, agrupación por colaborador y afinamiento fonético de nomenclaturas |
 | `2026-11-04` | `6b26b93` | `docs` | Optimizar maquetación docx, corregir marca Interelectricos y estructurar galerías y estilos |

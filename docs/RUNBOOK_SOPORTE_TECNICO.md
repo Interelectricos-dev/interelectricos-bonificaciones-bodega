@@ -270,3 +270,44 @@ Dado que el motor de inteligencia artificial (`bot/src/parser_ai.py`) analiza el
 3. **Actualizar Google Sheets y AppSheet:**
    * En AppSheet, ir a Data → Columns → tabla `REGISTRO_DIARIO` → columna `Tipo_Factura` y agregar el nuevo valor a la lista de opciones permitidas (`Enum Values`).
 4. **Desplegar a producción en Vercel.**
+
+---
+
+### 6.4. Tolerancia a Fallos Transitorios de Red en Google Sheets (HttpError 503 / 500 / 429)
+
+#### A. Síntoma Detectado (Incidente del 05/11/2026)
+Al enviar una nota de voz, el despachador recibió un mensaje de error técnico en WhatsApp:
+```text
+⚠️ No se pudo registrar en Google Sheets:
+<HttpError 503 when requesting .../values:batchGet?... returned "The service is currently unavailable.">
+```
+
+#### B. Diagnóstico y Causa Raíz
+* **No fue error de IA ni de audio:** Gemini interpretó el audio al 100% (ej. `IC 105013 Fabian 3 puntos`).
+* **Micro-corte en la nube de Google:** La API de Google Sheets experimentó un parpadeo temporal de red (~1 a 2 segundos). Al hacer una sola llamada síncrona sin política de reintentos, el microservicio abortaba de inmediato.
+
+#### C. Solución Arquitectónica (Reintentos Exponenciales)
+En `bot/src/sheets_service.py` se implementó el wrapper `_ejecutar_api_sheets_con_reintentos()` que envuelve tanto la lectura (`batchGet`) como la escritura (`append`):
+* Si Google responde con código `503` (Service Unavailable), `500` (Internal Server Error), `502`, `504` o `429` (Rate Limit), el sistema retiene la ejecución con esperas progresivas:
+  $$\text{Intento 1} \rightarrow \text{espera 1.5s} \rightarrow \text{Intento 2} \rightarrow \text{espera 3.0s} \rightarrow \text{Intento 3} \rightarrow \text{espera 6.0s} \rightarrow \text{Intento 4}$$
+* Esto garantiza que los micro-cortes de red de Google se resuelvan en segundo plano sin que el operario de bodega perciba interrupción alguna.
+
+#### D. Procedimiento de Recuperación de Despachos Afectados
+Si por contingencia mayor un audio no llegara a registrarse:
+1. Consultar el endpoint de Green API `lastIncomingMessages` para obtener el archivo de audio (`.oga`) y la marca temporal (`timestamp`).
+2. Procesarlo mediante consola o script local especificando el campo `fecha_hora`:
+   ```python
+   from bot.src.sheets_service import guardar_en_google_sheets
+
+   guardar_en_google_sheets([
+       {
+           "tipo_factura": "IC",
+           "numero_factura": 105013,
+           "nombre_empleado": "Fabian",
+           "puntos_esfuerzo": 3,
+           "puntos_error": 0,
+           "fecha_hora": "2026-11-05 18:19:27"  # Marca temporal original del audio
+       }
+   ])
+   ```
+3. El sistema inserta la fila conservando la fecha y hora histórica real de la entrega en bodega.
