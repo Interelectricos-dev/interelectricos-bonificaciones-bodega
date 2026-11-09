@@ -3,7 +3,8 @@
 **Empresa:** Interelectricos Group SAS  
 **Proyecto:** Sistema Control de Bonificaciones Operativas en Bodega  
 **Destinatarios:** Equipo de Soporte Técnico, Administrador de Sistemas y Jefatura de Operaciones  
-**Versión:** 2.0 (Arquitectura Centralizada con Base Histórica Dinámica y Drill-Down)  
+**Versión:** 2.3 (Arquitectura Modular Desacoplada SRP por Servicios + Bot Multimodal + AppSheet + Google Sheets)  
+**Fecha:** Noviembre de 2026  
 **Estado:** Producción  
 
 ---
@@ -223,49 +224,51 @@ Si la Gerencia General aprueba modificaciones en el esquema de compensación o l
 
 ---
 
-## 6. Soporte y Mantenimiento del Bot de WhatsApp (`/bot` — Vercel + Green API + Gemini)
+## 6. Soporte y Mantenimiento del Bot de WhatsApp (Serverless en Vercel + Green API + Gemini)
 
 ### 6.1. Cambio o Adición del Número Autorizado (`CHAT_ID_PRUEBA`)
-Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los mensajes que provengan del número configurado en `CHAT_ID_PRUEBA`. Para actualizarlo en producción:
-1. Ingresar a **Vercel** → Proyecto `interelectricos-bonificaciones-bodega` → **Environment Variables**.
-2. Localizar la variable **`CHAT_ID_PRUEBA`**, hacer clic en **`⋯` > Edit** y colocar el número en formato internacional de WhatsApp (`573XXXXXXXXX@c.us`). Si se desean autorizar dos números simultáneamente, separarlos por coma (`573134040002@c.us,573XXXXXXXXX@c.us`).
-3. Guardar los cambios (**Save**), ir a la pestaña **Deployments** y seleccionar **Redeploy** sobre el último despliegue activo.
+Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los mensajes que provengan de los números configurados en `CHAT_ID_PRUEBA`. Para actualizarlo en producción:
+1. Ingresar a **Vercel** → Proyecto `interelectricos-bonificaciones-bodega` → **Settings** → **Environment Variables**.
+2. Localizar la variable **`CHAT_ID_PRUEBA`**, hacer clic en **`⋯` > Edit** y colocar el número en formato internacional de WhatsApp (`573XXXXXXXXX@c.us`). Si se desean autorizar múltiples números simultáneamente (ej. Luis y soporte técnico), separarlos por coma (`573001234567@c.us,573109876543@c.us`).
+3. Guardar los cambios (**Save**) y desplegar los cambios.
 
 ### 6.2. Diagnóstico cuando el Bot de WhatsApp no responde
-1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Bot WhatsApp Bonificaciones Bodega - Interelectricos"}`.
+1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Sistema de Liquidación y Auditoría de Bonificaciones - Intereléctricos"}`.
 2. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
-3. **Pruebas desde consola local:** Para depurar el flujo en tiempo real desde un computador de soporte, ejecutar `python -X utf8 bot/tests/test_bot.py`.
+3. **Pruebas y verificación desde consola local:**
+   * **Prueba declarativa unitaria:** Ejecutar `python -m unittest tests/test_services.py` (debe aprobar 7/7 pruebas).
+   * **Prueba end-to-end con un despacho:** Ejecutar `python main.py "Para Edward: Factura IC 104958 3 puntos esfuerzo"`.
+   * **Modo de escucha continuo:** Para depurar en tiempo real el flujo de WhatsApp, ejecutar `python bot/tests/test_bot.py`.
 
 ---
 
 ### 6.3. Mantenimiento del Prompt de IA: Alta/Baja de Auxiliares y Nuevos Tipos de Factura
 
-Dado que el motor de inteligencia artificial (`bot/src/parser_ai.py`) analiza el lenguaje natural y las notas de voz mediante instrucciones estructuradas en `SYSTEM_PROMPT`, el área técnica debe aplicar el siguiente procedimiento ante cambios en la operación:
+En la arquitectura modular V2.3, las reglas de extracción por IA están centralizadas en `src/services/gemini_client.py` (`SYSTEM_PROMPT`) y las validaciones de negocio en `src/services/dispatch_analyzer.py` (manteniendo `bot/src/parser_ai.py` como fachada compatible):
 
 #### A. Si ingresa un nuevo auxiliar o se retira uno existente
 1. **Actualizar el catálogo maestro en Google Sheets:**
    * Abrir la hoja de cálculo del sistema y seleccionar la pestaña `EMPLEADOS`.
    * Si es un ingreso: agregar una nueva fila con `ID_Empleado` (ej. `E06`), el `Nombre` completo (ej. `Carlos Pérez`) y `Activo` en `TRUE`.
    * Si es un retiro: ubicar al colaborador y cambiar su estado en la columna `Activo` a `FALSE` (nunca borrar la fila para preservar la integridad histórica de liquidaciones pasadas).
-2. **Actualizar la lista de auxiliares en el Prompt (`bot/src/parser_ai.py`):**
-   * Abrir `bot/src/parser_ai.py`.
+2. **Actualizar la lista de auxiliares en el Prompt (`src/services/gemini_client.py`):**
+   * Abrir `src/services/gemini_client.py`.
    * En la variable `SYSTEM_PROMPT`, ubicar la sección `AUXILIARES ACTIVOS DE BODEGA:` y ajustar los nombres de pila reconocidos:
      ```text
      AUXILIARES ACTIVOS DE BODEGA:
      - "Edward", "Sneider", "Fabian", "Sergio", "Estebi", "NuevoNombre".
      ```
-   * En la función `normalizar_un_despacho()`, actualizar el texto informativo del error si se desea reflejar el catálogo vigente.
 3. **Desplegar a producción:**
    * Hacer commit y push hacia el repositorio de GitHub, o forzar un Redeploy desde la consola web de **Vercel**. El bot adoptará la lista de inmediato.
 
 #### B. Si cambia o se añade un nuevo tipo o prefijo de factura
-1. **Actualizar el Prompt de IA (`bot/src/parser_ai.py`):**
+1. **Actualizar el Prompt de IA (`src/services/gemini_client.py`):**
    * En `SYSTEM_PROMPT`, ubicar la sección `NOMENCLATURA Y TIPOS DE FACTURA (MAPEO FONÉTICO OBLIGATORIO)`.
    * Registrar la nueva sigla, su naturaleza comercial (ej. contado, crédito, traslado) y sus posibles variaciones o confusiones fonéticas en el audio.
-2. **Actualizar la validación estricta de tipos (`bot/src/parser_ai.py`):**
-   * En la función `normalizar_un_despacho()`, incorporar la nueva sigla a la tupla permitida:
+2. **Actualizar la validación de tipos en las reglas de negocio (`src/services/dispatch_analyzer.py`):**
+   * En la tupla `TIPOS_FACTURA_VALIDOS`, incorporar la nueva sigla permitida:
      ```python
-     elif tipo not in ("IC", "DP", "IR", "NUEVA_SIGLA"):
+     TIPOS_FACTURA_VALIDOS = ("IC", "DP", "IR", "NUEVA_SIGLA")
      ```
 3. **Actualizar Google Sheets y AppSheet:**
    * En AppSheet, ir a Data → Columns → tabla `REGISTRO_DIARIO` → columna `Tipo_Factura` y agregar el nuevo valor a la lista de opciones permitidas (`Enum Values`).
@@ -286,28 +289,38 @@ Al enviar una nota de voz, el despachador recibió un mensaje de error técnico 
 * **No fue error de IA ni de audio:** Gemini interpretó el audio al 100% (ej. `IC 105013 Fabian 3 puntos`).
 * **Micro-corte en la nube de Google:** La API de Google Sheets experimentó un parpadeo temporal de red (~1 a 2 segundos). Al hacer una sola llamada síncrona sin política de reintentos, el microservicio abortaba de inmediato.
 
-#### C. Solución Arquitectónica (Reintentos Exponenciales)
-En `bot/src/sheets_service.py` se implementó el wrapper `_ejecutar_api_sheets_con_reintentos()` que envuelve tanto la lectura (`batchGet`) como la escritura (`append`):
+#### C. Solución Arquitectónica (Reintentos Exponenciales y Resiliencia No Bloqueante)
+En `src/services/sheets_client.py` se implementó el método `_ejecutar_con_reintentos()` que envuelve tanto la lectura (`batchGet`) como la escritura (`append`):
 * Si Google responde con código `503` (Service Unavailable), `500` (Internal Server Error), `502`, `504` o `429` (Rate Limit), el sistema retiene la ejecución con esperas progresivas:
   $$\text{Intento 1} \rightarrow \text{espera 1.5s} \rightarrow \text{Intento 2} \rightarrow \text{espera 3.0s} \rightarrow \text{Intento 3} \rightarrow \text{espera 6.0s} \rightarrow \text{Intento 4}$$
-* Esto garantiza que los micro-cortes de red de Google se resuelvan en segundo plano sin que el operario de bodega perciba interrupción alguna.
+* Si la conexión a Google Sheets fallara persistentemente, el cliente conmuta de forma no bloqueante al catálogo local de contingencia (`EMPLEADOS_FALLBACK`) emitiendo advertencias descriptivas en [`app.log`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/app.log).
 
 #### D. Procedimiento de Recuperación de Despachos Afectados
 Si por contingencia mayor un audio no llegara a registrarse:
 1. Consultar el endpoint de Green API `lastIncomingMessages` para obtener el archivo de audio (`.oga`) y la marca temporal (`timestamp`).
-2. Procesarlo mediante consola o script local especificando el campo `fecha_hora`:
+2. Procesarlo mediante el orquestador desacoplado o script local especificando el campo `fecha_referencia`:
    ```python
-   from bot.src.sheets_service import guardar_en_google_sheets
+   from src.services.sheets_client import SheetsClient
+   from src.services.dispatch_analyzer import procesar_y_estructurar_registros
 
-   guardar_en_google_sheets([
+   despachos = [
        {
            "tipo_factura": "IC",
-           "numero_factura": 105013,
+           "numero_factura": "105013",
            "nombre_empleado": "Fabian",
            "puntos_esfuerzo": 3,
            "puntos_error": 0,
-           "fecha_hora": "2026-11-05 18:19:27"  # Marca temporal original del audio
        }
-   ])
+   ]
+   sheets = SheetsClient()
+   catalogo, existentes = sheets.obtener_catalogo_y_existentes()
+   res = procesar_y_estructurar_registros(
+       despachos,
+       catalogo_empleados=catalogo,
+       existentes_set=existentes,
+       fecha_referencia="2026-11-05 18:19:27",  # Marca temporal original del audio
+   )
+   if res["nuevos"]:
+       sheets.insertar_filas_registro_diario([r["fila_sheets"] for r in res["nuevos"]])
    ```
 3. El sistema inserta la fila conservando la fecha y hora histórica real de la entrega en bodega.

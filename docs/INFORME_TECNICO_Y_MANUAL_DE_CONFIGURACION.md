@@ -2,7 +2,7 @@
 
 **Proyecto:** SISTEMA DE LIQUIDACIÓN Y AUDITORÍA DE BONIFICACIONES EN BODEGA  
 **Empresa:** INTERELECTRICOS GROUP SAS  
-**Fecha:** Octubre de 2026 | Versión 2.0 (Arquitectura Matricial en Memoria y Centralización Histórica)  
+**Fecha:** Noviembre de 2026 | Versión 2.3 (Arquitectura Modular Desacoplada SRP, Servicios Especializados y Orquestador Declarativo)  
 **Autor:** Mauricio Sierra – Aprendiz ADSO SENA  
 **Entorno Tecnológico:** Arquitectura Híbrida en la Nube (AppSheet Engine + Google Sheets Advanced Matrix Engine)
 
@@ -475,35 +475,39 @@ Para fines de control documental, auditoría técnica de sistemas y entregables 
 
 ---
 
-## 8. Arquitectura del Canal Automatizado de WhatsApp con IA (`/bot` — Serverless en Vercel)
+## 8. Arquitectura del Canal Automatizado de WhatsApp con IA (Versión 2.3 — Modular SRP y Serverless en Vercel)
 
-En la actualización **Versión 2.1**, el sistema incorpora un segundo canal de captura de alta velocidad que coexiste con AppSheet y escribe directamente sobre la misma tabla transaccional `REGISTRO_DIARIO` en Google Sheets.
+En la actualización **Versión 2.3**, el sistema migra hacia una arquitectura modular desacoplada por servicios basada en el **Principio de Responsabilidad Única (SRP)**, coordinada por un orquestador declarativo (`main.py`) y un endpoint Serverless (`api/webhook.py`):
+
+```
+src/
+├── config.py                 # Paths absolutos (BASE_DIR) y logging dual (consola + app.log)
+└── services/
+    ├── gemini_client.py      # Integración multimodal con Google AI Studio y rotación de modelos
+    ├── green_api_client.py   # Integración HTTP con Green API (WhatsApp)
+    ├── sheets_client.py      # Integración con Google Sheets API con reintentos y fallback offline
+    ├── dispatch_parser.py    # Deserialización de webhooks y extracción JSON de IA
+    ├── dispatch_analyzer.py  # Reglas de negocio puras (validaciones, rangos, deduplicación)
+    └── dispatch_exporter.py  # Formateo enriquecido para WhatsApp y reportes JSON en reports/
+```
 
 ### 8.1. Flujo de Procesamiento de Extremo a Extremo
 
 1. **Captura en WhatsApp (Green API Gateway):**
    * El jefe de bodega envía un mensaje de texto o una nota de voz (`.ogg`) al número corporativo de Sistemas vinculado en **Green API**.
    * Green API dispara en tiempo real una petición HTTP `POST` (Webhook) hacia el endpoint Serverless alojado en **Vercel** (`/api/webhook`).
-2. **Filtro de Privacidad *Fail-Closed* (`bot/api/webhook.py`):**
-   * Antes de procesar el contenido o invocar la IA, el webhook verifica que el remitente (`chatId`) coincida estrictamente con el número autorizado en la variable de entorno `CHAT_ID_PRUEBA`.
-   * Cualquier conversación de terceros en el teléfono corporativo es ignorada de inmediato (`ignored_other_chat`), garantizando privacidad total y cero consumo innecesario de cuota.
-3. **Extracción Multimodal Estructurada con Contexto de Nomenclatura (`bot/src/parser_ai.py`):**
-   * El texto o los bytes del audio (`.ogg`) se envían en una sola llamada a **Gemini API (`gemini-3.5-flash`)** con `responseMimeType: "application/json"` y `temperature: 0.0`.
-   * El modelo cuenta con instrucciones operativas de la bodega:
-     * **Tipos de factura oficiales:** `IC` (Factura de contado), `DP` (Factura de tirilla blanca - contado) e `IR` (Factura de remisión crédito). Todos los comprobantes son facturas.
-     * **Blindaje del término "Factura":** La palabra genérica *"factura"* aplica a los 3 tipos de documento; el modelo jamás la asocia exclusivamente a `IC`. Si no se distingue la sigla o naturaleza, se cataloga como incompleto (`null`) para solicitar la corrección a Luis.
-     * **Mapeo fonético de homófonos:** Interpreta siglas distorsionadas por el transcriptor o el acento: *"ICE"*, *"EC"* $\rightarrow$ `IC`; *"DePe"*, *"Pepe"*, *"BP"* $\rightarrow$ `DP`; *"ER"*, *"YR"*, *"Ye-erre"* $\rightarrow$ `IR`.
-     * **Reglas de ensamblado numérico (sin rangos fijos):** Ensambla números pronunciados por parejas (*"diez cuarenta y nueve cincuenta y ocho"* $\rightarrow$ `104958`), números con dígitos repetidos (*"treinta y seis seis cero cero"* $\rightarrow$ `36600`) o cantidades estándar, garantizando compatibilidad permanente ante cualquier evolución de los consecutivos en el tiempo.
-     * **Agrupación por auxiliar:** Soporta sintaxis de lote (*"Para Edward: IC 104958 3 puntos, DP 36600 2 puntos..."*) heredando el colaborador en cascada sin obligar a repetir su nombre.
-4. **Seguro de Integridad, Validación contra `EMPLEADOS`, Tolerancia a Fallos Parciales y Antiduplicados `batchGet` (`bot/src/sheets_service.py`):**
-   * **Tolerancia a fallos parciales:** El sistema segrega los despachos en `validos` e `incompletos`. Si en un audio de 18 despachos uno solo carece de nombre o número, el sistema **no cancela la tanda completa**: inserta los 17 válidos y aparta el incompleto para que Luis solo reenvíe ese comprobante puntual.
-   * Si no se mencionan errores en el audio/texto, el sistema asigna `0` por defecto.
-   * **Lectura optimizada `batchGet` de ultra-baja latencia:** En una sola petición HTTP de red, el microservicio consulta tanto el catálogo de personal activo (`EMPLEADOS!A2:C100`) como las facturas existentes (`REGISTRO_DIARIO!C2:E`).
-   * **Filtro antiduplicados en memoria:** Cruza cada elemento del lote contra `(ID_Empleado, Tipo_Factura, Numero_Factura)`. Si la factura ya fue registrada para ese colaborador (o se dictó repetida en el mismo audio), se aparta como duplicado sin insertarse en la hoja. Si pertenece a colaboradores distintos (pedido compartido), se valida y se permite.
-   * **Resiliencia con Reintentos Exponenciales ante Errores de Google Cloud (`503/500/429`):** Toda interacción con la API de Google Sheets (`batchGet` y `append`) opera bajo `_ejecutar_api_sheets_con_reintentos()`, ejecutando esperas progresivas (1.5s, 3s, 6s) hasta 4 intentos si la nube experimenta caídas momentáneas (*Service Unavailable*), evitando rechazos por parpadeos de red.
-   * Los registros válidos se insertan de forma atómica en una única llamada (`batch append`) sobre `REGISTRO_DIARIO`. Si todos los despachos eran duplicados o incompletos, el microservicio ahorra la llamada de escritura.
-5. **Confirmación Instantánea con Alertas de Duplicidad e Incompletos (`bot/src/whatsapp_service.py`):**
-   * El bot responde al chat de WhatsApp con el resumen detallado del despacho (o listado numerado cuando se registra por bloque).
-   * Si se omitieron comprobantes por duplicidad, advierte: *"⚠️ Omitidos por duplicidad: • [Auxiliar]: [Documento]"*.
-   * Si se omitieron comprobantes por datos incompletos, detalla el motivo exacto: *"⚠️ Omitidos por datos incompletos (requieren reenvío): • Factura [Documento]: falta el nombre del colaborador"*, confirmando que los válidos ya quedaron a salvo en la base de datos.
-   * Los registros válidos aparecen reflejados al instante en la vista `HISTORIAL HOY` y en la matriz `BASE_HISTORICA` de AppSheet.
+2. **Filtro de Privacidad *Fail-Closed* (`api/webhook.py` y `src/config.py`):**
+   * Antes de procesar el contenido o invocar la IA, el webhook verifica que el remitente (`chatId`) coincida estrictamente con los números autorizados en la variable de entorno `CHAT_ID_PRUEBA` (soporta múltiples IDs separados por coma).
+   * Cualquier conversación de terceros en el teléfono corporativo es ignorada de inmediato (`ignored_unauthorized_chat`), garantizando privacidad total y cero consumo innecesario de cuota.
+3. **Extracción Multimodal Estructurada (`src/services/gemini_client.py` y `dispatch_parser.py`):**
+   * El texto o los bytes del audio (`.ogg`) se envían a **Gemini API (`gemini-3.5-flash`)** con reintentos y fallback automático a `gemini-3-flash-preview` ante congestión o errores 503.
+   * `DispatchParser` deserializa la respuesta garantizando que sea un reporte de despachos legítimo (`es_despacho: true`).
+4. **Reglas de Negocio Puras, Integridad y Deduplicación (`src/services/dispatch_analyzer.py` y `sheets_client.py`):**
+   * **Tolerancia a fallos parciales:** `segregar_despachos_lote()` separa despachos en `validos` e `incompletos`. Si en un lote de 18 despachos uno solo carece de tipo o colaborador, el sistema **no cancela la tanda**: persiste los 17 válidos y aisla el incompleto para reenvío quirúrgico.
+   * **Resolución fonética de auxiliares:** Cruza el nombre dictado contra el catálogo de activos removiendo tildes y aplicando coincidencia flexible.
+   * **Filtro antiduplicados en memoria:** Cruza cada elemento contra el historial `(ID_Empleado, Tipo_Factura, Numero_Factura)`. Si ya fue registrado para ese colaborador, se clasifica como duplicado sin tocar la hoja.
+   * **Construcción atómica de 7 columnas:** Genera el registro físico estándar para `REGISTRO_DIARIO` con UUID y hora Colombia.
+   * **Resiliencia con Reintentos Exponenciales y Fallback Offline:** `SheetsClient` ejecuta hasta 4 reintentos ante códigos `503/500/429`. Si la red persiste caída, activa el catálogo local de contingencia (`EMPLEADOS_FALLBACK`) sin bloquear la ejecución.
+5. **Confirmación Instantánea y Auditoría (`src/services/dispatch_exporter.py`):**
+   * Genera el mensaje formateado en Markdown para WhatsApp (resumen de nuevos, avisos de duplicidad y detalle pedagógico de incompletos).
+   * Exporta automáticamente un artefacto JSON en `reports/` para trazabilidad y auditoría local.
