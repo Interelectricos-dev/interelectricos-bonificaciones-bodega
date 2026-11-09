@@ -131,7 +131,7 @@ class TestDispatchArchitecture(unittest.TestCase):
         msg = DispatchExporter.formatear_mensaje_whatsapp(nuevos=nuevos)
         self.assertIn("✓ *DESPACHO REGISTRADO*", msg)
         self.assertIn("• *Factura:* IC-104958", msg)
-        self.assertIn("• *Fecha y hora:* 2026-11-09 10:00", msg)
+        self.assertIn("• *Hora:* 2026-11-09 10:00", msg)
 
 
 if __name__ == "__main__":

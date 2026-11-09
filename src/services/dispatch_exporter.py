@@ -89,7 +89,7 @@ class DispatchExporter:
                 f"• *Factura:* {r['factura_label']}\n"
                 f"• *Auxiliar:* {r['nombre_oficial']} (ID: {r['id_empleado']})\n"
                 f"• *Puntos:* {r['puntos_esfuerzo']} pts | {r['puntos_error']} err\n"
-                f"• *Fecha y hora:* {fecha_hora_txt}"
+                f"• *Hora:* {fecha_hora_txt}"
             )
         # Caso 3: Múltiples despachos nuevos en bloque
         else:
@@ -100,7 +100,7 @@ class DispatchExporter:
                     f"{idx}. *{r['factura_label']}* — {r['nombre_oficial']} "
                     f"({r['puntos_esfuerzo']} pts | {r['puntos_error']} err)"
                 )
-            lineas.append(f"• *Fecha y hora:* {fecha_hora_txt}")
+            lineas.append(f"• *Hora:* {fecha_hora_txt}")
 
         # Avisos adicionales en lotes mixtos
         if duplicados:
