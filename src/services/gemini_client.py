@@ -136,14 +136,14 @@ class GeminiClient:
             )
             try:
                 logger.info("Consultando Gemini API con modelo '%s'...", mod)
-                with urllib.request.urlopen(req, timeout=25) as resp:
+                with urllib.request.urlopen(req, timeout=10) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                 raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
                 return raw_text
             except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError) as err:
                 ultimo_error = err
                 logger.warning("Fallo al consultar modelo '%s': %s. Reintentando...", mod, err)
-                time.sleep(1.0)
+                time.sleep(0.5)
 
         logger.error("Todos los intentos con Gemini API fallaron: %s", ultimo_error)
         raise RuntimeError(f"Error de conexión tras reintentos con Gemini API: {ultimo_error}")
