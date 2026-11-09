@@ -1380,7 +1380,7 @@ if __name__ == '__main__':
             'Destinatarios': 'Despachadores, Auxiliares de Bodega y Supervisión',
             'Software': 'AppSheet PWA + Bot WhatsApp IA + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.3 (Producción) | Noviembre de 2026'
         },
         short_title='Manual de Usuario Operativo',
         is_formal_report=True
@@ -1391,14 +1391,14 @@ if __name__ == '__main__':
         md_filepath='docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md',
         docx_outpath='docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.docx',
         doc_title='INFORME TÉCNICO Y MANUAL DE CONFIGURACIÓN',
-        doc_subtitle='Arquitectura de Datos, Fórmulas de Liquidación, AppSheet y Bot Serverless IA',
+        doc_subtitle='Arquitectura Modular SRP, Fórmulas de Liquidación, AppSheet y Bot Serverless IA',
         metadata={
             'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Dirección de Operaciones, TI y Auditoría',
             'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.3 (Producción) | Noviembre de 2026'
         },
         short_title='Informe Técnico y Manual de Configuración',
         is_formal_report=True
@@ -1409,14 +1409,14 @@ if __name__ == '__main__':
         md_filepath='schemas/appsheet_config.md',
         docx_outpath='docs/CONFIGURACION_TECNICA_APPSHEET.docx',
         doc_title='CONFIGURACIÓN TÉCNICA DE APPSHEET',
-        doc_subtitle='Guía de Configuración Paso a Paso de Tablas, Columnas, Vistas y Reglas (V2.1)',
+        doc_subtitle='Guía de Configuración Paso a Paso de Tablas, Columnas, Vistas y Reglas (V2.3)',
         metadata={
             'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Sistemas y Desarrolladores AppSheet',
             'Software': 'Motor AppSheet Core Engine',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.3 (Producción) | Noviembre de 2026'
         },
         short_title='Configuración Técnica AppSheet',
         is_formal_report=True
@@ -1427,14 +1427,14 @@ if __name__ == '__main__':
         md_filepath='docs/RUNBOOK_SOPORTE_TECNICO.md',
         docx_outpath='docs/RUNBOOK_SOPORTE_TECNICO.docx',
         doc_title='RUNBOOK DE SOPORTE TÉCNICO',
-        doc_subtitle='Diagnóstico de Incidencias, Mantenimiento Operativo y Contingencia (V2.1)',
+        doc_subtitle='Diagnóstico de Incidencias, Mantenimiento Operativo y Contingencia (V2.3)',
         metadata={
             'Empresa': 'Interelectricos Group SAS',
             'Proyecto': 'Sistema de Bonificaciones en Bodega',
             'Destinatarios': 'Equipo de Soporte Técnico, TI y Operaciones',
             'Software': 'AppSheet PWA + Bot Vercel/Gemini + Google Sheets',
             'Autor': 'Mauricio Sierra — Aprendiz ADSO SENA',
-            'Versión / Fecha': 'Versión 2.1 (Producción) | Octubre de 2026'
+            'Versión / Fecha': 'Versión 2.3 (Producción) | Noviembre de 2026'
         },
         short_title='Runbook Soporte Técnico',
         is_formal_report=True

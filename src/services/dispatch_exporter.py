@@ -120,15 +120,18 @@ class DispatchExporter:
     @staticmethod
     def exportar_reporte_auditoria_json(
         datos_procesados: Dict[str, Any], prefijo: str = "lote_despachos"
-    ) -> Path:
-        """Exporta un artefacto JSON en el directorio reports/ para trazabilidad y auditoría."""
+    ) -> Optional[Path]:
+        """Exporta un artefacto JSON en reports/ (o /tmp en Vercel) para trazabilidad y auditoría."""
+        import os
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archivo_salida = settings.REPORTS_DIR / f"{prefijo}_{timestamp}.json"
+        directorio = Path("/tmp") if os.getenv("VERCEL") else settings.REPORTS_DIR
+        archivo_salida = directorio / f"{prefijo}_{timestamp}.json"
         try:
             with open(archivo_salida, "w", encoding="utf-8") as f:
                 json.dump(datos_procesados, f, indent=2, ensure_ascii=False)
             logger.info("Reporte de auditoría generado en: %s", archivo_salida)
+            return archivo_salida
         except Exception as exc:
-            logger.warning("No se pudo escribir el reporte de auditoría en %s: %s", archivo_salida, exc)
-        return archivo_salida
+            logger.debug("No se persistió reporte JSON en entorno serverless: %s", exc)
+            return None
 
