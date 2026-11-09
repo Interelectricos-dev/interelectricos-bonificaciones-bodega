@@ -144,7 +144,7 @@ Para proteger la exactitud de los puntos y evitar dobles digitaciones por error 
 <img src="images/appsheet_config_v2/17b_app_alerta_factura_duplicada.png" alt="Alerta en Pantalla de Factura Duplicada" width="260">
 
 * **Bloqueo de duplicados para un mismo colaborador:** Si se intenta registrar una factura (`Tipo_Factura` + `Numero_Factura`) que ya fue guardada previamente para el mismo operario, la casilla del número se resalta en rojo impidiendo el guardado con la advertencia:
-  > `⚠️ Esta factura ya fue registrada previamente para este colaborador.`
+  > `Esta factura ya fue registrada previamente para este colaborador.`
 * **Compatibilidad con pedidos compartidos:** Si una orden grande fue alistada entre dos o más auxiliares (por ejemplo, alistamiento compartido de cables y luminarias en la factura `IC-104524`), el sistema **sí permite** registrarla para colaboradores diferentes (un registro para Edward y otro para Sneider), acreditando a cada uno los puntos que le corresponden.
 
 #### Formulario Listo y Botón Save
@@ -337,7 +337,7 @@ Por estrictas políticas de auditoría, el sistema bloquea la edición local pas
 * Si el colaborador acumuló menos de 300 puntos de esfuerzo en la quincena, su desempeño está amparado bajo el salario ordinario y el sistema liquidará `$0` en bonos productivos y de calidad.
 
 ### ¿Qué ocurre si intento registrar una factura que ya fue cargada?
-* **En AppSheet:** El sistema no le permitirá guardar el formulario y mostrará una alerta en rojo: *"⚠️ Esta factura ya fue registrada previamente para este colaborador"*. Si la factura fue alistada entre dos personas distintas, sí le permitirá guardarla para el segundo auxiliar.
+* **En AppSheet:** El sistema no le permitirá guardar el formulario y mostrará una alerta en rojo: *"Esta factura ya fue registrada previamente para este colaborador"*. Si la factura fue alistada entre dos personas distintas, sí le permitirá guardarla para el segundo auxiliar.
 * **En WhatsApp:** Si envía una nota de voz o texto con una factura repetida para el mismo colaborador, el bot la omitirá automáticamente para no sumar puntajes dobles y le responderá advirtiendo qué factura ya existía en el sistema.
 
 ### ¿Dónde solicitar soporte técnico?
@@ -367,10 +367,10 @@ Para registrar uno o varios despachos, envíe un audio o texto al contacto ofici
      * *(El sistema asigna automáticamente a Edward todos los comprobantes que le sigan hasta que se mencione a otro colaborador).*
 
 ### 8.3. Confirmación y Control de Errores en WhatsApp
-* **Confirmación inmediata (`✅`):** En pocos segundos, el bot responde confirmando el documento, auxiliar, puntos registrados y hora exacta. Los registros aparecen reflejados de inmediato en la pestaña **HISTORIAL HOY** de la aplicación móvil.
-* **Control antiduplicados (`⚠️`):** El bot verifica en tiempo real contra Google Sheets que la factura no haya sido registrada previamente para ese mismo colaborador.
-  * Si un audio trae varios despachos y uno ya existía, guarda los nuevos y notifica al final: *"⚠️ Omitidos por duplicidad: • Edward Sanchez: IC-104561"*.
-  * Si todo el audio fue reenviado por equivocación, no inserta nada y avisa: *"⚠️ Aviso de duplicidad: Todos los despachos enviados ya estaban registrados previamente"*.
-* **Tolerancia a fallos parciales y guardado de lotes (`✅` / `⚠️`):** Si un audio contiene múltiples despachos y a uno de ellos le faltó algún dato crítico (por ejemplo, faltó el nombre del auxiliar o el número de factura), el sistema **guarda inmediatamente todos los despachos válidos en Google Sheets** y notifica al final del mensaje qué factura quedó pendiente:
-  * *"⚠️ Omitidos por datos incompletos (requieren reenvío): • Factura DP-36628: falta el nombre del colaborador"*.
+* **Confirmación inmediata:** En pocos segundos, el bot responde confirmando el documento, auxiliar, puntos registrados y hora exacta. Los registros aparecen reflejados de inmediato en la pestaña **HISTORIAL HOY** de la aplicación móvil.
+* **Control antiduplicados:** El bot verifica en tiempo real contra Google Sheets que la factura no haya sido registrada previamente para ese mismo colaborador.
+  * Si un audio trae varios despachos y uno ya existía, guarda los nuevos y notifica al final: *"[AVISO] Omitidos por duplicidad: • Edward Sanchez: IC-104561"*.
+  * Si todo el audio fue reenviado por equivocación, no inserta nada y avisa: *"[AVISO] Aviso de duplicidad: Todos los despachos enviados ya estaban registrados previamente"*.
+* **Tolerancia a fallos parciales y guardado de lotes:** Si un audio contiene múltiples despachos y a uno de ellos le faltó algún dato crítico (por ejemplo, faltó el nombre del auxiliar o el número de factura), el sistema **guarda inmediatamente todos los despachos válidos en Google Sheets** y notifica al final del mensaje qué factura quedó pendiente:
+  * *"[AVISO] Omitidos por datos incompletos (requieren reenvío): • Factura DP-36628: falta el nombre del colaborador"*.
   * Esto garantiza que el despachador **nunca pierda una tanda completa de trabajo** y solo tenga que reenviar el despacho que quedó pendiente.

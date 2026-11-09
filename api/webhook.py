@@ -33,7 +33,7 @@ class handler(BaseHTTPRequestHandler):
                 self._responder_json(200, {"status": "ignored_non_target_event"})
                 return
 
-            if texto and texto.startswith(("✅", "⚠️", "🤖")):
+            if texto and texto.startswith(("*DESPACHO", "*AVISO", "*ERROR", "[", "✅", "⚠️", "🤖")):
                 self._responder_json(200, {"status": "ignored_bot_echo"})
                 return
 

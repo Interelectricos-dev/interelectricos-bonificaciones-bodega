@@ -25,7 +25,7 @@ def escuchar_whatsapp_continuo() -> None:
     chats_autorizados = settings.get_authorized_chats()
 
     logger.info("=" * 60)
-    logger.info("🎧 MODO DE ESCUCHA ACTIVO (Presiona Ctrl + C para salir)")
+    logger.info("[MODO DE ESCUCHA ACTIVO] Presiona Ctrl + C para salir")
     logger.info("Chats autorizados: %s", chats_autorizados or "TODOS")
     logger.info("=" * 60)
 
@@ -76,7 +76,7 @@ def escuchar_whatsapp_continuo() -> None:
             for _, chat_id, texto, audio_url in mensajes_a_procesar:
                 if chats_autorizados and chat_id not in chats_autorizados:
                     continue
-                if texto and texto.startswith(("✅", "⚠️", "🤖")):
+                if texto and texto.startswith(("*DESPACHO", "*AVISO", "*ERROR", "[", "✅", "⚠️", "🤖")):
                     continue
 
                 logger.info("Nuevo mensaje recibido de: %s", chat_id)

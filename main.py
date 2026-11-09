@@ -81,7 +81,7 @@ def main() -> None:
         print(resultado["mensaje_whatsapp"])
     except Exception as exc:
         logger.error("Error en la ejecución del flujo principal: %s", exc)
-        print(f"\n❌ Error: {exc}")
+        print(f"\n[ERROR] {exc}")
 
 
 if __name__ == "__main__":

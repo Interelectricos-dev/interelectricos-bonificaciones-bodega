@@ -177,7 +177,7 @@ Para garantizar la integridad y trazabilidad ante cualquier revisión de soporte
 ---
 
 ### Incidente 8: El sistema rechaza un número de factura ("Esta factura ya fue registrada previamente para este colaborador")
-* **Síntoma:** En AppSheet, al ingresar el número de factura, la casilla se resalta en rojo y muestra el mensaje `⚠️ Esta factura ya fue registrada previamente para este colaborador`. En WhatsApp, el bot responde que la factura fue omitida por duplicidad.
+* **Síntoma:** En AppSheet, al ingresar el número de factura, la casilla se resalta en rojo y muestra el mensaje `Esta factura ya fue registrada previamente para este colaborador`. En WhatsApp, el bot responde que la factura fue omitida por duplicidad.
 * **Causa:** La regla de negocio antiduplicados `(Empleado + Tipo_Factura + Numero_Factura)` detectó que dicho documento ya fue cargado previamente para ese mismo operario en la hoja `REGISTRO_DIARIO`.
 * **Procedimiento de Diagnóstico y Soporte:**
   1. **Verificar en `HISTORIAL HOY`:** En la app móvil, ir a `HISTORIAL HOY` y filtrar por el número de factura. Validar la hora y el auxiliar al que le fue acreditada originalmente.
@@ -281,7 +281,7 @@ En la arquitectura modular V2.3, las reglas de extracción por IA están central
 #### A. Síntoma Detectado (Incidente del 05/11/2026)
 Al enviar una nota de voz, el despachador recibió un mensaje de error técnico en WhatsApp:
 ```text
-⚠️ No se pudo registrar en Google Sheets:
+[ERROR] No se pudo registrar en Google Sheets:
 <HttpError 503 when requesting .../values:batchGet?... returned "The service is currently unavailable.">
 ```
 

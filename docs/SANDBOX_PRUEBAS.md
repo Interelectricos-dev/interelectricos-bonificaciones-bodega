@@ -48,9 +48,9 @@ Crear una **Columna Virtual** llamada `Factura_Completa` y configurarla como el 
 
 | Columna | Tipo | KEY? | LABEL? | SHOW? | EDITABLE? | REQUIRE? | SEARCH? | Configuración Clave |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `Tipo_Documento` | `Enum` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ⬜ | **Base type:** `Text`<br>**Input mode:** `Buttons`<br>**Values:** `IR, IC, NCR`<br>**Initial value:** `"IR"` |
-| `Numero_Factura` | `Number` | ⬜ | ⬜ | ☑️ | ☑️ | ☑️ | ☑️ | **Type:** `Number`<br>Dispara teclado numérico directo. |
-| `Factura_Completa` *(Virtual)* | `Text` | ⬜ | ☑️ | ☑️ | ⬜ | ⬜ | ☑️ | **App formula:**<br>`[Tipo_Documento] & "-" & [Numero_Factura]`<br>**Display name:** `Factura` |
+| `Tipo_Documento` | `Enum` | - | - | Sí | Sí | Sí | - | **Base type:** `Text`<br>**Input mode:** `Buttons`<br>**Values:** `IR, IC, NCR`<br>**Initial value:** `"IR"` |
+| `Numero_Factura` | `Number` | - | - | Sí | Sí | Sí | Sí | **Type:** `Number`<br>Dispara teclado numérico directo. |
+| `Factura_Completa` *(Virtual)* | `Text` | - | Sí | Sí | - | - | Sí | **App formula:**<br>`[Tipo_Documento] & "-" & [Numero_Factura]`<br>**Display name:** `Factura` |
 
 ---
 
@@ -216,19 +216,19 @@ Para evitar la duplicación de datos y la sobrecarga de fórmulas fijas en hojas
 
 | Columna | Tipo | KEY? | LABEL? | SHOW? | EDITABLE? | SEARCH? | Configuración Clave / App Formula |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `ID_Liquidacion` *(Virtual)* | `Text` | ☑️ | ⬜ | ⬜ | ⬜ | ⬜ | `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])` |
-| `Año` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ☑️ | Formato número entero sin separador de miles. |
-| `Mes` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Oculto (1..12). |
-| `Mes_Nombre` *(Virtual)* | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ☑️ | `SWITCH([Mes], 1, "Enero", 2, "Febrero", 3, "Marzo", 4, "Abril", 5, "Mayo", 6, "Junio", 7, "Julio", 8, "Agosto", 9, "Septiembre", 10, "Octubre", 11, "Noviembre", 12, "Diciembre", "")` |
-| `Quincena` | `Text` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | Código base (`Q1` / `Q2`). |
-| `Quincena_Nombre` *(Virtual)* | `Text` | ⬜ | ⬜ | ☑️ | ⬜ | ☑️ | `IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]` *(Ejemplo: `1ra Quincena · Octubre 2026`)*. |
-| `ID_Empleado` | `Number` | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ID numérico del colaborador. |
-| `Nombre` | `Text` | ⬜ | ☑️ | ☑️ | ⬜ | ☑️ | **LABEL oficial de la tabla**. |
-| `Pts_Esfuerzo` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | Entero. |
-| `Pts_Error` | `Number` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | Entero (con valores negativos). |
-| `Bono Productivo` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | Currency: COP ($), sin decimales. |
-| `Bono Calidad` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ⬜ | Currency: COP ($), sin decimales. |
-| `Total BONO` | `Price` | ⬜ | ⬜ | ☑️ | ⬜ | ☑️ | Currency: COP ($), sin decimales. |
+| `ID_Liquidacion` *(Virtual)* | `Text` | Sí | - | - | - | - | `CONCATENATE([Año], "-", [Mes], "-", [Quincena], "-", [ID_Empleado])` |
+| `Año` | `Number` | - | - | Sí | - | Sí | Formato número entero sin separador de miles. |
+| `Mes` | `Number` | - | - | - | - | - | Oculto (1..12). |
+| `Mes_Nombre` *(Virtual)* | `Text` | - | - | Sí | - | Sí | `SWITCH([Mes], 1, "Enero", 2, "Febrero", 3, "Marzo", 4, "Abril", 5, "Mayo", 6, "Junio", 7, "Julio", 8, "Agosto", 9, "Septiembre", 10, "Octubre", 11, "Noviembre", 12, "Diciembre", "")` |
+| `Quincena` | `Text` | - | - | - | - | - | Código base (`Q1` / `Q2`). |
+| `Quincena_Nombre` *(Virtual)* | `Text` | - | - | Sí | - | Sí | `IF([Quincena] = "Q1", "1ra Quincena", "2da Quincena") & " · " & [Mes_Nombre] & " " & [Año]` *(Ejemplo: `1ra Quincena · Octubre 2026`)*. |
+| `ID_Empleado` | `Number` | - | - | - | - | - | ID numérico del colaborador. |
+| `Nombre` | `Text` | - | Sí | Sí | - | Sí | **LABEL oficial de la tabla**. |
+| `Pts_Esfuerzo` | `Number` | - | - | Sí | - | - | Entero. |
+| `Pts_Error` | `Number` | - | - | Sí | - | - | Entero (con valores negativos). |
+| `Bono Productivo` | `Price` | - | - | Sí | - | - | Currency: COP ($), sin decimales. |
+| `Bono Calidad` | `Price` | - | - | Sí | - | - | Currency: COP ($), sin decimales. |
+| `Total BONO` | `Price` | - | - | Sí | - | Sí | Currency: COP ($), sin decimales. |
 
 ---
 

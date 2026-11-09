@@ -48,7 +48,7 @@ El backend de procesamiento opera bajo una arquitectura modular desacoplada por 
 
 1. **Orquestador Delgado (`main.py`):**
    - No contiene lógica matemática ni llamadas HTTP directas.
-   - Secuencia declarativamente el flujo: `GeminiClient` ➔ `DispatchParser` ➔ `DispatchAnalyzer` ➔ `SheetsClient` ➔ `DispatchExporter`.
+   - Secuencia declarativamente el flujo: `GeminiClient` → `DispatchParser` → `DispatchAnalyzer` → `SheetsClient` → `DispatchExporter`.
 2. **Capa de Reglas de Negocio Puras (`src/services/dispatch_analyzer.py`):**
    - Sin dependencias de red, librerías de presentación ni frameworks externos.
    - Valida siglas de factura autorizadas (`IC`, `DP`, `IR`), rangos de esfuerzo (1 a 5) y errores (0 a -3).

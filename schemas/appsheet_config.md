@@ -147,7 +147,7 @@ Esta tabla transaccional implementa la separación ergonómica entre comprobante
       )
     )
     ```
-  * **Data Validity > Invalid value error:** `"⚠️ Esta factura ya fue registrada previamente para este colaborador."`
+  * **Data Validity > Invalid value error:** `"Esta factura ya fue registrada previamente para este colaborador."`
   * *Garantiza que una misma factura no sea cargada dos veces al mismo colaborador, previniendo dobles digitaciones accidentales pero permitiendo el trabajo compartido legítimo si dos colaboradores alistaron la misma factura.*
 
 * **`Factura` (Columna Virtual):**

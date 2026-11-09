@@ -26,6 +26,15 @@ class DispatchExporter:
             return f"Factura *{tipo}-{num}* ({emp}): {motivo}"
         return f"Despacho #{inc.get('indice', '?')}: {motivo}"
 
+    @staticmethod
+    def _formatear_fecha_hora(fecha_hora_str: str) -> str:
+        """Formatea fecha y hora omitiendo segundos: YYYY-MM-DD HH:MM."""
+        s = str(fecha_hora_str).strip()
+        partes = s.split()
+        if len(partes) >= 2:
+            return f"{partes[0]} {partes[1][:5]}"
+        return s[:16]
+
     @classmethod
     def formatear_mensaje_whatsapp(
         cls,
@@ -43,67 +52,68 @@ class DispatchExporter:
         # Caso 1: Cero registros nuevos guardados
         if not nuevos:
             if duplicados and not incompletos:
-                lineas.append("⚠️ *Aviso de duplicidad:*")
-                lineas.append("Los siguientes despachos ya estaban registrados previamente:")
+                lineas.append("⚠ *AVISO DE DUPLICIDAD*")
+                lineas.append("Las siguientes facturas ya estaban registradas:")
                 for d in duplicados:
                     lineas.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
                 return "\n".join(lineas)
 
             if incompletos and not duplicados:
-                lineas.append("⚠️ *No se pudo registrar ningún despacho por datos incompletos:*")
+                lineas.append("⚠ *DATOS INCOMPLETOS*")
+                lineas.append("No se pudo registrar por datos faltantes:")
                 for inc in incompletos:
                     lineas.append(f"• {cls.describir_incompleto(inc)}")
-                lineas.append("\n💡 *Por favor reenvía el mensaje o audio indicando los datos faltantes.*")
-                lineas.append("👉 *Ejemplo:* `IC104958 Edward 3 puntos`")
+                lineas.append("\nReenvío requerido:")
+                lineas.append("`IC104958 Edward 3 puntos`")
                 return "\n".join(lineas)
 
             if incompletos and duplicados:
-                lineas.append("⚠️ *Ningún despacho nuevo registrado:*")
-                lineas.append("\n*Omitidos por duplicidad:*")
+                lineas.append("⚠ *NINGÚN DESPACHO REGISTRADO*")
+                lineas.append("\n*Duplicados:*")
                 for d in duplicados:
                     lineas.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
-                lineas.append("\n*Omitidos por datos incompletos:*")
+                lineas.append("\n*Incompletos:*")
                 for inc in incompletos:
                     lineas.append(f"• {cls.describir_incompleto(inc)}")
-                lineas.append("\n💡 *Por favor reenvía únicamente los despachos incompletos.*")
+                lineas.append("\nPor favor reenvía únicamente los incompletos.")
                 return "\n".join(lineas)
 
-            return "ℹ️ *No se procesaron despachos en este mensaje.*"
+            return "⚠ *No se procesaron despachos en este mensaje.*"
 
         # Caso 2: Exactamente 1 despacho nuevo
         if len(nuevos) == 1:
             r = nuevos[0]
+            fecha_hora_txt = cls._formatear_fecha_hora(r.get("fecha_hora", ""))
             lineas.append(
-                "✅ *¡Despacho registrado con éxito!*\n"
-                f"📄 *Documento:* {r['factura_label']}\n"
-                f"👷 *Auxiliar:* {r['nombre_oficial']} (ID: {r['id_empleado']})\n"
-                f"⚡ *Esfuerzo:* {r['puntos_esfuerzo']} pts | "
-                f"⚠️ *Errores:* {r['puntos_error']}\n"
-                f"🕒 *Hora:* {r['fecha_hora']} (ID: `{r['id_registro']}`)"
+                "✓ *DESPACHO REGISTRADO*\n"
+                f"• *Factura:* {r['factura_label']}\n"
+                f"• *Auxiliar:* {r['nombre_oficial']} (ID: {r['id_empleado']})\n"
+                f"• *Puntos:* {r['puntos_esfuerzo']} pts | {r['puntos_error']} err\n"
+                f"• *Fecha y hora:* {fecha_hora_txt}"
             )
         # Caso 3: Múltiples despachos nuevos en bloque
         else:
-            lineas.append(f"✅ *¡{len(nuevos)} despachos registrados en bloque!*")
+            fecha_hora_txt = cls._formatear_fecha_hora(nuevos[0].get("fecha_hora", ""))
+            lineas.append(f"✓ *{len(nuevos)} DESPACHOS REGISTRADOS*")
             for idx, r in enumerate(nuevos, start=1):
                 lineas.append(
                     f"{idx}. *{r['factura_label']}* — {r['nombre_oficial']} "
                     f"({r['puntos_esfuerzo']} pts | {r['puntos_error']} err)"
                 )
-            lineas.append(f"🕒 *Hora:* {nuevos[0]['fecha_hora']}")
+            lineas.append(f"• *Fecha y hora:* {fecha_hora_txt}")
 
         # Avisos adicionales en lotes mixtos
         if duplicados:
-            lineas.append("\n⚠️ *Omitidos por duplicidad (ya registrados previamente):*")
+            lineas.append("\n⚠ *Duplicados (ya registrados):*")
             for d in duplicados:
                 lineas.append(f"• *{d['nombre_oficial']}*: {d['factura_label']}")
 
         if incompletos:
-            lineas.append("\n⚠️ *Omitidos por datos incompletos (requieren reenvío):*")
+            lineas.append("\n⚠ *Incompletos (requieren reenvío):*")
             for inc in incompletos:
                 lineas.append(f"• {cls.describir_incompleto(inc)}")
             lineas.append(
-                f"\n💡 *Los {len(nuevos)} despachos válidos ya quedaron guardados.* "
-                "Por favor reenvía únicamente los omitidos."
+                f"\nLos {len(nuevos)} despachos válidos ya quedaron guardados."
             )
 
         return "\n".join(lineas)
@@ -112,9 +122,9 @@ class DispatchExporter:
     def formatear_error_operativo(mensaje_error: str) -> str:
         """Formatea un mensaje de error operacional para ser devuelto por WhatsApp."""
         return (
-            f"⚠️ *No se pudo registrar en Google Sheets:*\n{mensaje_error}\n\n"
-            "💡 *Ejemplo individual:* `IC104958 Edward 3 puntos`\n"
-            "💡 *Ejemplo en bloque:* `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`"
+            f"⚠ *ERROR EN GOOGLE SHEETS:*\n{mensaje_error}\n\n"
+            "Ejemplo individual: `IC104958 Edward 3 puntos`\n"
+            "Ejemplo en bloque: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`"
         )
 
     @staticmethod
