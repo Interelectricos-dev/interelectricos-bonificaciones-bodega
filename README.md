@@ -3,46 +3,106 @@
 **Empresa:** Interelectricos Group SAS  
 **Proyecto:** Control de Bonificaciones Operativas en Bodega  
 **Autor:** Mauricio Sierra – Aprendiz ADSO SENA  
-**Versión:** 2.2 (Arquitectura Híbrida AppSheet + Bot de WhatsApp con IA Multimodal + Google Sheets)  
+**Versión:** 2.3 (Arquitectura Modular Desacoplada SRP por Servicios + Bot Multimodal + AppSheet + Google Sheets)  
 **Estado:** En Producción  
 
 ---
 
-## Descripción General
-El sistema **BONIFICACIONES** es una solución operativa diseñada para digitalizar, agilizar y auditar en tiempo real la captura del rendimiento en la zona de despachos. Sustituye el conteo manual en papel por un flujo digital con **doble canal de captura** (aplicación móvil en AppSheet y registro conversacional por WhatsApp mediante notas de voz o texto con Inteligencia Artificial), desacoplando la digitación en bodega del procesamiento de nómina. El sistema garantiza la equidad operativa e integra un módulo de control de calidad mediante penalizaciones que protegen el salario base del trabajador.
+## 1. Descripción General
+El sistema **BONIFICACIONES** es una solución operativa diseñada para digitalizar, agilizar y auditar en tiempo real la captura del rendimiento en la zona de despachos de Intereléctricos Group SAS. Sustituye el conteo manual en papel por un flujo digital con **doble canal de captura** (aplicación móvil en AppSheet y bot conversacional por WhatsApp mediante notas de voz o texto con Inteligencia Artificial), desacoplando la digitación en bodega del procesamiento de nómina.
 
-## Arquitectura del Sistema
-La solución opera bajo un esquema en la nube con dos canales de entrada sincronizados sobre una única fuente de verdad:
-* **Canal 1 — Frontend Táctil (AppSheet Mobile & PWA):** Aplicación ejecutada en terminales móviles Android/iOS y computadores de mostrador para captura táctil, consulta del historial diario (`HISTORIAL HOY`) y auditoría jerárquica de liquidaciones (`LIQUIDACION`).
-* **Canal 2 — Bot de WhatsApp con IA Multimodal (`/bot` en Vercel Serverless):** Microservicio en Python desplegado en Vercel que recibe notas de voz (`.ogg`) o mensajes de texto a través de **Green API**, extrae y valida los despachos (individuales o por lotes) mediante **Gemini API (`gemini-3.5-flash`)**, inserta las filas en Google Sheets y responde confirmación inmediata por WhatsApp. Cuenta con **tolerancia a fallos parciales**, **filtro antiduplicados por colaborador** y **ensamblado numérico estructural sin rangos fijos**.
-* **Backend y Motor de Liquidación (Google Sheets):** Libro relacional centralizado compuesto por 5 hojas maestras que actúan como base de datos transaccional y motor de cálculo matricial en tiempo real.
+---
 
-## Estructura de la Base de Datos (Versión 2.0+)
-1. **`EMPLEADOS`:** Catálogo maestro del personal operativo (`ID_Empleado`, `Nombre_Completo`, `Activo`).
-2. **`REGISTRO_DIARIO`:** Tabla transaccional atómica de 7 columnas físicas (`ID_Registro`, `Fecha_Hora`, `Empleado`, `Tipo_Factura`, `Numero_Factura`, `Puntos_Esfuerzo`, `Puntos_Error`). Alimentada simultáneamente por AppSheet y por el Bot de WhatsApp.
-3. **`BASE_HISTORICA`:** Motor matricial dinámico (`LET + MAP + LAMBDA + QUERY`) que consolida automáticamente los puntos y bonos por Año, Mes y Quincena en modo de solo lectura.
-4. **`LIQUIDACION_MES`:** Tablero ejecutivo para consulta gerencial y liquidación de nómina.
-5. **`CONFIGURACION`:** Centralización de parámetros financieros (meta base quincenal, fondo de calidad, penalización por error y matriz de escalas).
+## 2. Arquitectura de Software Desacoplada (SRP)
 
-## Organización del Repositorio
-* `/bot`: Microservicio Serverless del Bot de WhatsApp con IA:
-  * [`bot/api/webhook.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/api/webhook.py): Endpoint Serverless en Vercel (`/api/webhook`) para recepción de eventos de Green API.
-  * [`bot/src/parser_ai.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/parser_ai.py): Motor de extracción a JSON estricto con Gemini API, ensamblado numérico universal sin rangos fijos y mapeo fonético de facturas (`IC`, `DP`, `IR`).
-  * [`bot/src/sheets_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/sheets_service.py): Validación contra `EMPLEADOS`, filtro antiduplicados por colaborador, tolerancia a fallos parciales e inserción atómica por lotes en `REGISTRO_DIARIO`.
-  * [`bot/src/whatsapp_service.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/src/whatsapp_service.py): Cliente de comunicación con Green API y formateo de confirmaciones con alertas descriptivas.
-  * [`bot/tests/test_bot.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/bot/tests/test_bot.py): Consola de pruebas locales con modo de escucha dual (cola y sondeo saliente/entrante).
-* `/docs`: Documentación técnica del sistema, manuales de usuario y reglas de negocio:
-  * [`GUIA_INSTALACION_APP.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/GUIA_INSTALACION_APP.md)
-  * [`INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/INFORME_TECNICO_Y_MANUAL_DE_CONFIGURACION.md)
-  * [`MANUAL_DE_USUARIO_OPERATIVO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/MANUAL_DE_USUARIO_OPERATIVO.md)
-  * [`RUNBOOK_SOPORTE_TECNICO.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/RUNBOOK_SOPORTE_TECNICO.md)
-  * [`SANDBOX_PRUEBAS.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/docs/SANDBOX_PRUEBAS.md)
-* `/schemas`: Respaldo de configuraciones estructurales, fórmulas internas y expresiones lógicas de AppSheet ([`appsheet_config.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/schemas/appsheet_config.md)).
-* `/scripts`: Generador automatizado de documentación institucional en formato Word ([`build_docs.py`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/scripts/build_docs.py)).
-* `/templates`: Plantilla limpia de la base de datos de Google Sheets excluyendo registros sensibles ([`BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/templates/BD_BONIFICACIONES_BODEGA_TEMPLATE.xlsx)).
-* [`CHANGELOG.md`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/CHANGELOG.md): Registro de auditoría y trazabilidad histórica de versiones y commits del proyecto.
+El backend de procesamiento opera bajo una arquitectura modular desacoplada por servicios, aplicando estrictamente el **Principio de Responsabilidad Única (SRP)**:
 
-## Despliegue y Seguridad
-* El sistema en AppSheet implementa una ventana de edición restringida a 15 minutos para correcciones inmediatas y deshabilita la eliminación de registros para garantizar la trazabilidad de auditoría.
-* El Bot de WhatsApp opera bajo política *Fail-Closed*, procesando únicamente los mensajes provenientes del número autorizado (`CHAT_ID_PRUEBA`) y rechazando cualquier registro con datos faltantes o fuera de rango antes de tocar Google Sheets.
-* Las credenciales (`.env`, `service_account.json`) y hojas de cálculo con registros reales (`.xlsx`) se excluyen estrictamente del control de versiones mediante [`.gitignore`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/.gitignore).
+```
+├── .env                          # Variables de entorno reales (excluido en .gitignore)
+├── .env.example                  # Plantilla documentada con ejemplos de cada variable
+├── .gitignore                    # Protección de credenciales, temporales, venv y logs
+├── main.py                       # Orquestador declarativo y delgado (~80 líneas)
+├── requirements.txt              # Dependencias fijadas con versiones mínimas
+├── README.md                     # Documentación técnica, arquitectura y guía de despliegue
+├── data/                         # Capa de insumos / plantillas (*.example)
+├── reports/                      # Artefactos y reportes generados dinámicamente (.gitkeep)
+├── credentials/                  # Llaves privadas/JSON de Google (ignorado en Git, .gitkeep)
+├── docs/                         # Documentación viva (Manual Operativo, Runbook, CHANGELOG)
+├── tests/                        # Suite de pruebas unitarias automatizadas
+├── api/                          # Endpoints HTTP Serverless (Vercel)
+│   └── webhook.py                # Controlador HTTP desacoplado
+└── src/
+    ├── __init__.py
+    ├── config.py                 # Centralización de configuración, paths absolutos y logging dual
+    └── services/                 # Módulos especializados por responsabilidad técnica
+        ├── __init__.py
+        ├── gemini_client.py      # Capa de integración con API de Google Gemini (texto/audio)
+        ├── green_api_client.py   # Capa de integración con Green API (WhatsApp)
+        ├── sheets_client.py      # Capa de integración con Google Sheets API (lectura/escritura)
+        ├── dispatch_parser.py    # Capa de ingesta, lectura y extracción de payloads crudos
+        ├── dispatch_analyzer.py  # Reglas de negocio puras (validaciones, rangos, deduplicación)
+        └── dispatch_exporter.py  # Formateo de presentación WhatsApp y reportes de auditoría
+```
+
+### Capas y Responsabilidades Técnicas
+
+1. **Orquestador Delgado (`main.py`):**
+   - No contiene lógica matemática ni llamadas HTTP directas.
+   - Secuencia declarativamente el flujo: `GeminiClient` ➔ `DispatchParser` ➔ `DispatchAnalyzer` ➔ `SheetsClient` ➔ `DispatchExporter`.
+2. **Capa de Reglas de Negocio Puras (`src/services/dispatch_analyzer.py`):**
+   - Sin dependencias de red, librerías de presentación ni frameworks externos.
+   - Valida siglas de factura autorizadas (`IC`, `DP`, `IR`), rangos de esfuerzo (1 a 5) y errores (0 a -3).
+   - Resuelve auxiliares mediante coincidencia fonética/sin acentos contra el catálogo de activos.
+   - Detecta y aísla duplicados contra el historial y el mismo lote.
+   - Ensambla las 7 columnas físicas del registro atómico de `REGISTRO_DIARIO`.
+3. **Capa de Clientes / Integración (`src/services/*_client.py`):**
+   - Encapsulan autenticación, reintentos exponenciales (ante errores 429, 500, 503) y timeouts.
+   - Si la API externa cambia de versión o endpoint, las reglas de negocio no se alteran.
+4. **Capa de Ingesta y Estructuración (`src/services/dispatch_parser.py`):**
+   - Extrae el contenido de webhooks y desensambla el JSON multimodal devuelto por la IA.
+5. **Capa de Formateo y Presentación (`src/services/dispatch_exporter.py`):**
+   - Formatea respuestas estéticas en Markdown enriquecido para WhatsApp y genera reportes JSON en `reports/`.
+6. **Configuración Centralizada (`src/config.py`):**
+   - Resuelve todas las rutas mediante `BASE_DIR = Path(__file__).resolve().parent.parent`.
+   - Inicializa el sistema de logs dual escribiendo a la vez en consola y en `app.log`.
+
+---
+
+## 3. Despliegue y Ejecución
+
+### Requisitos Previos
+* Python 3.10 o superior.
+* Archivo de entorno `.env` configurado a partir de `.env.example`.
+* Credenciales de Google Sheets (`service_account.json` dentro de `credentials/` o `GOOGLE_CREDENTIALS_JSON`).
+
+### Instalación de Dependencias
+```bash
+python -m venv .venv
+# En Windows:
+.venv\Scripts\activate
+# En Linux/macOS:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### Modos de Ejecución
+
+1. **Ejecución Local / Tarea Programada (Orquestador CLI):**
+   ```bash
+   python main.py "Para Edward: Factura IC 104958 3 puntos esfuerzo"
+   ```
+
+2. **Modo Escucha en Vivo de WhatsApp (Sondeo continuo para pruebas):**
+   ```bash
+   python bot/tests/test_bot.py
+   ```
+
+3. **Ejecución de Pruebas Unitarias:**
+   ```bash
+   python -m unittest tests/test_services.py
+   ```
+
+4. **Despliegue Serverless en Vercel:**
+   - Endpoint: `/api/webhook`
+   - Configurado en `bot/vercel.json` apuntando al controlador desacoplado.

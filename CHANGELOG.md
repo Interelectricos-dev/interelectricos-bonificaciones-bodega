@@ -8,6 +8,27 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 ---
 
+## [Versión 2.3] — 2026-11-09
+### Refactorización Arquitectónica: Desacoplamiento Modular por Servicios (SRP) y Orquestador Declarativo
+
+* **Arquitectura de Software y Modularización (`refactor`):**
+  * **Principio de Responsabilidad Única (SRP):** Desacoplamiento total del sistema en 4 capas de servicios especializados dentro de `src/services/`:
+    * `gemini_client.py`: Integración y consumo de Google AI Studio con reintentos y tolerancia a fallos.
+    * `green_api_client.py`: Integración HTTP con Green API para mensajería, descargas de audio y consulta de colas.
+    * `sheets_client.py`: Integración con Google Sheets API con reintentos exponenciales y modo de contingencia no bloqueante.
+    * `dispatch_parser.py`: Ingesta, deserialización y extracción estructural de datos de webhooks y respuestas de IA.
+    * `dispatch_analyzer.py`: Lógica de negocio pura (validación de campos, rangos de esfuerzo/error, deduplicación y resolución fonética de auxiliares) con **cero dependencias externas**.
+    * `dispatch_exporter.py`: Capa de presentación para WhatsApp y exportación de reportes de auditoría JSON en `reports/`.
+  * **Orquestador Delgado (`main.py`):** Coordinador declarativo de alto nivel (~80 líneas) sin lógica contable ni llamadas HTTP directas, operable mediante CLI o tareas programadas.
+  * **Configuración Centralizada (`src/config.py`):** Resolución de rutas absolutas basadas en `BASE_DIR`, tipado de variables de entorno con `python-dotenv` y sistema de logs dual (consola + `app.log`).
+  * **Compatibilidad hacia atrás (*Backward-Compatibility*):** Módulos heredados en `bot/src/` y `bot/api/webhook.py` adaptados como fachadas transparentes hacia `src/services/`.
+* **Pruebas y Calidad de Código (`test`):**
+  * Suite automatizada de pruebas unitarias (`tests/test_services.py`) con cobertura de validaciones de negocio, segregación de fallos parciales, deduplicación e integridad estructural.
+* **Documentación y Estandarización (`docs`):**
+  * Sincronización integral de `README.md`, `.env.example`, `.gitignore` y creación de directorios estándar `data/`, `reports/` y `credentials/`.
+
+---
+
 ## [Versión 2.2] — 2026-11-04 a 2026-11-05
 ### Robustez Operativa: Antiduplicados por Colaborador, Tolerancia a Fallos Parciales, Ensamblado Numérico Universal y Mapeo Fonético de Facturas
 

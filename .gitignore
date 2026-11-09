@@ -1,8 +1,18 @@
 # Archivos de entorno y credenciales
 .env
 *.env
+credentials/*
+!credentials/.gitkeep
 *credentials*.json
 *service_account*.json
+
+# Archivos de logs y depuración
+*.log
+app.log
+
+# Reportes y artefactos generados dinámicamente
+reports/*
+!reports/.gitkeep
 
 # Archivos de datos con registros reales o información sensible
 *.xlsx

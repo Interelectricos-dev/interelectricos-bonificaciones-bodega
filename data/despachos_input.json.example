@@ -1,0 +1,19 @@
+{
+  "ejemplos": [
+    {
+      "tipo_factura": "IC",
+      "numero_factura": 104958,
+      "nombre_empleado": "Edward Sanchez",
+      "puntos_esfuerzo": 3,
+      "puntos_error": 0
+    },
+    {
+      "tipo_factura": "DP",
+      "numero_factura": 36600,
+      "nombre_empleado": "Sneider Villanueva",
+      "puntos_esfuerzo": 2,
+      "puntos_error": -1
+    }
+  ]
+}
+
