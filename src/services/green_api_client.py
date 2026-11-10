@@ -2,7 +2,8 @@ import json
 import urllib.error
 import urllib.request
 from typing import Any, Dict, List, Optional, Tuple
-from src.config import settings, get_logger
+
+from src.config import get_logger, settings
 
 logger = get_logger("green_api_client")
 

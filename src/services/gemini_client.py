@@ -4,7 +4,8 @@ import time
 import urllib.error
 import urllib.request
 from typing import Optional
-from src.config import settings, get_logger
+
+from src.config import get_logger, settings
 
 logger = get_logger("gemini_client")
 

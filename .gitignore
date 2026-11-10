@@ -18,6 +18,8 @@ reports/*
 *.xlsx
 *.xls
 *.csv
+*.docx
+*.pdf
 !templates/*.xlsx
 !templates/*.csv
 !data/*.example

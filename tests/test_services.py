@@ -1,16 +1,17 @@
 import json
 import unittest
 from pathlib import Path
+
 from src.config import settings
 from src.services.dispatch_analyzer import (
-    validar_un_despacho,
-    segregar_despachos_lote,
-    resolver_empleado,
-    procesar_y_estructurar_registros,
     normalizar_numero_factura,
+    procesar_y_estructurar_registros,
+    resolver_empleado,
+    segregar_despachos_lote,
+    validar_un_despacho,
 )
-from src.services.dispatch_parser import DispatchParser
 from src.services.dispatch_exporter import DispatchExporter
+from src.services.dispatch_parser import DispatchParser
 
 
 class TestDispatchArchitecture(unittest.TestCase):

@@ -1,8 +1,10 @@
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from src.config import settings, get_logger
+
+from src.config import get_logger, settings
 
 logger = get_logger("dispatch_exporter")
 
@@ -132,7 +134,6 @@ class DispatchExporter:
         datos_procesados: Dict[str, Any], prefijo: str = "lote_despachos"
     ) -> Optional[Path]:
         """Exporta un artefacto JSON en reports/ (o /tmp en Vercel) para trazabilidad y auditoría."""
-        import os
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         directorio = Path("/tmp") if os.getenv("VERCEL") else settings.REPORTS_DIR
         archivo_salida = directorio / f"{prefijo}_{timestamp}.json"

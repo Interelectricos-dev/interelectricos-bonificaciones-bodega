@@ -2,10 +2,12 @@ import json
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from src.config import settings, get_logger
+
+from src.config import get_logger, settings
 from src.services.dispatch_analyzer import EMPLEADOS_FALLBACK, normalizar_numero_factura
 
 logger = get_logger("sheets_client")

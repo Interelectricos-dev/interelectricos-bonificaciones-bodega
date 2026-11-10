@@ -1,7 +1,8 @@
 import json
 from http.server import BaseHTTPRequestHandler
+
 from main import orquestar_procesamiento_despacho
-from src.config import settings, get_logger
+from src.config import get_logger, settings
 from src.services.dispatch_exporter import DispatchExporter
 from src.services.dispatch_parser import DispatchParser
 from src.services.green_api_client import GreenAPIClient
