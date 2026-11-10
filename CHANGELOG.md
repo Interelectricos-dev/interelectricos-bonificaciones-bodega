@@ -8,6 +8,17 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 ---
 
+## [Versión 2.4] — 2026-11-10
+### Deprecación de Directorio Heredado `bot/`, Consolidación Canónica y Estandarización PEP 8
+
+* **Limpieza y Consolidación de Arquitectura (`refactor`):**
+  * **Retiro definitivo de `bot/`:** Eliminación completa de módulos fachada obsoletos (`bot/src/`, `bot/api/`), archivos duplicados de configuración (`bot/vercel.json`, `bot/requirements.txt`) y variables redundantes.
+  * **Reubicación de Consola de Pruebas (`tests/test_bot.py`):** Consola interactiva de WhatsApp trasladada a la suite de pruebas raíz con imports limpios bajo PEP 8 y resolución de ruta directa.
+  * **Estandarización PEP 8:** Normalización estricta de imports (estándar, terceros y locales) en todos los módulos de `src/`, `api/`, `tests/` y `main.py`.
+  * **Exclusión de Artefactos Binarios en Git (`chore`):** Configuración de `.gitignore` para desvincular binarios compilados (`.docx` y `.pdf`) del repositorio remoto, preservándolos intactos en local para reportes de oficina.
+
+---
+
 ## [Versión 2.3] — 2026-11-09
 ### Refactorización Arquitectónica: Desacoplamiento Modular por Servicios (SRP) y Orquestador Declarativo
 

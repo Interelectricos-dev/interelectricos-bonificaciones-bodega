@@ -238,13 +238,13 @@ Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los me
 3. **Pruebas y verificación desde consola local:**
    * **Prueba declarativa unitaria:** Ejecutar `python -m unittest tests/test_services.py` (debe aprobar 7/7 pruebas).
    * **Prueba end-to-end con un despacho:** Ejecutar `python main.py "Para Edward: Factura IC 104958 3 puntos esfuerzo"`.
-   * **Modo de escucha continuo:** Para depurar en tiempo real el flujo de WhatsApp, ejecutar `python bot/tests/test_bot.py`.
+   * **Modo de escucha continuo:** Para depurar en tiempo real el flujo de WhatsApp, ejecutar `python tests/test_bot.py`.
 
 ---
 
 ### 6.3. Mantenimiento del Prompt de IA: Alta/Baja de Auxiliares y Nuevos Tipos de Factura
 
-En la arquitectura modular V2.3, las reglas de extracción por IA están centralizadas en `src/services/gemini_client.py` (`SYSTEM_PROMPT`) y las validaciones de negocio en `src/services/dispatch_analyzer.py` (manteniendo `bot/src/parser_ai.py` como fachada compatible):
+En la arquitectura modular V2.3, las reglas de extracción por IA están centralizadas en `src/services/gemini_client.py` (`SYSTEM_PROMPT`) y las validaciones de negocio en `src/services/dispatch_analyzer.py`:
 
 #### A. Si ingresa un nuevo auxiliar o se retira uno existente
 1. **Actualizar el catálogo maestro en Google Sheets:**

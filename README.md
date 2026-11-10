@@ -95,7 +95,7 @@ pip install -r requirements.txt
 
 2. **Modo Escucha en Vivo de WhatsApp (Sondeo continuo para pruebas):**
    ```bash
-   python bot/tests/test_bot.py
+   python tests/test_bot.py
    ```
 
 3. **Ejecución de Pruebas Unitarias:**
@@ -105,4 +105,4 @@ pip install -r requirements.txt
 
 4. **Despliegue Serverless en Vercel:**
    - Endpoint: `/api/webhook`
-   - Configurado en `bot/vercel.json` apuntando al controlador desacoplado.
+   - Configurado en `vercel.json` apuntando al controlador `api/webhook.py`.

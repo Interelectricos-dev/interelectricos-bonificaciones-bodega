@@ -3,12 +3,13 @@ import sys
 import time
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+# Resolver ruta raíz del proyecto (un nivel arriba de tests/)
+ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 from main import orquestar_procesamiento_despacho
-from src.config import settings, get_logger
+from src.config import get_logger, settings
 from src.services.dispatch_exporter import DispatchExporter
 from src.services.dispatch_parser import DispatchParser
 from src.services.green_api_client import GreenAPIClient
@@ -110,3 +111,4 @@ def escuchar_whatsapp_continuo() -> None:
 
 if __name__ == "__main__":
     escuchar_whatsapp_continuo()
+
