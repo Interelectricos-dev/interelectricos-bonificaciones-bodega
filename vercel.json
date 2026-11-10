@@ -5,6 +5,11 @@
       "use": "@vercel/python"
     }
   ],
+  "functions": {
+    "api/webhook.py": {
+      "maxDuration": 60
+    }
+  },
   "routes": [
     {
       "src": "/api/webhook",

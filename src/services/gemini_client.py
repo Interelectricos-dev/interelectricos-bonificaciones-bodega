@@ -123,9 +123,10 @@ class GeminiClient:
             },
         }
 
-        modelos = [self.model, "gemini-3-flash-preview", "gemini-3.5-flash"]
+        modelos = [self.model, "gemini-3-flash-preview", "gemini-3.5-flash", "gemini-3.1-flash-lite"]
         modelos_unicos = list(dict.fromkeys(modelos))
         ultimo_error: Optional[Exception] = None
+        timeout_segundos = 25 if audio_bytes else 12
 
         for mod in modelos_unicos:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{mod}:generateContent?key={self.api_key}"
@@ -136,15 +137,15 @@ class GeminiClient:
                 method="POST",
             )
             try:
-                logger.info("Consultando Gemini API con modelo '%s'...", mod)
-                with urllib.request.urlopen(req, timeout=10) as resp:
+                logger.info("Consultando Gemini API con modelo '%s' (timeout: %ds)...", mod, timeout_segundos)
+                with urllib.request.urlopen(req, timeout=timeout_segundos) as resp:
                     res_json = json.loads(resp.read().decode("utf-8"))
                 raw_text = res_json["candidates"][0]["content"]["parts"][0]["text"]
                 return raw_text
             except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, OSError) as err:
                 ultimo_error = err
                 logger.warning("Fallo al consultar modelo '%s': %s. Reintentando...", mod, err)
-                time.sleep(0.5)
+                time.sleep(1.0)
 
         logger.error("Todos los intentos con Gemini API fallaron: %s", ultimo_error)
         raise RuntimeError(f"Error de conexión tras reintentos con Gemini API: {ultimo_error}")

@@ -50,7 +50,10 @@ def escuchar_whatsapp_continuo() -> None:
                 if body:
                     cid, txt, aurl, mid = DispatchParser.parse_webhook_payload(body)
                     if cid:
-                        mensajes_a_procesar.append((mid or "queue", cid, txt, aurl))
+                        msg_id = mid or "queue"
+                        if msg_id not in procesados:
+                            procesados.add(msg_id)
+                            mensajes_a_procesar.append((msg_id, cid, txt, aurl))
             except Exception:
                 pass
 
