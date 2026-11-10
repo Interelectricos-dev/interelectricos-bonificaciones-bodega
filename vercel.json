@@ -1,9 +1,13 @@
 {
-  "functions": {
-    "api/webhook.py": {
-      "maxDuration": 60
+  "builds": [
+    {
+      "src": "api/webhook.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 60
+      }
     }
-  },
+  ],
   "routes": [
     {
       "src": "/api/webhook",
@@ -11,4 +15,3 @@
     }
   ]
 }
-
