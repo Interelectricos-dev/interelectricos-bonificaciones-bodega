@@ -123,11 +123,26 @@ class DispatchExporter:
     @staticmethod
     def formatear_error_operativo(mensaje_error: str) -> str:
         """Formatea un mensaje de error operacional para ser devuelto por WhatsApp."""
-        return (
-            f"⚠ *ERROR EN GOOGLE SHEETS:*\n{mensaje_error}\n\n"
-            "Ejemplo individual: `IC104958 Edward 3 puntos`\n"
-            "Ejemplo en bloque: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`"
-        )
+        msg_lower = mensaje_error.lower()
+        if "gemini" in msg_lower or "timed out" in msg_lower or "timeout" in msg_lower:
+            titulo = "⚠ *AVISO DE TIEMPO DE ESPERA (IA)*"
+            recomendacion = (
+                "El audio fue muy extenso o hubo congestión temporal en el procesamiento.\n"
+                "💡 *Sugerencia:* Para audios de más de 20 facturas, repártelos en 2 notas de voz de 30-40 segundos."
+            )
+        elif "sheets" in msg_lower or "google" in msg_lower:
+            titulo = "⚠ *ERROR EN GOOGLE SHEETS*"
+            recomendacion = "Hubo un error de comunicación con la base de datos de Google Sheets."
+        else:
+            titulo = "⚠ *AVISO DEL SISTEMA*"
+            recomendacion = ""
+
+        partes = [f"{titulo}:", mensaje_error]
+        if recomendacion:
+            partes.append(f"\n{recomendacion}")
+        partes.append("\nEjemplo individual: `IC104958 Edward 3 puntos`")
+        partes.append("Ejemplo en bloque: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`")
+        return "\n".join(partes)
 
     @staticmethod
     def exportar_reporte_auditoria_json(
