@@ -122,27 +122,39 @@ class DispatchExporter:
 
     @staticmethod
     def formatear_error_operativo(mensaje_error: str) -> str:
-        """Formatea un mensaje de error operacional para ser devuelto por WhatsApp."""
+        """
+        Formatea un mensaje de error operacional para WhatsApp en lenguaje 100% humano y operativo,
+        sin tecnicismos de programación, guiando a Luis sobre qué hacer para solucionarlo.
+        """
         msg_lower = mensaje_error.lower()
-        if "gemini" in msg_lower or "timed out" in msg_lower or "timeout" in msg_lower:
-            titulo = "⚠ *AVISO DE TIEMPO DE ESPERA (IA)*"
-            recomendacion = (
-                "El audio fue muy extenso o hubo congestión temporal en el procesamiento.\n"
-                "💡 *Sugerencia:* Para audios de más de 20 facturas, repártelos en 2 notas de voz de 30-40 segundos."
-            )
-        elif "sheets" in msg_lower or "google" in msg_lower:
-            titulo = "⚠ *ERROR EN GOOGLE SHEETS*"
-            recomendacion = "Hubo un error de comunicación con la base de datos de Google Sheets."
-        else:
-            titulo = "⚠ *AVISO DEL SISTEMA*"
-            recomendacion = ""
 
-        partes = [f"{titulo}:", mensaje_error]
-        if recomendacion:
-            partes.append(f"\n{recomendacion}")
-        partes.append("\nEjemplo individual: `IC104958 Edward 3 puntos`")
-        partes.append("Ejemplo en bloque: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`")
-        return "\n".join(partes)
+        if "timed out" in msg_lower or "timeout" in msg_lower or "gemini" in msg_lower:
+            return (
+                "⚠ *AUDIO MUY LARGO O CONGESTIÓN TEMPORAL*\n\n"
+                "El audio contenía demasiadas facturas juntas y se agotó el tiempo máximo de procesamiento.\n\n"
+                "👉 *¿Cómo solucionarlo?*\n"
+                "Por favor reenvía este lote dividiéndolo en *2 notas de voz más cortas* (de unos 30 a 45 segundos cada una).\n\n"
+                "💡 *Ejemplo al dictar:*\n"
+                "• Audio 1: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos...`\n"
+                "• Audio 2: `Para Sneider: IC 105193 3 puntos...`"
+            )
+
+        if "sheets" in msg_lower or "google" in msg_lower or "503" in msg_lower or "500" in msg_lower:
+            return (
+                "⚠ *PAUSA TEMPORAL EN GOOGLE SHEETS*\n\n"
+                "Hubo un pestañeo de conexión al intentar guardar en la hoja de cálculo.\n\n"
+                "👉 *¿Cómo solucionarlo?*\n"
+                "Espera 1 minuto y vuelve a enviar el audio o mensaje para que quede registrado."
+            )
+
+        return (
+            "⚠ *NO SE PUDO REGISTRAR EL DESPACHO*\n\n"
+            "El sistema no logró procesar los datos de este mensaje.\n\n"
+            "👉 *¿Cómo solucionarlo?*\n"
+            "Verifica que el audio se escuche claro o envía los despachos en texto con este formato:\n\n"
+            "• Individual: `IC104958 Edward 3 puntos`\n"
+            "• En bloque: `Para Edward: IC 104958 3 puntos, DP 36600 2 puntos`"
+        )
 
     @staticmethod
     def exportar_reporte_auditoria_json(
