@@ -8,6 +8,20 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 ---
 
+## [Versión 2.5] — 2026-11-13
+### Resiliencia para Audios Densos, Errores Humanizados y Protocolo de Rotación de Líneas de WhatsApp
+
+* **Resiliencia y Rendimiento en IA Multimodal (`fix`):**
+  * **Ampliación de Timeout a 42s:** En `src/services/gemini_client.py`, se aumentó el tiempo de espera para audios de 25s a 42s con rotación ágil de modelos (`gemini-3.5-flash` y `gemini-3-flash-preview`), permitiendo procesar notas de voz densas de más de 1 minuto y 20 facturas sin sufrir abortos prematuros por socket timeout (`The read operation timed out`).
+  * **Recuperación Histórica de Despachos:** Rescate y consolidación atómica en Google Sheets de 21 facturas dictadas en el audio denso del 10/11/2026 con su marca temporal original (`2026-11-10 18:11:57`), manteniendo intacto el balance diario.
+* **Experiencia de Usuario y Lenguaje Operativo (`feat`):**
+  * **Mensajes de Error 100% Claros y Sin Tecnicismos:** En `src/services/dispatch_exporter.py`, se rediseñó `formatear_error_operativo()` para eliminar todo rastro de terminología de programación (como `Gemini API`, `HttpError`, `The read operation timed out`) en los mensajes dirigidos a WhatsApp, sustituyéndolos por explicaciones pedagógicas y recomendaciones directas sobre cómo proceder (ej. dividir audios muy extensos en notas de 30-40 segundos).
+* **Documentación y Mantenimiento a Futuro (`docs`):**
+  * **Sección 6.5 en Runbook de Soporte:** En `docs/RUNBOOK_SOPORTE_TECNICO.md`, se documentó el protocolo detallado de gestión de destinatarios del plan Developer de Green API y los pasos exactos para que un nuevo Administrador de Sistemas pueda reemplazar el número celular del jefe de bodega en 2 minutos creando una nueva instancia gratuita sin costo adicional.
+  * **Compilación de Suite Documental:** Regeneración de los 4 manuales en formato Word (`.docx`) mediante `scripts/build_docs.py`.
+
+---
+
 ## [Versión 2.4] — 2026-11-10
 ### Deprecación de Directorio Heredado `bot/`, Consolidación Canónica y Estandarización PEP 8
 

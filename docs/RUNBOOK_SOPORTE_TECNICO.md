@@ -324,3 +324,68 @@ Si por contingencia mayor un audio no llegara a registrarse:
        sheets.insertar_filas_registro_diario([r["fila_sheets"] for r in res["nuevos"]])
    ```
 3. El sistema inserta la fila conservando la fecha y hora histórica real de la entrega en bodega.
+
+---
+
+### 6.5. Gestión de Líneas de WhatsApp y Rotación de Personal Operativo (Cupos de Green API Developer)
+
+#### A. Contexto Técnico del Plan Developer de Green API
+La pasarela de WhatsApp opera actualmente bajo una instancia en plan gratuito **Developer** de Green API. Este plan cuenta con una limitación estricta de arquitectura:
+* **Límite de 3 destinatarios únicos por mes:** La instancia solo puede interactuar y enviar notificaciones a un máximo de **3 chats (números de teléfono)** diferentes durante el mes calendario.
+* **Bloqueo de cuota:** Una vez que la instancia envía o recibe un mensaje de 3 números, esos 3 identificadores de WhatsApp (`573XXXXXXXXX@c.us`) quedan fijados en la cuota mensual de la instancia.
+* **Comportamiento ante un 4º número:** Si una persona con un número celular diferente intenta enviar despachos al bot, Green API rechaza la petición con el código **Error 466 (`QUOTE_EXCEEDED`)**, impidiendo que el bot le responda o procese sus audios.
+
+#### B. Escenario Operativo: Cambio de Número o Reemplazo del Encargado de Bodega
+Si el jefe de bodega (Luis) cambia de número celular personal, o si es reemplazado por un nuevo encargado de bodega, el nuevo número será interpretado por Green API como un 4º destinatario no autorizado si los 3 cupos del mes ya están copados.
+
+Para resolver esta situación de forma rápida, segura y sin interrumpir la operación, el nuevo Administrador de Sistemas debe seguir uno de los siguientes procedimientos:
+
+---
+
+#### C. Procedimiento Inmediato y 100% Gratuito: Recreación de la Instancia Developer
+
+No es necesario esperar al fin de mes ni pagar una suscripción si solo se requiere cambiar el número del encargado de bodega:
+
+1. **Acceder a la Consola de Green API:**
+   * Ingresar a [https://console.green-api.com/](https://console.green-api.com/) con las credenciales corporativas del departamento de Sistemas de Intereléctricos.
+2. **Eliminar la Instancia Actual o Crear una Nueva:**
+   * Ubicar la instancia en uso (ej. `710722740631`).
+   * Hacer clic en eliminar instancia o seleccionar el botón **"Create instance"** eligiendo el plan gratuito **Developer**.
+3. **Vincular el Teléfono Físico de Sistemas (Escanear QR):**
+   * Abrir la nueva instancia creada en el panel web y hacer clic en **"QR code"**.
+   * Tomar el teléfono celular oficial de Sistemas (`573185796837`), abrir WhatsApp → Dispositivos vinculados → Vincular un dispositivo.
+   * Escanear el código QR. El estado en la consola de Green API cambiará a **`authorized`**.
+4. **Configurar el Webhook hacia Vercel:**
+   * En la configuración de la nueva instancia en Green API, dirigirse a la sección **Webhooks**.
+   * Establecer los siguientes parámetros:
+     * `webhookUrl`: `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`
+     * `incomingWebhook`: `yes`
+     * `stateWebhook`: `no`
+     * `outgoingWebhook`: `no`
+   * Guardar los cambios.
+5. **Actualizar Variables de Entorno en Vercel:**
+   * Ingresar al panel de **Vercel** (`https://vercel.com/`) → Proyecto `interelectricos-bonificaciones-bodega`.
+   * Ir a **Settings** → **Environment Variables**.
+   * Actualizar las siguientes claves con los valores de la nueva instancia:
+     * `ID_INSTANCE`: El nuevo ID numérico generado por Green API.
+     * `API_TOKEN_INSTANCE`: El nuevo token alfanumérico generado por Green API.
+     * `AUTHORIZED_CHATS`: Agregar el nuevo número de WhatsApp del jefe de bodega en formato internacional (ej. `573001234567@c.us`), separado por coma de los demás autorizados.
+   * Forzar un **Redeploy** de la última versión en Vercel para que adopte las nuevas credenciales de inmediato.
+6. **Actualizar el Entorno Local de Pruebas:**
+   * En el archivo local [`.env`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/.env), actualizar `ID_INSTANCE`, `API_TOKEN_INSTANCE` y `AUTHORIZED_CHATS`.
+7. **Verificación y Prueba:**
+   * Pedirle al nuevo encargado que envíe una nota de voz o mensaje de prueba: *"Para Edward: Factura IC 105000 3 puntos"*.
+   * El bot responderá en menos de 10 segundos y el nuevo celular quedará registrado como el Slot #1 de los 3 cupos libres de la nueva instancia.
+
+---
+
+#### D. Alternativa Automática: Reinicio Mensual de Cuota
+Green API reinicia automáticamente a cero los 3 destinatarios de prueba el **día 1 de cada mes calendario**. Si el cambio de personal coincide con el inicio de mes, no se requiere recrear la instancia: simplemente el nuevo número envía un mensaje el día 1 y ocupará uno de los 3 cupos disponibles.
+
+---
+
+#### E. Alternativa Comercial Definitiva: Migración al Plan Business
+Si la dirección de Intereléctricos decide expandir el bot para que múltiples jefes de turno, supervisores o auxiliares reporten despachos simultáneamente desde sus propios celulares sin ninguna restricción de cupos:
+1. En la consola de Green API, seleccionar la opción **"Change Plan"** en la instancia y ascender al plan **Business** (tarifa aproximada de ~$12 USD/mes).
+2. El plan Business elimina por completo la restricción de 3 destinatarios y permite tráfico ilimitado de entrada y salida con cualquier número de WhatsApp.
+3. La seguridad del sistema queda garantizada por la variable `AUTHORIZED_CHATS` en Vercel, que actúa como lista blanca estricta (*Fail-Closed*), asegurando que solo los números autorizados por Sistemas puedan registrar comprobantes en Google Sheets.
