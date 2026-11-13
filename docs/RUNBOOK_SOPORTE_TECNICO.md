@@ -335,8 +335,8 @@ La pasarela de WhatsApp opera actualmente bajo una instancia en plan gratuito **
 * **Bloqueo de cuota:** Una vez que la instancia envía o recibe un mensaje de 3 números, esos 3 identificadores de WhatsApp (`573XXXXXXXXX@c.us`) quedan fijados en la cuota mensual de la instancia.
 * **Comportamiento ante un 4º número:** Si una persona con un número celular diferente intenta enviar despachos al bot, Green API rechaza la petición con el código **Error 466 (`QUOTE_EXCEEDED`)**, impidiendo que el bot le responda o procese sus audios.
 
-#### B. Escenario Operativo: Cambio de Número o Reemplazo del Encargado de Bodega
-Si el jefe de bodega (Luis) cambia de número celular personal, o si es reemplazado por un nuevo encargado de bodega, el nuevo número será interpretado por Green API como un 4º destinatario no autorizado si los 3 cupos del mes ya están copados.
+#### B. Escenario Operativo: Cambio de Número o Reemplazo del Despachador de Entregas
+Si el despachador de mostrador (Luis, encargado de entregar los artículos al cliente y registrar los despachos con factura y puntos) cambia de número celular personal, o si es reemplazado por otro despachador encargado del registro, el nuevo número será interpretado por Green API como un 4º destinatario no autorizado si los 3 cupos del mes ya están copados.
 
 Para resolver esta situación de forma rápida, segura y sin interrumpir la operación, el nuevo Administrador de Sistemas debe seguir uno de los siguientes procedimientos:
 
@@ -369,7 +369,7 @@ No es necesario esperar al fin de mes ni pagar una suscripción si solo se requi
    * Actualizar las siguientes claves con los valores de la nueva instancia:
      * `ID_INSTANCE`: El nuevo ID numérico generado por Green API.
      * `API_TOKEN_INSTANCE`: El nuevo token alfanumérico generado por Green API.
-     * `AUTHORIZED_CHATS`: Agregar el nuevo número de WhatsApp del jefe de bodega en formato internacional (ej. `573001234567@c.us`), separado por coma de los demás autorizados.
+     * `AUTHORIZED_CHATS`: Agregar el nuevo número de WhatsApp del despachador de entregas (encargado del registro) en formato internacional (ej. `573001234567@c.us`), separado por coma de los demás autorizados.
    * Forzar un **Redeploy** de la última versión en Vercel para que adopte las nuevas credenciales de inmediato.
 6. **Actualizar el Entorno Local de Pruebas:**
    * En el archivo local [`.env`](file:///c:/Proyectos/interelectricos-bonificaciones-bodega/.env), actualizar `ID_INSTANCE`, `API_TOKEN_INSTANCE` y `AUTHORIZED_CHATS`.

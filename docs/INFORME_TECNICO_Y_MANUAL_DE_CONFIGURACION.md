@@ -494,7 +494,7 @@ src/
 ### 8.1. Flujo de Procesamiento de Extremo a Extremo
 
 1. **Captura en WhatsApp (Green API Gateway):**
-   * El jefe de bodega envía un mensaje de texto o una nota de voz (`.ogg`) al número corporativo de Sistemas vinculado en **Green API**.
+   * El despachador de entregas (encargado del registro) envía un mensaje de texto o una nota de voz (`.ogg`) al número corporativo de Sistemas vinculado en **Green API**.
    * Green API dispara en tiempo real una petición HTTP `POST` (Webhook) hacia el endpoint Serverless alojado en **Vercel** (`/api/webhook`).
 2. **Filtro de Privacidad *Fail-Closed* (`api/webhook.py` y `src/config.py`):**
    * Antes de procesar el contenido o invocar la IA, el webhook verifica que el remitente (`chatId`) coincida estrictamente con los números autorizados en la variable de entorno `CHAT_ID_PRUEBA` (soporta múltiples IDs separados por coma).

@@ -10,7 +10,7 @@ from src.config import get_logger, settings
 logger = get_logger("gemini_client")
 
 SYSTEM_PROMPT = """Eres el motor de extracción de datos de la bodega de Intereléctricos Group SAS.
-Tu tarea es analizar el mensaje de texto o nota de voz enviado por el jefe de bodega (Luis) y extraer UNO o MÚLTIPLES registros de facturas en formato JSON estricto.
+Tu tarea es analizar el mensaje de texto o nota de voz enviado por el despachador de entregas (Luis, encargado de registrar los despachos con factura y puntos) y extraer UNO o MÚLTIPLES registros de facturas en formato JSON estricto.
 
 NOMENCLATURA Y TIPOS DE FACTURA (MAPEO FONÉTICO OBLIGATORIO):
 En Intereléctricos TODOS los comprobantes son facturas. Existen únicamente 3 tipos de factura autorizados:
@@ -105,13 +105,13 @@ class GeminiClient:
             parts.append(
                 {
                     "text": (
-                        "Escucha esta nota de voz del jefe de bodega y extrae todos los despachos mencionados "
+                        "Escucha esta nota de voz del despachador de entregas y extrae todos los despachos mencionados "
                         "en el arreglo JSON 'despachos'. Si falta algún dato en un despacho, pon null en ese campo."
                     )
                 }
             )
         else:
-            parts.append({"text": f"Mensaje del jefe de bodega: {texto}"})
+            parts.append({"text": f"Mensaje del despachador de entregas: {texto}"})
 
         payload = {
             "system_instruction": {"parts": [{"text": SYSTEM_PROMPT}]},

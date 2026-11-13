@@ -17,7 +17,7 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 * **Experiencia de Usuario y Lenguaje Operativo (`feat`):**
   * **Mensajes de Error 100% Claros y Sin Tecnicismos:** En `src/services/dispatch_exporter.py`, se rediseñó `formatear_error_operativo()` para eliminar todo rastro de terminología de programación (como `Gemini API`, `HttpError`, `The read operation timed out`) en los mensajes dirigidos a WhatsApp, sustituyéndolos por explicaciones pedagógicas y recomendaciones directas sobre cómo proceder (ej. dividir audios muy extensos en notas de 30-40 segundos).
 * **Documentación y Mantenimiento a Futuro (`docs`):**
-  * **Sección 6.5 en Runbook de Soporte:** En `docs/RUNBOOK_SOPORTE_TECNICO.md`, se documentó el protocolo detallado de gestión de destinatarios del plan Developer de Green API y los pasos exactos para que un nuevo Administrador de Sistemas pueda reemplazar el número celular del jefe de bodega en 2 minutos creando una nueva instancia gratuita sin costo adicional.
+  * **Sección 6.5 en Runbook de Soporte:** En `docs/RUNBOOK_SOPORTE_TECNICO.md`, se documentó el protocolo detallado de gestión de destinatarios del plan Developer de Green API y los pasos exactos para que un nuevo Administrador de Sistemas pueda reemplazar el número celular del despachador de entregas (encargado del registro) en 2 minutos creando una nueva instancia gratuita sin costo adicional.
   * **Compilación de Suite Documental:** Regeneración de los 4 manuales en formato Word (`.docx`) mediante `scripts/build_docs.py`.
 
 ---
@@ -79,7 +79,7 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 * **Nuevas Funcionalidades (`feat`):**
   * **Bot de WhatsApp (`/bot`):** Nuevo canal de entrada que coexiste en tiempo real con AppSheet escribiendo sobre la misma tabla transaccional `REGISTRO_DIARIO` en Google Sheets.
-  * **Procesamiento Multimodal con Gemini API (`gemini-3.5-flash`):** Extracción estructurada en JSON a partir de **notas de voz (`.ogg`)** o **mensajes de texto** en lenguaje natural enviados por el jefe de bodega (`bot/src/parser_ai.py`).
+  * **Procesamiento Multimodal con Gemini API (`gemini-3.5-flash`):** Extracción estructurada en JSON a partir de **notas de voz (`.ogg`)** o **mensajes de texto** en lenguaje natural enviados por el despachador de entregas (encargado del registro) (`bot/src/parser_ai.py`).
   * **Registro Individual y por Bloques (Lotes):** Capacidad de procesar tanto 1 despacho suelto (`"IC 2021 Edward 2 puntos 1 error"`) como múltiples despachos acumulados en un solo audio o texto, ejecutando una única lectura del catálogo `EMPLEADOS` y una única inserción masiva (`batch append`) en `REGISTRO_DIARIO` (`bot/src/sheets_service.py`).
   * **Despliegue Serverless en Vercel (`bot/api/webhook.py`):** Función en la nube con ejecución bajo demanda (costo $0 y aislamiento total de la red interna y del Windows Server corporativo).
 * **Seguridad y Validaciones (`fix`):**
