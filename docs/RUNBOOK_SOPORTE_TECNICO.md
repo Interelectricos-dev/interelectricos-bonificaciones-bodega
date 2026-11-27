@@ -233,9 +233,12 @@ Por política de seguridad (*Fail-Closed*), el bot procesa exclusivamente los me
 3. Guardar los cambios (**Save**) y desplegar los cambios.
 
 ### 6.2. Diagnóstico cuando el Bot de WhatsApp no responde
-1. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Sistema de Liquidación y Auditoría de Bonificaciones - Intereléctricos"}`.
-2. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
-3. **Pruebas y verificación desde consola local:**
+1. **Acceso Manual de Emergencia (Reinicio Rápido en 5 segundos):** Abrir en el navegador (PC o celular) el enlace:
+   `https://interelectricos-bonificaciones-bode.vercel.app/api/cron_reboot`
+   Si el contenedor de Green API estaba "congelado" o con el socket desincronizado, esta llamada lo destruye y relanza en vivo, reconectando WhatsApp y liberando los audios encolados de inmediato (ver detalle en sección 6.6).
+2. **Verificar estado de la función en Vercel:** Abrir `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook` en el navegador. Debe retornar `{"status": "ok", "service": "Sistema de Liquidación y Auditoría de Bonificaciones - Intereléctricos"}`.
+3. **Verificar sesión QR en Green API:** Si el teléfono físico de Sistemas permaneció más de 14 días continuos apagado o sin conexión a internet, ingresar al panel de Green API (`idInstance: 710722740631`) y verificar que el estado sea `authorized` y que `webhookUrl` apunte a `https://interelectricos-bonificaciones-bode.vercel.app/api/webhook`.
+4. **Pruebas y verificación desde consola local:**
    * **Prueba declarativa unitaria:** Ejecutar `python -m unittest tests/test_services.py` (debe aprobar 7/7 pruebas).
    * **Prueba end-to-end con un despacho:** Ejecutar `python main.py "Para Edward: Factura IC 104958 3 puntos esfuerzo"`.
    * **Modo de escucha continuo:** Para depurar en tiempo real el flujo de WhatsApp, ejecutar `python tests/test_bot.py`.
