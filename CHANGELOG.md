@@ -8,6 +8,18 @@ Todos los cambios notables a nivel arquitectónico, funcional, documental y de s
 
 ---
 
+## [Versión 2.6] — 2026-11-27
+### Auto-Reinicio Preventivo Diario en Vercel Cron Jobs (Resiliencia Green API)
+
+* **Resiliencia Operativa y Mantenimiento Autónomo (`feat`):**
+  * **Vercel Cron Job (`/api/cron_reboot`):** Implementación de una tarea programada en la nube (`api/cron_reboot.py`) configurada en `vercel.json` con la directiva `"schedule": "30 12 * * *"` (todos los días a las 07:30 a. m. hora Colombia / 12:30 UTC).
+  * **Prevención de Sesión Zombie:** Invoca automáticamente `GET /waInstance{id}/reboot/{token}` en Green API media hora antes de que inicie la jornada de bodega, garantizando que el socket WebSocket y contenedor headless amanezcan siempre limpios, reconectados y receptivos.
+  * **Cero Costo Adicional:** Corre 100% en la capa gratuita (Hobby) de Vercel y sin costo por API en Green API, con ejecución en ~2 segundos.
+* **Documentación Técnica (`docs`):**
+  * Incorporación de la sección **6.6** en `docs/RUNBOOK_SOPORTE_TECNICO.md` detallando el flujo de auto-reinicio preventivo y los pasos de diagnóstico ante eventuales congelamientos de sockets de terceros.
+
+---
+
 ## [Versión 2.5] — 2026-11-13
 ### Resiliencia para Audios Densos, Errores Humanizados y Protocolo de Rotación de Líneas de WhatsApp
 

@@ -6,12 +6,29 @@
       "config": {
         "maxDuration": 60
       }
+    },
+    {
+      "src": "api/cron_reboot.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 30
+      }
     }
   ],
   "routes": [
     {
       "src": "/api/webhook",
       "dest": "api/webhook.py"
+    },
+    {
+      "src": "/api/cron_reboot",
+      "dest": "api/cron_reboot.py"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron_reboot",
+      "schedule": "30 12 * * *"
     }
   ]
 }

@@ -389,3 +389,19 @@ Si la dirección de Intereléctricos decide expandir el bot para que múltiples 
 1. En la consola de Green API, seleccionar la opción **"Change Plan"** en la instancia y ascender al plan **Business** (tarifa aproximada de ~$12 USD/mes).
 2. El plan Business elimina por completo la restricción de 3 destinatarios y permite tráfico ilimitado de entrada y salida con cualquier número de WhatsApp.
 3. La seguridad del sistema queda garantizada por la variable `AUTHORIZED_CHATS` en Vercel, que actúa como lista blanca estricta (*Fail-Closed*), asegurando que solo los números autorizados por Sistemas puedan registrar comprobantes en Google Sheets.
+
+---
+
+### 6.6. Auto-Reinicio Preventivo Diario de Green API (Vercel Cron Jobs)
+
+Para evitar que el contenedor virtualizado en la nube de Green API entre en estado "zombie" o congele su conexión WebSocket con WhatsApp tras periodos de inactividad nocturna o microcortes de red, el sistema cuenta con un Cron Job automatizado en Vercel:
+
+* **Archivo de Ejecución:** `api/cron_reboot.py` (Endpoint: `/api/cron_reboot`).
+* **Programación en `vercel.json`:** `"schedule": "30 12 * * *"` (Todos los días a las **07:30 a. m.** hora Colombia UTC-5 / 12:30 UTC).
+* **Acción que ejecuta:** Realiza una petición `GET` a la API oficial de Green API (`{{GREEN_HOST}}/waInstance{{ID_INSTANCE}}/reboot/{{API_TOKEN_INSTANCE}}`). Esto destruye y relanza el proceso de escucha del contenedor en menos de 5 segundos, reconectando el socket a WhatsApp y liberando cualquier cola represada.
+* **Disparo Manual de Emergencia:** Si en algún momento durante el día se sospecha que Green API dejó de entregar eventos en vivo, el administrador de Sistemas puede invocar manualmente el reinicio abriendo en el navegador:
+  ```
+  https://interelectricos-bonificaciones-bode.vercel.app/api/cron_reboot
+  ```
+  La respuesta esperada es: `{"status": "ok", "service": "Green API Auto-Reboot Cron", "response": {"isReboot": true}}`.
+
